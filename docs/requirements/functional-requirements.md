@@ -3,7 +3,7 @@
 **Document:** `docs/requirements/functional-requirements.md`  
 **Status:** Draft v0.1  
 **Product:** Vyasa — Workspace Intelligence MCP  
-**Related Documents:** `docs/product/vision.md`, `docs/product/scope-and-roadmap.md`
+**Related Documents:** `knowledge/product/vision.md`, `knowledge/product/scope-and-roadmap.md`
 
 ## 1. Purpose
 
@@ -754,7 +754,7 @@ The following decisions must be resolved before their corresponding functionalit
 
 | ID | Decision | Required before |
 |---|---|---|
-| DFR-001 | Confirm the meaning and detection rules for OKF. | P1 standards detection |
+| DFR-001 | ~~Confirm the meaning and detection rules for OKF.~~ Resolved 2026-10-26: OKF is Google Cloud's Open Knowledge Format (`knowledge/technologies/okf.md`); detection rules in `knowledge/architecture/scanning-and-evidence.md` §9.11. | P1 standards detection |
 | DFR-002 | Define deterministic README quality criteria or leave quality unassessed. | P1 documentation detection |
 | DFR-003 | Define project discovery boundaries and criteria for non-Git project directories. | P1 discovery |
 | DFR-004 | Define canonical project profile format, draft location, and source precedence. | P1 profile lifecycle |

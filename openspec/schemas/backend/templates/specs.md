@@ -7,7 +7,8 @@
 - **Related proposal:** `proposal.md`
 - **Related design:** `design.md`
 - **Api and data contract:** `api-contract.md`
-- **Team focus:** Backend changes are judged on API contracts, data model, and authorization boundaries; failure modes, data integrity, and migration impact; and the test-layer placement for server-side behavior.
+- **Knowledge references:** `knowledge/<folder>/<concept>.md` — concepts these requirements rely on; cite them inline in requirement text where a term or rule comes from knowledge
+- **Team focus:** Changes are judged on MCP tool and interface contracts, data model, and trust boundaries; failure modes, data integrity, provenance of detected facts, and migration impact; and the verification layer that owns each behavior.
 
 Organize specifications by capability. Create one specification file per affected capability using the project's OpenSpec conventions.
 
