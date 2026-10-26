@@ -1,0 +1,33 @@
+{
+  "okf_version": "0.2",
+  "description": "Vyasa profile of OKF v0.2. OKF requires only `type`; this profile is stricter so every concept is self-describing and independent of delivery artifacts.",
+  "required_fields": [
+    "type",
+    "title",
+    "description",
+    "status",
+    "generated"
+  ],
+  "status_values": [
+    "draft",
+    "stable",
+    "deprecated"
+  ],
+  "types": {
+    "Product": "product",
+    "Architecture": "architecture",
+    "Concept": "concepts",
+    "Decision": "decisions",
+    "Practice": "practices",
+    "Technology": "technologies",
+    "Runbook": "runbooks",
+    "Term": "glossary"
+  },
+  "actor_pattern": "^(human:[a-z0-9._-]+|process:[a-z0-9._-]+|[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)$",
+  "forbidden_text": [
+    "docs/requirements/",
+    "openspec/changes/",
+    "openspec/specs/"
+  ],
+  "independence": "Concept links and sources may point only inside this bundle or to absolute external URLs. Knowledge never depends on requirements, specifications, changes, or implementation."
+}

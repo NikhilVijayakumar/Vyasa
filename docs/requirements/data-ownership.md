@@ -4,8 +4,8 @@
 **Product:** Vyasa — Workspace Intelligence MCP  
 **Status:** Draft v0.1  
 **Related Documents:**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
+- `knowledge/product/vision.md`
+- `knowledge/product/scope-and-roadmap.md`
 - `docs/requirements/functional-requirements.md`
 - `docs/requirements/non-functional-requirements.md`
 
@@ -234,7 +234,7 @@ The following matrix defines the proposed initial ownership model.
 | README presence and path | Current repository observation | Store | Share presence; exclude local-only paths |
 | Documentation structure | Deterministic repository observation | Store | Share approved summary |
 | OpenSpec presence/configuration | Recognized repository evidence | Store | Share status |
-| OKF status | Defined detector and recognized evidence, once OKF is clarified | Store | Share status after definition |
+| OKF status | OKF detector over declared bundles (`knowledge/technologies/okf.md`) | Store | Share status |
 | Agent instruction files | Recognized repository evidence | Store | Share approved names/status |
 | Test indicators | Recognized repository evidence | Store | Share summary |
 | README quality | Explicitly defined deterministic assessment, or not assessed | Store status | Share status if approved |

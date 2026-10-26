@@ -8,7 +8,8 @@
 
 - Organize work into logical phases and implementation slices.
 - Map tasks to relevant requirements, scenarios, design elements, or ADRs.
-- Prefer small tasks that produce independently verifiable progress.
+- Each implementation slice is a vertical slice (`knowledge/practices/vertical-slices.md`): one observable behaviour, its tests, and its evidence. Label pure enabling work as a prerequisite.
+- Reference the `knowledge/` concepts a slice depends on next to its traceability line.
 - Identify dependencies and preserve the order required for safe implementation.
 - Use test-first development where applicable: establish a failing test, implement the behavior, and verify the result.
 - Include relevant regression, integration, acceptance, security, accessibility, performance, or platform-specific checks based on the change and team conventions.
@@ -28,7 +29,7 @@
 
 ## 2. Implementation Slice: {{capability-or-behavior}}
 
-**Traceability:** Requirement(s): `{{requirement-reference}}`
+**Traceability:** Requirement(s): `{{requirement-reference}}` · Knowledge: `knowledge/<folder>/<concept>.md`
 
 - [ ] 2.1 Add or update tests for the expected behavior and confirm the relevant test fails for the intended reason.
 - [ ] 2.2 Implement the minimum change required to satisfy the behavior.
@@ -55,7 +56,8 @@ Repeat this section for each meaningful capability or implementation slice. Adap
 - [ ] 4.5 Record verification commands, outcomes, failures, skips, and unverified checks.
 - [ ] 4.6 Resolve failures introduced by the change or explicitly document approved exceptions and outstanding risks.
 - [ ] 4.7 Verify the implementation against the API and data contract,
-      including authorization enforcement at the server boundary and the
+      including the trust boundary (untrusted repository content, workspace
+      roots, credentials) and the
       documented error model.
 
 
@@ -63,7 +65,8 @@ Repeat this section for each meaningful capability or implementation slice. Adap
 
 - [ ] 5.1 Update developer, user, API, architecture, or operational documentation as applicable.
 - [ ] 5.2 Record relevant decisions, deviations, limitations, and follow-up work.
-- [ ] 5.3 Prepare a change summary with links to requirements, tests, and verification evidence.
+- [ ] 5.3 Capture durable lessons in `knowledge/` with the `knowledge-first` skill; the knowledge change must stand on its own.
+- [ ] 5.4 Prepare a change summary with links to requirements, tests, and verification evidence.
 
 ## 6. Review, Merge, and Archive
 

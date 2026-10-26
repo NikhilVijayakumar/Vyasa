@@ -4,8 +4,8 @@
 **Product:** Vyasa — Workspace Intelligence MCP  
 **Status:** Draft v0.1  
 **Related Documents:**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
+- `knowledge/product/vision.md`
+- `knowledge/product/scope-and-roadmap.md`
 - `docs/requirements/functional-requirements.md`
 
 ---
