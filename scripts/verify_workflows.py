@@ -278,6 +278,18 @@ def check_knowledge(report: Report) -> None:
     )
 
 
+def check_requirements(report: Report) -> None:
+    script = REPO_ROOT / "scripts" / "verify_requirements.py"
+    result = subprocess.run(
+        [sys.executable, str(script)], cwd=REPO_ROOT, capture_output=True, text=True
+    )
+    report.check(
+        "the requirement packages are complete, traceable, and well-formed",
+        result.returncode == 0,
+        result.stdout + result.stderr,
+    )
+
+
 def skill_homes() -> dict[str, str]:
     """Skill name to its home category, read from the skill homes on disk."""
     return {
@@ -448,6 +460,7 @@ def main() -> int:
     check_changes(report)
     check_skill_references(report)
     check_knowledge(report)
+    check_requirements(report)
     check_schema_resolution(report)
     check_skill_scoping(report)
 
