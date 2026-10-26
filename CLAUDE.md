@@ -86,9 +86,13 @@ Use only skills present in `skills/`; do not assume a skill exists because it is
 
 ## Git discipline
 
-- `main` — release branch
-- `develop` — integration branch
-- `feature/<change-id>-<short-description>` — new functionality
-- `fix/<change-id>-<short-description>` — bug fixes
+Follow `openspec-git-discipline` (policy) and `git-flow-branch-creator` (mechanics).
 
-Feature and fix branches originate from `develop` and merge back after review and verification. Keep the OpenSpec change ID consistent across the change directory, branch name, pull request, commits, and verification report. Do not commit directly to protected branches.
+| Branch | From | Merges into |
+|---|---|---|
+| `develop` | `master` (create it if missing) | — |
+| `feature/<change-id>-<desc>` | `develop` | `develop`, when implementation is complete and verified |
+| `fix/<change-id>-<desc>` | `develop` | `develop` |
+| `hotfix/<change-id>-<desc>` | `master` | `master` (tag a patch release), then `master` → `develop` |
+
+A release merges `develop` into `master` (`--no-ff`) and adds an annotated tag `vX.Y.Z`. No release branches. Never commit directly to `master` or `develop`. Push, release, and tag only when the user asks. Keep the OpenSpec change ID consistent across the change directory, branch name, pull request, commits, and verification report.
