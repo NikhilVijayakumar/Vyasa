@@ -56,7 +56,8 @@ After changing a schema, a template, a change's proposal or specifications, or t
 ```bash
 python3 scripts/verify_workflows.py      # schemas, templates, changes, skill references, knowledge bundle
 python3 scripts/verify_knowledge.py      # knowledge bundle only
-python3 -m unittest scripts/test_verify_knowledge.py
+python3 scripts/verify_requirements.py   # requirement packages: ownership, Gherkin, grill logs
+python3 -m unittest scripts/test_verify_knowledge.py scripts/test_verify_requirements.py
 python3 scripts/smoke_team_schemas.py    # end-to-end scratch change per schema
 python3 -m unittest scripts/test_sync_skills.py
 ```

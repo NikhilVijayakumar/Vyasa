@@ -1,5 +1,6 @@
 # Architecture
 
+* [C4 System Views](c4-system-views.md) - Context, container, and component views of Vyasa, the shared vocabulary for diagrams elsewhere.
 * [Data Model](data-model.md) - Entities, identifiers, observations, evidence, and relationships stored in the Vyasa index.
 * [Local Storage](local-storage.md) - How Vyasa persists its index, configuration, and scan history locally in SQLite.
 * [MCP Interface](mcp-interface.md) - MCP tools, parameters, response conventions, error codes, and limits exposed to coding agents.

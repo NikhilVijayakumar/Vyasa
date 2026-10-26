@@ -1,22 +1,33 @@
 # Grill Log: <name>
 
-Run with the `grill-me` skill. The requirement is ready for specification
-when every dimension is resolved or its open points are recorded as accepted
-open decisions in `requirement.md`. Do not force implementation choices here.
+Run with the `grill-me` skill. Answer each question with a recommendation; nothing is approved until confirmed.
 
-| Dimension | Questions asked | Resolution | Status |
-|---|---|---|---|
-| Intent | What problem, for whom, why now? | | open / resolved / accepted-open |
-| Scope | Included, excluded, deferred? | | |
-| Behaviour | Happy, failure, boundary, unusual paths? | | |
-| Data | Ownership, lifecycle, validation, persistence, privacy, provenance? | | |
-| Integration | Dependencies, contracts, external systems, failure behaviour? | | |
-| Architecture | Which C4 view, if any, clarifies this? | | |
-| Acceptance | Observable outcomes and how each is verified? | | |
-| Ambiguity | Contradictions, assumptions, missing decisions? | | |
+**Status key:** *Settled* — existing documents decide. *Recommended* — low-risk answer, accept unless you object.
+*Decision needed* — a real trade-off to choose.
 
-## Decisions
+| Dimension | Questions | Decision needed |
+|---|---|---|
+| Intent | | |
+| Scope | | |
+| Behaviour | | |
+| Data | | |
+| Integration | | |
+| Architecture | | |
+| Acceptance | | |
+| Ambiguity | | |
 
-### <YYYY-MM-DD> — <decision>
+## Intent
 
-Context, options considered, decision, and who agreed.
+**Q1. What problem, for whom, and why now?**
+
+- **Recommendation:** …
+- **Why:** …
+- **Status:** Recommended
+- **Feeds:** FR-nnn or a scenario
+
+(Repeat for each question. Cover all eight dimensions: Intent, Scope, Behaviour, Data, Integration, Architecture,
+Acceptance, Ambiguity. A dimension with nothing to ask is itself a finding.)
+
+## Decisions for you
+
+- **Qn** — the questions whose status is *Decision needed*.
