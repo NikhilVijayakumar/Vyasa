@@ -103,4 +103,4 @@ Follow `openspec-git-discipline` (policy) and `git-flow-branch-creator` (mechani
 | `fix/<change-id>-<desc>` | `develop` | `develop` |
 | `hotfix/<change-id>-<desc>` | `master` | `master` (tag a patch release), then `master` → `develop` |
 
-A release merges `develop` into `master` (`--no-ff`) and adds an annotated tag `vX.Y.Z`. No release branches. Never commit directly to `master` or `develop`. Push, release, and tag only when the user asks. Keep the OpenSpec change ID consistent across the change directory, branch name, pull request, commits, and verification report.
+A release merges `develop` into `master` (`--no-ff`) and adds an annotated tag `vX.Y.Z`. No release branches. Never commit directly to `master` or `develop`. Before every commit or merge: `git fetch`, report incoming changes on the branch and its base, pull them in, then commit and push (never force-push). Release and tag only when the user asks. Keep the OpenSpec change ID consistent across the change directory, branch name, pull request, commits, and verification report.

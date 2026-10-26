@@ -117,8 +117,12 @@ context: |
 
   A release merges develop into master with --no-ff and tags the
   merge commit. There are no release branches. Never commit
-  directly to master or develop. Push, release, and tag only when
-  the user asks.
+  directly to master or develop.
+
+  Before every commit or merge, fetch, report incoming changes on
+  the branch and its base, and pull them in; then commit and push.
+  Never force-push or push over an unresolved pull. Release and tag
+  only when the user asks.
 
   The OpenSpec change identifier must be traceable across the
   change directory, branch name, pull request, relevant commits,

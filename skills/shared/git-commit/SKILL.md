@@ -53,6 +53,15 @@ BREAKING CHANGE: `extends` key behavior changed
 
 ## Workflow
 
+### 0. Sync with the remote first
+
+Before analyzing or committing, follow **Sync, commit, push** in
+`openspec-git-discipline`: `git fetch origin --prune`, report any incoming
+commits on this branch's upstream and on its base (`develop`, or `master` for
+a hotfix), pull them in, and resolve conflicts with the user. Do not commit
+until the branch contains every remote change. Never commit on `master` or
+`develop` directly.
+
 ### 1. Analyze Diff
 
 ```bash
@@ -109,6 +118,15 @@ EOF
 )"
 ```
 
+### 5. Push
+
+```bash
+git push -u origin <current-branch>
+```
+
+Never force-push. If the push is rejected because the remote moved, repeat
+step 0 and push again.
+
 ## Best Practices
 
 - One logical change per commit
@@ -122,5 +140,5 @@ EOF
 - NEVER update git config
 - NEVER run destructive commands (--force, hard reset) without explicit request
 - NEVER skip hooks (--no-verify) unless user asks
-- NEVER force push to main/master
+- NEVER force push to any branch
 - If commit fails due to hooks, fix and create NEW commit (don't amend)

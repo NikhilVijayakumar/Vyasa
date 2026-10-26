@@ -4,9 +4,10 @@ description: >-
   Enforces the repository's Git Flow: develop created from master, feature and
   fix branches from develop merged back to develop, releases merged from
   develop to master and tagged, hotfixes from master merged back to master and
-  tagged; plus change-ID traceability, review gates, and archive timing. Use
-  when creating branches, committing, merging, releasing, tagging, handling a
-  production hotfix, or archiving a change.
+  tagged; always pull and check remote changes before committing, then push;
+  plus change-ID traceability, review gates, and archive timing. Use when
+  creating branches, committing, pushing, merging, releasing, tagging,
+  handling a production hotfix, or archiving a change.
 metadata:
   scope: shared
 ---
@@ -45,37 +46,70 @@ merges.
 There are no release branches: a release is a merge of `develop` into
 `master`.
 
+## Sync, commit, push
+
+Every commit — and every merge into `develop` or `master` — goes through
+this sequence. Never commit on a stale branch.
+
+1. **Fetch:** `git fetch origin --prune`.
+2. **Check for remote changes** and report them before going on:
+   ```bash
+   git log --oneline HEAD..@{u}            # new commits on this branch's remote
+   git log --oneline HEAD..origin/<base>   # new commits on the base: develop (feature/fix) or master (hotfix)
+   ```
+   Skip a line whose ref does not exist (branch never pushed, no remote).
+3. **Pull everything in:**
+   ```bash
+   git pull --rebase --autostash           # this branch's own remote commits, if it has an upstream
+   git merge --no-ff origin/<base>         # only when the base has new commits
+   ```
+   On a conflict, stop: show the conflicting files and resolve them with the
+   user. Never commit or push over an unresolved pull.
+4. **Verify and commit** with `git-commit` once the branch contains all
+   remote changes and the relevant checks pass.
+5. **Push:** `git push -u origin <branch>`. Never force-push.
+
+For a merge into a long-lived branch: `git switch <target> && git pull --ff-only`,
+then merge, then `git push origin <target>`.
+
 ## Flows
 
 ### Feature or fix
 
 1. `git switch develop && git pull --ff-only`
 2. `git switch -c feature/<change-id>-<desc>` (or `fix/…`)
-3. Implement and commit (`git-commit`).
+3. Implement; commit and push through **Sync, commit, push**.
 4. When implementation, review, and verification are complete:
-   `git switch develop && git merge --no-ff feature/<change-id>-<desc>`
-5. Delete the working branch once merged.
+   ```bash
+   git switch develop && git pull --ff-only
+   git merge --no-ff feature/<change-id>-<desc>
+   git push origin develop
+   ```
+5. Delete the local working branch; delete the remote branch when the user
+   asks (or when the pull request is merged).
 
 ### Release
 
 1. Confirm `develop` is verified (tests, `verify_workflows.py`, phase gate
    when applicable).
 2. `git switch master && git pull --ff-only`
-3. `git merge --no-ff develop -m "Release vX.Y.Z"`
-4. `git tag -a vX.Y.Z -m "Release vX.Y.Z"` on that merge commit.
-5. Push `master` and the tag only when the user asks:
-   `git push origin master vX.Y.Z`.
+3. `git fetch origin` and confirm `develop` has nothing unpulled
+   (`git log --oneline develop..origin/develop` is empty).
+4. `git merge --no-ff develop -m "Release vX.Y.Z"`
+5. `git tag -a vX.Y.Z -m "Release vX.Y.Z"` on that merge commit.
+6. `git push origin master vX.Y.Z`.
 
 ### Hotfix
 
 1. `git switch master && git pull --ff-only`
 2. `git switch -c hotfix/<change-id>-<desc>`
-3. Fix with a regression test; commit.
-4. `git switch master && git merge --no-ff hotfix/<change-id>-<desc>`
-5. Tag the patch release: `git tag -a vX.Y.(Z+1) -m "Hotfix vX.Y.(Z+1)"`.
-6. Bring the fix into integration: `git switch develop && git merge --no-ff master`,
-   so the next release does not regress it.
-7. Delete the hotfix branch.
+3. Fix with a regression test; commit and push through **Sync, commit, push**.
+4. `git switch master && git pull --ff-only && git merge --no-ff hotfix/<change-id>-<desc>`
+5. Tag the patch release: `git tag -a vX.Y.(Z+1) -m "Hotfix vX.Y.(Z+1)"`;
+   `git push origin master vX.Y.(Z+1)`.
+6. Bring the fix into integration so the next release does not regress it:
+   `git switch develop && git pull --ff-only && git merge --no-ff master && git push origin develop`.
+7. Delete the local hotfix branch.
 
 ## Tags
 
@@ -94,7 +128,10 @@ framework and process changes use `openspec-`.
 
 - Merge into `develop` only after review and verification pass.
 - Merge into `master` only as a release (from `develop`) or a hotfix.
-- Push, release, and tag only when the user asks.
+- Pull before every commit and merge; push after every commit and merge.
+- Release (develop → master) and tagging happen only when the user asks;
+  a hotfix is released as soon as it is merged into `master`.
+- Never force-push, and never push over an unresolved pull or conflict.
 - Respect protected-branch settings; never bypass required review.
 
 ## Archive timing
