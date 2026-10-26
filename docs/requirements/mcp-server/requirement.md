@@ -82,7 +82,7 @@ Accepted as open until you confirm the recommended direction in the grill log.
 |---|---|---|
 | optional refresh | No agent-callable refresh in version 1; refresh is a CLI command, with an opt-in tool setting. | Q2 |
 | NFD-007 | Stdio transport only. | Q3 |
-| local paths | Local paths are returned to the local client by default, configurable off. | Q7 |
+| local paths | Local paths are omitted by default and can be enabled in configuration. | Q7 |
 | errors | Tool failures use structured results with the documented codes, not protocol errors. | Q4 |
 
 ## Delivery

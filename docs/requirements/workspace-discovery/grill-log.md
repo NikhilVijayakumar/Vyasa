@@ -149,7 +149,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q17. What exactly do completed, partial, and failed mean?**
 
-- **Recommendation:** `completed`: every candidate inspected, no errors. `completed_with_warnings`: some candidates skipped by policy. `partial`: at least one inaccessible or failed item or root. `failed`: nothing usable. `interrupted`: the process stopped mid-run.
+- **Recommendation:** The knowledge bundle's run vocabulary: `pending`, `running`, `completed` (every candidate inspected; skips allowed by policy are counted and listed, not a separate status), `partial` (at least one inaccessible or failed item or root), `failed` (nothing usable), `cancelled` (stopped by the user), `interrupted` (the process stopped mid-run).
 - **Why:** FR-015 requires partial results to be distinguishable; a fixed enum is the testable form.
 - **Status:** Recommended
 - **Feeds:** FR-015 S1

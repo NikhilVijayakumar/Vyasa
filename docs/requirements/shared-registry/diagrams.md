@@ -27,7 +27,7 @@ sequenceDiagram
   participant Db as Project index
   participant Gs as Google Sheets
   Dev->>Sync: sync (or --dry-run)
-  Sync->>Gs: read meta tab and headers
+  Sync->>Gs: read schema marker and headers
   alt required tab or column missing
     Sync-->>Dev: schema error, nothing written
   else schema valid

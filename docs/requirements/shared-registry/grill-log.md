@@ -29,7 +29,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q2. Which fields are exported (SP-006)?**
 
-- **Recommendation:** Allowlist v1: project id, display name, approved purpose, public repository URL, normalized remote identity, languages, technologies, README/OpenSpec/OKF/tests presence, declared lifecycle, Last Verified At, details status. Portfolio fields: tracking level, priority, notes. Never: local paths, workspace roots, checkout names, evidence lines, credentials, internal URLs without approval.
+- **Recommendation:** Allowlist v1: project id, display name, approved purpose, public repository URL, normalized remote identity, languages, technologies, README/OpenSpec/OKF/tests presence, declared lifecycle, Last Verified At, details status. Human-managed fields in the registry baseline: tracking level, domain, project type; priority and notes only through a reviewed schema change. Never: local paths, workspace roots, checkout names, evidence lines, credentials, internal URLs without approval.
 - **Why:** Starts narrow; adding a field is a classified, reviewed change.
 - **Status:** Decision needed
 - **Feeds:** FR-016 S4
@@ -60,7 +60,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q6. How is the registry schema checked (S8)?**
 
-- **Recommendation:** A meta tab records the schema version. Required tabs and columns are matched by header name, not position. A missing required column aborts before any write; extra columns are left alone.
+- **Recommendation:** A named range on the Project Registry tab records the schema version, so no extra tab is added (the registry has three tabs). Required tabs and columns are matched by header name, not position. A missing required column aborts before any write; extra columns are left alone.
 - **Why:** Header matching survives people inserting columns.
 - **Status:** Recommended
 - **Feeds:** FR-016 S8
