@@ -157,9 +157,16 @@ def skill_homes() -> dict[str, str]:
     }
 
 
+# The documented intent-driven spine. Used only when a single schema exists,
+# because the spine cannot be inferred from one chain.
+DEFAULT_SPINE = {"proposal", "specs", "design", "adr", "tasks"}
+
+
 def spine_artifacts(schemas: list[str]) -> set[str]:
     """Artifacts every schema has: the shared spine, whatever it is called."""
     chains = [set(schema_artifact_ids(schema)) for schema in schemas]
+    if len(chains) == 1:
+        return chains[0] & DEFAULT_SPINE
     return set.intersection(*chains) if chains else set()
 
 

@@ -274,7 +274,7 @@ Suggested fields:
 - Tests Present
 - Documentation Entry Point
 
-OKF detection semantics must be defined explicitly before implementation.
+OKF means Google Cloud's [Open Knowledge Format](knowledge/technologies/okf.md); Vyasa recognizes bundles that declare `okf_version` and reports their version and conformance.
 
 ### Scan History
 

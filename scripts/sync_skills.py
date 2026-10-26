@@ -9,9 +9,7 @@ the skill's home folder. Edit a skill once and every agent sees the change.
 Skill homes are grouped by team scope::
 
     skills/shared      lifecycle spine and cross-cutting quality skills
-    skills/frontend    frontend team skills
-    skills/backend     backend team skills
-    skills/qa          QA team skills
+    skills/backend     scanner, MCP contract, data-ownership, SQLite, phase-gate skills
 
 Agent directories stay **flat**: one link per skill name, whatever its
 category. Skill discovery expects ``<skills-dir>/<name>/SKILL.md``, so

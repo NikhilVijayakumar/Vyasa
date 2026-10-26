@@ -33,7 +33,7 @@ Describe the outcome this change should achieve.
 - [ ] Goal 2
 
 ### Team Focus
-Backend changes are judged on API contracts, data model, and authorization boundaries; failure modes, data integrity, and migration impact; and the test-layer placement for server-side behavior.
+Changes are judged on MCP tool and interface contracts, data model, and trust boundaries; failure modes, data integrity, provenance of detected facts, and migration impact; and the verification layer that owns each behavior.
 
 ### Success Criteria
 Define observable outcomes that can be verified during implementation or review.
@@ -110,8 +110,10 @@ Acceptance criteria must be observable and verifiable. Detailed scenarios and ed
 ## 9. Traceability
 
 - **OpenSpec Change ID:** `{{change-id}}`
-- **Proposing team:** be (backend team — this schema is the backend team's workflow)
+- **Proposing team:** be (backend — the default workflow for this repository)
 - **Proposed branch:** `feature/{{change-id}}-{{short-description}}` or `fix/{{change-id}}-{{short-description}}`
+- **Requirement package:** `docs/requirements/<package>/requirement.md`
+- **Knowledge references:** `knowledge/<folder>/<concept>.md` — why it applies (checked with `knowledge-first`; missing concepts are created in `knowledge/` first)
 - **Related issues or references:** None / links
 - **Related existing specifications:** None / paths
 - **Related ADRs:** None / paths

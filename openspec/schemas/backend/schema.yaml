@@ -1,18 +1,21 @@
 name: backend
 version: 1
 description: >
-  Backend delivery workflow: the intent-driven lifecycle plus an API and
-  data contract artifact that fixes the server-facing contract,
-  authorization boundaries, and migration impact before technical design.
+  Vyasa delivery workflow: the intent-driven lifecycle plus an interface
+  and data contract artifact that fixes the MCP tool contract, the local
+  index schema, the trust boundary, and migration impact before technical
+  design.
 
 # ============================================================
 # ARTIFACT LIFECYCLE
 #
 # proposal -> specs -> api-contract -> design -> adr -> tasks
 #
-# The api-contract artifact is the backend team's addition to the shared
-# intent-driven spine: it fixes the interface other teams build against
-# before the technical design commits to a persistence or service shape.
+# The api-contract artifact is this repository's addition to the shared
+# intent-driven spine: it fixes the interface coding agents and integrations
+# build against (MCP tools, CLI commands, the SQLite index, the Google Sheets
+# sync format, remote provider calls) before the technical design commits to
+# a persistence or service shape.
 # ============================================================
 
 artifacts:
@@ -23,32 +26,40 @@ artifacts:
   - id: proposal
     generates: proposal.md
     description: >
-      Defines the problem, intent, scope, constraints, affected services
-      and data, and the expected backend outcome.
+      Defines the problem, intent, scope, constraints, affected components
+      and data, and the expected outcome.
     template: proposal.md
     instruction: |
       Establish why the change is needed and what outcome is
       expected before deciding how to implement it.
 
-      Inspect the existing repository, existing API and schema
-      definitions, and relevant project documentation. Reuse existing
+      Start from the reviewed requirement package under
+      `docs/requirements/` and its grill log. Apply the `knowledge-first`
+      skill before writing: search `knowledge/` for every topic the change
+      touches, create or update missing concepts there first (they must
+      stand alone and never reference this change), then cite them under
+      Knowledge references.
+
+      Inspect the existing repository, the requirements and architecture
+      under `docs/`, existing specs under `openspec/specs/`, and the
+      current MCP tool and index schema definitions. Reuse existing
       conventions and decisions.
 
       Identify scope, exclusions, dependencies, risks, affected
-      services, endpoints, and data.
+      components (scanner, detectors, index, MCP server, sync, remote
+      providers), MCP tools, and stored data. State the roadmap phase
+      the change belongs to.
 
-      This is the backend team's workflow. Apply the backend focus:
-      API contracts, data model, authorization boundaries, failure
-      modes, data integrity, and migration impact.
+      Apply the backend focus: interface contracts, data model, trust
+      boundaries, failure modes, data integrity, provenance of detected
+      facts, and migration impact.
 
-      Consult the backend skills under `skills/backend/` when the
-      change touches the server boundary: `api-contract-testing`,
-      `graphql-testing`, `database-integration-testing`, and
-      `security-and-privacy-review`. For NestJS and PostgreSQL work,
-      consult `nestjs-architecture-principles` for module boundaries
-      and dependency structure, `graphql-schema` when GraphQL SDL
-      changes, and `postgresql-best-practices` for relational design,
-      constraints, and migrations.
+      Consult the skills under `skills/backend/` when the change touches
+      a boundary: `deterministic-scanner` for scanner or detector work,
+      `mcp-contract-review` for MCP tools, `data-ownership-review` for
+      metadata, index, or sync fields, `database-integration-testing` for
+      the SQLite index, and `mcp-server-review` when repository content,
+      credentials, synchronized data, or local paths are affected.
 
       Consult the `grill-me` skill when available and applicable to
       challenge assumptions before finalizing the proposal.
@@ -69,17 +80,23 @@ artifacts:
     instruction: |
       Define observable, specific, and testable system behavior.
 
+      Reuse the terms and rules of the knowledge concepts cited by the
+      proposal; apply `knowledge-first` for any new term the
+      specification introduces.
+
       Use Given/When/Then scenarios where appropriate and consult
       the `gherkin-authoring` skill when available.
 
       Consult the `test-strategy` skill when available to keep
       requirements verifiable and to place each behavior in the
-      server-side verification layer that owns it: unit, contract,
-      integration, or persistence.
+      verification layer that owns it: unit, contract (MCP tool
+      inputs and outputs), integration (filesystem, Git, Sheets,
+      provider APIs), or persistence (SQLite).
 
       Cover positive behavior, negative behavior, validation,
       boundary conditions, and error handling where applicable.
-      Authorization failures are behavior: state them.
+      Unknown, missing, or untrusted evidence is behavior: state what
+      the system reports when a fact cannot be established.
 
       Preserve existing behavior unless the approved change
       explicitly modifies it.
@@ -98,15 +115,16 @@ artifacts:
   - id: api-contract
     generates: api-contract.md
     description: >
-      Fixes the server-facing contract: operations, payloads, error model,
-      authorization boundaries, data model, and migration impact.
+      Fixes the interface contract: MCP tools and CLI commands, payloads,
+      error model, trust boundary, data model, and migration impact.
     template: api-contract.md
     instruction: |
-      Fix the server-facing contract before the technical design
+      Fix the interface contract before the technical design
       commits to a persistence or service shape.
 
-      Describe every affected operation: its inputs, outputs, error
-      responses, and the authorization it requires. Other teams build
+      Describe every affected operation — MCP tool, CLI command, sync
+      exchange, or remote provider call — with its inputs, outputs,
+      error responses, and the access it requires. Coding agents build
       against this contract, so an unstated default is a decision
       nobody made.
 
@@ -114,28 +132,28 @@ artifacts:
       error, what shape the error takes, and whether the error leaks
       detail the caller must not see.
 
-      State the authorization boundary: which role or scope may invoke
-      which operation, what the server enforces, and what is only a
-      client-side convenience.
+      State the trust boundary: which inputs are trusted configuration
+      and which are untrusted repository or provider content, which
+      paths and data each operation may read or expose, and which data
+      is machine-local versus synchronized.
 
       Describe the data model: entities, fields, types, constraints,
-      and the invariants the database must hold.
+      provenance, and the invariants the SQLite index and the Google
+      Sheets layout must hold.
 
       Describe migration and backward compatibility: how existing
-      callers and stored data survive the change, and the order in
-      which the change is rolled out.
+      MCP clients, stored indexes, and synchronized sheets survive the
+      change, and the order in which the change is rolled out.
 
       Trace each operation and field back to the specification
       requirements it satisfies. Record unresolved contract questions
       as explicit open questions.
 
-      Consult `api-contract-testing` and `graphql-testing` for
-      contract expectations, `graphql-schema` for GraphQL types,
-      fields, nullability, pagination, and error shapes,
-      `postgresql-best-practices` for the relational model and its
-      constraints, `database-integration-testing` for persistence
-      constraints, and `security-and-privacy-review` when access,
-      secrets, or sensitive data are affected.
+      Consult `mcp-contract-review` and `api-contract-testing` for
+      MCP tool contracts, `data-ownership-review` for field ownership and
+      precedence, `database-integration-testing` for persistence
+      constraints, and `mcp-server-review` when access, secrets, local
+      paths, or synchronized data are affected.
     requires:
       - specs
 
@@ -146,7 +164,7 @@ artifacts:
     generates: design.md
     description: >
       Defines the technical approach, affected components, interfaces,
-      data flows, and important trade-offs for the backend.
+      data flows, and important trade-offs.
     template: design.md
     instruction: |
       Describe how the approved requirements and the API and data
@@ -161,16 +179,21 @@ artifacts:
       Reuse existing architecture and document reasons for
       introducing new patterns or technologies.
 
-      Consult the `architecture-review` skill when available and
-      applicable, and the backend skills under `skills/backend/` for
-      the patterns this project already uses.
+      Build on the `knowledge/` concepts the proposal cites and list them
+      under Knowledge References. Record a durable decision as a
+      `type: Decision` concept in `knowledge/decisions/` rather than only
+      in this change.
 
-      Consult `nestjs-architecture-principles` for module boundaries,
-      dependency inversion, and service responsibilities, and
-      `nestjs-features-performance` when the design introduces runtime
-      primitives, caching, queues, or scaling decisions. Consult
-      `postgresql-best-practices` for schema, index, transaction, and
-      migration design.
+      Consult the `architecture-review` skill when available and
+      applicable, and keep the layer boundaries of
+      `knowledge/architecture/system-architecture.md`: MCP adapter,
+      application services, scanner and detectors, index repository,
+      sync and provider adapters.
+
+      Keep scans bounded and deterministic, and keep untrusted
+      repository content out of trusted configuration. Prefer the
+      standard library and already-chosen dependencies (Python 3.12+,
+      MCP SDK, Pydantic, SQLite, pytest) over new ones.
 
       Identify significant architectural decisions that require a
       durable ADR. Avoid unnecessary design complexity for small,
@@ -203,8 +226,9 @@ artifacts:
       that no new ADR is required and explain briefly why.
 
       Consult the `architectural-decision-records` skill when
-      available. Store durable decisions according to the consuming
-      project's knowledge and documentation policy.
+      available. Store each durable decision as a `type: Decision`
+      concept in `knowledge/decisions/` (written to stand alone, without
+      referencing this change) and reference it from `adr.md`.
     requires:
       - design
 
@@ -222,7 +246,11 @@ artifacts:
       specifications, API and data contract, design, and architectural
       decisions.
 
-      Break work into small, reviewable vertical slices.
+      Break work into small, reviewable vertical slices as defined in
+      `knowledge/practices/vertical-slices.md`: each slice delivers one
+      observable behaviour with its tests and completion evidence; label
+      pure enabling work as a prerequisite. Reference the knowledge
+      concepts each slice depends on.
 
       Map tasks to requirements, contract operations, and acceptance
       scenarios where practical.
@@ -230,19 +258,16 @@ artifacts:
       Include implementation, testing, verification, and necessary
       migration and documentation work.
 
-      Follow the `test-driven-development` skill when available.
+      Follow the `test-driven-development` skill when available, with
+      `pytest-skill` for pytest patterns.
       Plan Red-Green-Refactor cycles for applicable code changes.
-
-      Consult `nestjs-professional-software-engineering` for NestJS
-      implementation practice and version-appropriate syntax, and
-      `postgresql-best-practices` for migration and indexing tasks.
 
       Use the `acceptance-test-authoring` skill to turn specifications
       and contract expectations into verifiable acceptance checks.
 
       Use the `test-strategy` skill when available to choose the
-      server-side verification layer for each task, using the backend
-      skills under `skills/backend/`.
+      verification layer for each task, using the skills under
+      `skills/backend/`.
 
       Include applicable quality checks and explicit completion
       criteria. Keep all tasks within the approved scope.
@@ -271,20 +296,18 @@ apply:
     - Review the approved proposal, specifications, API and data
       contract, design, ADR decision, and tasks.
     - Inspect the relevant project conventions and skills.
-    - For Staffing backend work, select backend-documentation-correctness.
-      Select backend-nestjs-architecture-review for module boundaries,
-      backend-security-review for security boundaries,
-      backend-graphql-api-contract-review for GraphQL contracts, and
-      backend-prisma-postgresql-integrity-review for persistence changes.
-      Use backend-nestjs-test-verification for authorized verification tasks.
+    - Select `deterministic-scanner` for scanner and detector code,
+      `mcp-contract-review` and `api-contract-testing` for MCP tools,
+      `data-ownership-review` for metadata and sync fields, and
+      `database-integration-testing` for index schema or migration changes.
     - Confirm the required implementation tasks are actionable.
 
     During implementation:
     - Follow the project's technology-specific conventions.
     - Use Red-Green-Refactor for applicable code changes.
     - Implement one testable vertical slice at a time.
-    - Keep the server boundary authoritative: enforce authorization
-      on the server, not only in the client.
+    - Treat repository files, manifests, and provider responses as
+      untrusted input; never execute repository code while scanning.
     - Run relevant tests and quality checks.
     - When a check fails, consult the `test-debugging` skill when
       available to diagnose it with evidence; never weaken or delete
@@ -297,7 +320,11 @@ apply:
     Before considering implementation complete:
     - Verify the implementation against the approved requirements and
       the API and data contract.
-    - Use the `code-reviewer` skill to review the change.
+    - Use the `code-reviewer` skill to review the change, and
+      `code-review-security` plus `secrets-scan` for its security pass;
+      `sca-audit` when dependencies change.
+    - Before declaring a roadmap phase complete, run
+      `phase-gate-verification`.
     - Report tests and checks actually executed.
     - Identify failures, skipped checks, unavailable tooling, and
       unresolved verification gaps.
