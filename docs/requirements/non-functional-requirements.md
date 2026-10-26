@@ -883,6 +883,26 @@ A phase is ready for release only when its required functional and non-functiona
 
 ---
 
+## 13.1 Owning packages
+
+Each requirement is owned by exactly one requirement package, which carries its grill log, scenarios, and diagrams.
+
+| Requirements | Owning package |
+|---|---|
+| NFR-001, 002, 005 | [metadata-and-evidence](metadata-and-evidence/requirement.md) |
+| NFR-003 | [local-index](local-index/requirement.md) |
+| NFR-004 | [project-identity](project-identity/requirement.md) |
+| NFR-006–015, 023–034, 040–043 | [quality-attributes](quality-attributes/requirement.md) |
+| NFR-016, 017, 019, 020 | [security-and-privacy](security-and-privacy/requirement.md) |
+| NFR-018, 035 | [shared-registry](shared-registry/requirement.md) |
+| NFR-021, 038, 039 | [mcp-server](mcp-server/requirement.md) |
+| NFR-022, 036, 037 | [remote-discovery](remote-discovery/requirement.md) |
+
+Recommended answers to the open decisions below are in the owning packages' grill logs and are collected in
+[decisions-for-review.md](decisions-for-review.md).
+
+---
+
 # 14. Open Decisions
 
 The following decisions require validation or explicit approval.

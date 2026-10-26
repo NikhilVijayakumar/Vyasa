@@ -4,14 +4,19 @@ Vyasa/
 ├── CHANGELOG.md
 ├── docs/                          # delivery track: requirements
 │   └── requirements/
-│       ├── README.md              # requirement-package flow
+│       ├── README.md              # package index and flow
+│       ├── decisions-for-review.md  # generated: every decision still needed, with a recommendation
 │       ├── _template/             # requirement.md + grill-log.md
 │       ├── functional-requirements.md
 │       ├── non-functional-requirements.md
 │       ├── data-ownership.md
 │       ├── security-and-privacy-requirements.md
 │       ├── phase-acceptance-criteria.md
-│       └── <package>/             # one grilled package per epic-level requirement
+│       └── <package>/             # 12 grilled packages
+│           ├── requirement.md
+│           ├── grill-log.md
+│           ├── diagrams.md
+│           └── features/*.feature
 ├── knowledge/                     # knowledge track: OKF v0.2 bundle, independent of delivery
 │   ├── index.md                   # okf_version, section listing
 │   ├── log.md
