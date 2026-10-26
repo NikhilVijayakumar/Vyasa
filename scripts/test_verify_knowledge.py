@@ -2,6 +2,7 @@ import json
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -54,6 +55,22 @@ class VerifyKnowledgeTests(unittest.TestCase):
     def test_unlisted_concept_fails(self):
         errors, _ = vk.verify(self.bundle(index="# Concepts\n"))
         self.assertTrue(any("does not list 'thing.md'" in e for e in errors), errors)
+
+    def test_concept_over_the_line_limit_fails(self):
+        errors, _ = vk.verify(self.bundle(CONCEPT + "\nline\n" * (PROFILE["max_lines"] + 1)))
+        self.assertTrue(any("split it into parts" in e for e in errors), errors)
+
+    def test_stale_after_in_the_past_warns(self):
+        stale = CONCEPT.replace("status: draft\n", "status: draft\nstale_after: 2026-01-01T00:00:00Z\n")
+        _, warnings = vk.verify(self.bundle(stale), now=datetime(2026, 6, 1, tzinfo=timezone.utc))
+        self.assertTrue(any("stale since" in w for w in warnings), warnings)
+        _, warnings = vk.verify(self.bundle(stale), now=datetime(2025, 6, 1, tzinfo=timezone.utc))
+        self.assertFalse(any("stale since" in w for w in warnings), warnings)
+
+    def test_bad_stale_after_fails(self):
+        bad = CONCEPT.replace("status: draft\n", "status: draft\nstale_after: someday\n")
+        errors, _ = vk.verify(self.bundle(bad))
+        self.assertTrue(any("stale_after" in e for e in errors), errors)
 
 
 if __name__ == "__main__":
