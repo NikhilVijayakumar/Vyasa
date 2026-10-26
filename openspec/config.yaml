@@ -121,7 +121,8 @@ context: |
 
   Before every commit or merge, fetch, report incoming changes on
   the branch and its base, and pull them in; then commit and push.
-  Never force-push or push over an unresolved pull. Release and tag
+  A new branch with no upstream is committed directly (nothing to
+  pull yet). Never force-push or push over an unresolved pull. Release and tag
   only when the user asks.
 
   The OpenSpec change identifier must be traceable across the
