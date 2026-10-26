@@ -1,4 +1,4 @@
-# API and Data Contract: {{change-name}}
+# Interface and Data Contract: {{change-name}}
 
 - **OpenSpec Change ID:** `{{change-id}}`
 - **Proposing team:** be (backend team)
@@ -8,23 +8,23 @@
 
 ## 1. Purpose
 
-Describe the server-facing contract this change establishes: the operations
-other teams call, the payloads they exchange, the errors they receive, and
-the data the change stores.
+Describe the interface contract this change establishes: the MCP tools, CLI
+commands, sync exchanges, or provider calls involved, the payloads they
+exchange, the errors they return, and the data the change stores.
 
 ## 2. Scope
 
 Identify the operations, entities, and integrations affected by this contract,
 and any explicitly excluded from it.
 
-## 3. API Surface
+## 3. Interface Surface
 
-For each affected operation, state the full contract. Other teams build
+For each affected operation, state the full contract. Coding agents build
 against this section, so an unstated default is a decision nobody made.
 
-| Operation | Method and path or query | Authorization | Request | Success response | Error responses |
+| Operation | Kind | Access | Input | Success output | Errors |
 |---|---|---|---|---|---|
-| Name | `METHOD /path` | Role or scope | Fields and types | Fields and types | Conditions and codes |
+| Name | MCP tool / CLI / sync / provider call | Trusted roots, paths, or credentials used | Fields and types | Fields, types, evidence | Conditions and codes |
 
 ## 4. Error Model
 
@@ -33,22 +33,24 @@ what the response must not reveal. State whether errors are retryable and
 whether they are safe to surface to the user.
 
 | Condition | Error code | Response shape | Safe to show the user |
-|---|---|---|---|---|
+|---|---|---|---|
 | Condition | Code | Shape | Yes / No |
 
-## 5. Authorization Boundary
+## 5. Trust Boundary
 
-State which role or scope may invoke which operation, what the server
-enforces, and what is only a client-side convenience. Record the behavior
-for an unauthorized and an authenticated-but-forbidden caller.
+State which inputs are trusted configuration and which are untrusted
+repository or provider content, which paths and data each operation may read
+or return, and which data stays machine-local versus synchronized. Record the
+behavior for a request outside the configured workspace roots and for
+missing or invalid credentials.
 
-Consult the `security-and-privacy-review` skill when access, secrets, or
-sensitive data are affected.
+Consult the `mcp-server-review` skill when access, secrets, local
+paths, or synchronized data are affected.
 
 ## 6. Data Model
 
-State the entities, fields, types, constraints, and invariants the database
-must hold.
+State the entities, fields, types, constraints, provenance, and invariants
+the SQLite index (and, when affected, the Google Sheets layout) must hold.
 
 | Entity | Field | Type | Required | Constraint or invariant |
 |---|---|---|---|---|
@@ -59,10 +61,9 @@ behavior when a constraint is violated.
 
 ## 7. Migrations and Backward Compatibility
 
-State how existing callers and stored data survive this change: the
-migration steps, their order, whether the change is backward compatible
-during rollout, and the rollback path. State what happens to in-flight
-requests during the change.
+State how existing MCP clients, stored indexes, and synchronized sheets
+survive this change: the migration steps, their order, whether the change is
+backward compatible, and the rollback path.
 
 Consult the `database-integration-testing` skill for migration and
 constraint verification.
@@ -77,8 +78,8 @@ constraint verification.
 
 - [ ] Every affected operation is listed with request, response, and errors.
 - [ ] The error model states which conditions produce which error.
-- [ ] Authorization is stated per operation, including the forbidden case.
-- [ ] The data model states the invariants the database must hold.
+- [ ] The trust boundary is stated per operation, including out-of-root and credential failures.
+- [ ] The data model states the invariants the index must hold.
 - [ ] Migration and backward compatibility are stated.
 - [ ] Every requirement in scope is traced to an operation or rule.
 - [ ] Unresolved contract questions are recorded as explicit open questions.

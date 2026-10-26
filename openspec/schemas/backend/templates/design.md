@@ -28,6 +28,9 @@ Reference existing documentation and source code where appropriate. Do not assum
 ### Existing Decisions and Conventions
 Identify applicable ADRs, architecture standards, technology-specific extensions, and other authoritative project guidance.
 
+### Knowledge References
+List each `knowledge/` concept the design builds on (architecture, concepts, decisions, practices) and why. A design choice that is durable beyond this change belongs in `knowledge/decisions/` as its own concept.
+
 ## 3. Requirements and Traceability
 
 Explain how the design addresses the requirements established in the proposal and specifications.
@@ -133,7 +136,7 @@ Describe the applicable levels of testing, such as:
 - Performance, security, accessibility, or platform-specific tests.
 
 Select test types based on the change and applicable team standards; not every change requires every test category.
-  Place each behavior in the server-side verification layer that owns it:
+  Place each behavior in the verification layer that owns it:
   unit, contract, integration, or persistence.
 
 
