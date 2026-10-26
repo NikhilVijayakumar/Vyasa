@@ -21,14 +21,15 @@ Vyasa/
 │   ├── index.md                   # okf_version, section listing
 │   ├── log.md
 │   ├── profile.json               # Vyasa OKF profile (types, folders, required fields, independence)
-│   ├── product/                   # vision, scope and roadmap
-│   ├── architecture/              # system, data model, scanning, MCP, storage, sync, remote, security model
-│   ├── concepts/                  # domain concepts and glossary-level ideas
-│   ├── decisions/                 # ADRs (type: Decision)
-│   ├── practices/                 # engineering practices, test strategy
-│   ├── technologies/              # technology guidance (added when needed)
-│   ├── runbooks/                  # setup, troubleshooting, recovery (added when needed)
-│   └── glossary/                  # terms (added when needed)
+│   ├── product/                   # vision, scope and roadmap (overview + parts)
+│   ├── architecture/              # 8 overviews, each with a folder of parts, plus c4-system-views and views/
+│   │   └── views/                 # deployment, scan pipeline, data model, MCP, storage, sync, remote, security
+│   ├── concepts/                  # principles, identity, ownership, evidence, glossary
+│   ├── decisions/                 # 18 draft ADRs (type: Decision)
+│   ├── practices/                 # testing, errors, logging, configuration, dependencies, vertical slices
+│   ├── technologies/              # SQLite, MCP, Sheets API, GitHub/Bitbucket, Git metadata, Python, OKF
+│   └── runbooks/                  # credential leak, data leak, index recovery, conflict review
+├── docs/reviews/                  # grill records for the knowledge bundle
 ├── openspec/                      # agreed behaviour and change workflow
 │   ├── config.yaml
 │   ├── schemas/backend/

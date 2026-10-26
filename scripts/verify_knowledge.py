@@ -5,7 +5,7 @@ The bundle lives in ``<repo>/knowledge/`` and follows Open Knowledge Format
 v0.2. OKF itself requires only a ``type`` per concept; ``knowledge/profile.json``
 adds this repository's stricter rules, which this script enforces:
 
-- every concept has the profile's required frontmatter fields, a known
+- every concept has the profile's required frontmatter fields, stays within ``max_lines``, a known
   ``type`` stored in that type's folder, a valid ``status``, and a
   ``generated`` actor and timestamp;
 - every concept is listed in its folder's ``index.md`` and every folder in
@@ -15,7 +15,7 @@ adds this repository's stricter rules, which this script enforces:
   external URLs, and the profile's forbidden paths never appear. Knowledge
   never depends on requirements, changes, or implementation.
 
-Broken links inside the bundle are warnings, not errors: OKF treats them as
+A concept whose ``stale_after`` date has passed is a warning. Broken links inside the bundle are warnings, not errors: OKF treats them as
 not-yet-written knowledge.
 
 Usage::
@@ -29,6 +29,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -86,7 +87,7 @@ def check_path(bundle: Path, origin: Path, target: str, what: str, errors: list[
         warnings.append(f"{rel}: {what} '{target}' does not exist yet")
 
 
-def check_concept(bundle: Path, path: Path, profile: dict, errors: list[str], warnings: list[str]) -> None:
+def check_concept(bundle: Path, path: Path, profile: dict, errors: list[str], warnings: list[str], now: datetime) -> None:
     rel = path.relative_to(bundle)
     parsed = split_frontmatter(path.read_text(encoding="utf-8"))
     if parsed is None:
@@ -97,6 +98,18 @@ def check_concept(bundle: Path, path: Path, profile: dict, errors: list[str], wa
     for name in profile["required_fields"]:
         if not unquote(fields.get(name, "")):
             errors.append(f"{rel}: missing required field '{name}'")
+
+    limit = profile.get("max_lines")
+    if limit and len(path.read_text(encoding="utf-8").splitlines()) > limit:
+        errors.append(f"{rel}: longer than {limit} lines; split it into parts")
+
+    stale_after = unquote(fields.get("stale_after", ""))
+    if stale_after:
+        try:
+            if now >= datetime.fromisoformat(stale_after.replace("Z", "+00:00")):
+                warnings.append(f"{rel}: stale since {stale_after}; review it or move stale_after")
+        except ValueError:
+            errors.append(f"{rel}: stale_after '{stale_after}' is not an ISO 8601 datetime with offset")
 
     kind = unquote(fields.get("type", ""))
     folder = profile["types"].get(kind)
@@ -166,7 +179,8 @@ def check_logs(bundle: Path, errors: list[str]) -> None:
                 errors.append(f"{log.relative_to(bundle)}: date heading '{line}' is not YYYY-MM-DD")
 
 
-def verify(bundle: Path) -> tuple[list[str], list[str]]:
+def verify(bundle: Path, now: datetime | None = None) -> tuple[list[str], list[str]]:
+    now = now or datetime.now(timezone.utc)
     bundle = bundle.resolve()
     errors: list[str] = []
     warnings: list[str] = []
@@ -181,7 +195,7 @@ def verify(bundle: Path) -> tuple[list[str], list[str]]:
             if forbidden in text:
                 errors.append(f"{path.relative_to(bundle)}: mentions '{forbidden}' (knowledge must not depend on it)")
         if path.name not in RESERVED:
-            check_concept(bundle, path, profile, errors, warnings)
+            check_concept(bundle, path, profile, errors, warnings, now)
     check_indexes(bundle, profile, errors, warnings)
     check_logs(bundle, errors)
     return errors, warnings

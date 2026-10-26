@@ -70,8 +70,8 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q7. May responses include local filesystem paths?**
 
-- **Recommendation:** Yes by default for the local client, because the point is finding where a project is; setting `expose_local_paths = false` removes them. Paths from other devices are never shown, and paths never reach a shared export.
-- **Why:** The client is the user's own agent on the same machine; the setting covers stricter setups.
+- **Recommendation:** No by default: results say whether a local checkout is available but carry no absolute path. A configuration setting `expose_local_paths = true` adds them for the local client. Paths from other devices are never shown, and paths never reach a shared export.
+- **Why:** A path reveals usernames and directory layout, and most questions do not need it. Workflows that do need it opt in once. Matches the knowledge bundle's default.
 - **Status:** Decision needed
 - **Feeds:** NFR-018, NFR-021
 

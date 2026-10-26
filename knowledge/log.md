@@ -1,6 +1,11 @@
 # Knowledge Update Log
 
 ## 2026-10-26
+* **Creation**: Added [Views](/architecture/views/) (deployment, scan pipeline, data model, MCP, storage, synchronization, remote discovery, security) with C4, sequence, state, and decision diagrams.
+* **Creation**: Added the [Glossary](/concepts/glossary.md) and five principle concepts: [Deterministic Extraction](/concepts/deterministic-extraction.md), [Freshness and Staleness](/concepts/freshness-and-staleness.md), [Untrusted Content](/concepts/untrusted-content.md), [Explicit Operations](/concepts/explicit-operations.md), [Local-First Operation](/concepts/local-first.md).
+* **Creation**: Added six [technology](/technologies/) notes, five [practices](/practices/), four [runbooks](/runbooks/), and eighteen draft [decisions](/decisions/).
+* **Fix**: One run-status vocabulary across the [Data Model](/architecture/data-model.md), [Local Storage](/architecture/local-storage.md), and [Synchronization](/architecture/synchronization.md); the refresh tool default in [MCP Interface](/architecture/mcp-interface.md) now reads disabled unless enabled.
+* **Split**: Nine large concepts became overviews with parts ([System Architecture](/architecture/system-architecture.md), [Data Model](/architecture/data-model.md), [Scanning and Evidence](/architecture/scanning-and-evidence.md), [MCP Interface](/architecture/mcp-interface.md), [Local Storage](/architecture/local-storage.md), [Synchronization](/architecture/synchronization.md), [Remote Repositories](/architecture/remote-repositories.md), [Security and Privacy](/architecture/security-and-privacy.md), [Scope and Roadmap](/product/scope-and-roadmap.md)); no content removed. The profile now caps a concept at 400 lines.
 * **Creation**: Added [C4 System Views](/architecture/c4-system-views.md), [Project Identity](/concepts/project-identity.md), and [Field Ownership](/concepts/field-ownership.md).
 * **Split**: Phase acceptance criteria moved out of [Scope and Roadmap](/product/scope-and-roadmap.md) into the requirements.
 * **Migration**: Moved product vision and roadmap from `docs/` into [Product](/product/).

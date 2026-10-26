@@ -37,10 +37,17 @@ Feature: MCP Server and Tool Contracts — scenarios from the grill
     Then the write fails and no data changes
 
   @Q7
-  Scenario: Local paths can be withheld
-    Given expose_local_paths is false
+  Scenario: Local paths are omitted by default
+    Given the default configuration
     When project details are requested
     Then the response contains no local filesystem path
+    And it states whether a local checkout is available
+
+  @Q7
+  Scenario: Local paths can be enabled
+    Given expose_local_paths is true
+    When project details are requested for a locally available project
+    Then the response contains the local path
 
   @Q12
   Scenario: The tool list matches the committed snapshot

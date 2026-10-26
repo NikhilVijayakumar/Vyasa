@@ -8,7 +8,7 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 
 | Q | Question | Recommended answer |
 |---|---|---|
-| Q3 | Which fields are portfolio-owned (DO-006)? | Tracking level, priority, and notes. Tracking level takes a small fixed set (tracked, watch, ignored); priority is P0 to P3; notes are free text up to 2,000 characters. Anything else needs a classification before use. |
+| Q3 | Which fields are portfolio-owned (DO-006)? | Start from the registry baseline: tracking level (a small fixed set such as tracked, watch, ignored), domain, and project type. Priority (P0 to P3) and notes (free text up to 2,000 characters) are candidates that need a reviewed schema change first. Anything else needs a classification before use. |
 | Q4 | Who owns lifecycle status (DO-007)? | Two fields. `lifecycle_declared` is project-owned, from the profile. `portfolio_status` is portfolio-owned: active, review, archive-candidate, archived. A declared obsolete lifecycle can raise a review candidate but never changes the portfolio status. |
 | Q13 | Who counts as a portfolio maintainer? | Vyasa cannot tell. Any value present in a portfolio column is treated as authoritative, so protecting the sheet is a sharing and access matter. The documentation says so. |
 
@@ -27,7 +27,7 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 |---|---|---|
 | Q2 | Is refresh an MCP tool? | No by default. Refresh is a CLI command. An `[mcp] allow_refresh = true` setting registers an optional `refresh_index` tool for people who want it, since it writes generated state and can be expensive. |
 | Q4 | How are failures reported? | As a tool result with `isError` and a structured `error {code, message, details}` using the documented codes. JSON-RPC protocol errors are only for malformed requests. |
-| Q7 | May responses include local filesystem paths? | Yes by default for the local client, because the point is finding where a project is; setting `expose_local_paths = false` removes them. Paths from other devices are never shown, and paths never reach a shared export. |
+| Q7 | May responses include local filesystem paths? | No by default: results say whether a local checkout is available but carry no absolute path. A configuration setting `expose_local_paths = true` adds them for the local client. Paths from other devices are never shown, and paths never reach a shared export. |
 
 ## metadata-and-evidence
 
@@ -80,7 +80,7 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 |---|---|---|
 | Q2 | What defines a scope (DFR-011, RR-003)? | An explicit list: GitHub users and organizations, Bitbucket workspaces, with optional name filters. Nothing is discovered outside the list. Archived repositories are recorded and not inspected by default. |
 | Q4 | Which credentials (RR-001, RR-002)? | GitHub: a fine-grained token with read-only Metadata and Contents on selected repositories. Bitbucket Cloud: a repository or workspace access token with read scope. Atlassian is retiring app passwords, so confirm the current model when building. Credentials come from the OS keyring or environment, never the config file. |
-| Q8 | When is a repository considered gone (DFR-012)? | Only after two consecutive complete, successful listings omit it. It becomes `not_found_remote` and is never deleted. Authentication or partial failures never count. |
+| Q8 | When is a repository considered gone (DFR-012)? | Only after two consecutive complete, successful listings omit it. Its repository status becomes `missing` and the record is never deleted. Authentication or partial failures never count. |
 | Q10 | Do private repositories reach the shared registry? | Not by default. A scope must set `share_to_registry = true` for its records to be exported, and then only allowlisted fields. |
 
 ## security-and-privacy
@@ -98,7 +98,7 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 
 | Q | Question | Recommended answer |
 |---|---|---|
-| Q2 | Which fields are exported (SP-006)? | Allowlist v1: project id, display name, approved purpose, public repository URL, normalized remote identity, languages, technologies, README/OpenSpec/OKF/tests presence, declared lifecycle, Last Verified At, details status. Portfolio fields: tracking level, priority, notes. Never: local paths, workspace roots, checkout names, evidence lines, credentials, internal URLs without approval. |
+| Q2 | Which fields are exported (SP-006)? | Allowlist v1: project id, display name, approved purpose, public repository URL, normalized remote identity, languages, technologies, README/OpenSpec/OKF/tests presence, declared lifecycle, Last Verified At, details status. Human-managed fields in the registry baseline: tracking level, domain, project type; priority and notes only through a reviewed schema change. Never: local paths, workspace roots, checkout names, evidence lines, credentials, internal URLs without approval. |
 | Q3 | How are conflicts decided (NFD-010, DFR-009)? | By ownership. Portfolio fields: the sheet wins and is imported. Scanner-owned fields: the newest observation wins and is written only if the cell still holds the last synced value; a hand-edited cell is a conflict, kept untouched and reported until the user picks `--prefer local/sheet`. |
 | Q4 | Which Google authentication (DFR-010, SP-007)? | A service account by default, with the sheet explicitly shared with its address, so access is limited to that sheet. OAuth installed-app flow is an option for individuals. Credentials live in the OS keyring or a 0600 file outside any repository. |
 | Q9 | What do shared timestamps mean (DO-009)? | `Last Verified At`: when any device last observed the project. `Last Synced At`: when this row was last written. Local scan status stays local. |

@@ -17,7 +17,7 @@ flowchart LR
   end
   subgraph Shared["Google Sheets (shared)"]
     SUM[Approved summaries]
-    PORT[Portfolio fields<br/>tracking, priority, notes]
+    PORT[Portfolio fields<br/>tracking level, domain, project type]
   end
   PROV[Provider APIs<br/>provider-owned metadata]
   PF -->|read-only| IDX

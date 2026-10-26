@@ -29,5 +29,6 @@
     "openspec/changes/",
     "openspec/specs/"
   ],
-  "independence": "Concept links and sources may point only inside this bundle or to absolute external URLs. Knowledge never depends on requirements, specifications, changes, or implementation."
+  "independence": "Concept links and sources may point only inside this bundle or to absolute external URLs. Knowledge never depends on requirements, specifications, changes, or implementation.",
+  "max_lines": 400
 }

@@ -75,7 +75,7 @@ Accepted as open until you confirm the recommended direction in the grill log.
 
 | Decision | Recommended direction | Grill |
 |---|---|---|
-| SP-006 / DM-010 | Versioned allowlist of summary fields plus three portfolio fields. | Q2 |
+| SP-006 / DM-010 | Versioned allowlist of summary fields plus the registry's human-managed fields (tracking level, domain, project type). | Q2 |
 | NFD-010 / DFR-009 | Portfolio fields: Sheets wins. Scanner fields: newest observation, with a hand-edited cell reported as a conflict. | Q3 |
 | DFR-010 / SP-007 | Service account against one shared sheet by default; OAuth for individuals; credentials in the OS keyring. | Q4 |
 | DO-009 | Two timestamps: Last Verified At (any device) and Last Synced At. | Q9 |

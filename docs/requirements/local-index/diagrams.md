@@ -34,15 +34,16 @@ sequenceDiagram
 
 ```mermaid
 stateDiagram-v2
-  [*] --> running
+  [*] --> pending
+  pending --> running
   running --> completed: all items inspected
-  running --> completed_with_warnings: some skipped by policy
   running --> partial: some items or roots failed
   running --> failed: nothing usable
+  running --> cancelled: stopped by the user
   running --> interrupted: process stopped
   interrupted --> [*]
+  cancelled --> [*]
   completed --> [*]
-  completed_with_warnings --> [*]
   partial --> [*]
   failed --> [*]
 ```

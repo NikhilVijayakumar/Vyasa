@@ -21,7 +21,10 @@ Requirements, OpenSpec changes, and code **link to** knowledge; knowledge
 1. **List the topics** the work touches: domain concepts, components,
    interfaces, technologies, practices, past decisions.
 2. **Search the bundle.** Read `knowledge/index.md`, then the section
-   indexes; grep titles, descriptions, and `tags`.
+   indexes; grep titles, descriptions, and `tags`. Large topics are an
+   overview plus parts: read the overview's parts table, then only the part
+   that answers the question. `concepts/glossary.md` fixes term meanings;
+   `architecture/views/` holds the diagrams; `decisions/` holds draft ADRs.
 3. **Classify each topic:**
    - *Exists and current* — reference it.
    - *Exists but wrong or incomplete* — update the concept first.

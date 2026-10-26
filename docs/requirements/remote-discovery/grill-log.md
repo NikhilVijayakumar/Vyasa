@@ -74,7 +74,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q8. When is a repository considered gone (DFR-012)?**
 
-- **Recommendation:** Only after two consecutive complete, successful listings omit it. It becomes `not_found_remote` and is never deleted. Authentication or partial failures never count.
+- **Recommendation:** Only after two consecutive complete, successful listings omit it. Its repository status becomes `missing` and the record is never deleted. Authentication or partial failures never count.
 - **Why:** A single missed listing is common; a deletion claim must be hard to make.
 - **Status:** Decision needed
 - **Feeds:** FR-019 S4

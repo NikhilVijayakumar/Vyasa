@@ -29,7 +29,7 @@ Feature: Remote Repository Discovery and Inspection — scenarios from the grill
     Given a known repository is absent from one complete listing
     When discovery completes
     Then the repository is still reported as present
-    And it becomes not_found_remote only after a second complete listing omits it
+    And its status becomes missing only after a second complete listing omits it
 
   @Q13
   Scenario: Discovery never clones

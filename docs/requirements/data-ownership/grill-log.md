@@ -36,7 +36,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q3. Which fields are portfolio-owned (DO-006)?**
 
-- **Recommendation:** Tracking level, priority, and notes. Tracking level takes a small fixed set (tracked, watch, ignored); priority is P0 to P3; notes are free text up to 2,000 characters. Anything else needs a classification before use.
+- **Recommendation:** Start from the registry baseline: tracking level (a small fixed set such as tracked, watch, ignored), domain, and project type. Priority (P0 to P3) and notes (free text up to 2,000 characters) are candidates that need a reviewed schema change first. Anything else needs a classification before use.
 - **Why:** Small and explicit; people can ask for more.
 - **Status:** Decision needed
 - **Feeds:** FR-016 S3

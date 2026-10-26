@@ -83,7 +83,7 @@ Accepted as open until you confirm the recommended direction in the grill log.
 
 | Decision | Recommended direction | Grill |
 |---|---|---|
-| DO-006 | Portfolio fields: tracking level, priority, notes. | Q3 |
+| DO-006 | Portfolio fields: tracking level, domain, project type; priority and notes only after a schema change. | Q3 |
 | DO-007 | Lifecycle is two fields: declared lifecycle (project) and portfolio status (portfolio). | Q4 |
 | DO-005 | Name from profile, then manifest, then directory name marked provisional; purpose from profile or manifest description only. | Q5 |
 | DOR-001 | A code-defined ownership registry, checked by a completeness test. | Q2 |
