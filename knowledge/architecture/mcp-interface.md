@@ -1,21 +1,19 @@
+---
+type: Architecture
+title: "Vyasa (व्यास) — MCP Interface"
+description: MCP tools, parameters, response conventions, error codes, and limits exposed to coding agents.
+tags: [mcp, interface, contracts]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
+
 # Vyasa (व्यास) — MCP Interface
 
-**Document:** `docs/architecture/mcp-interface.md`  
-**Product:** Vyasa — Workspace Intelligence MCP  
-**Status:** Draft v0.1  
-**Scope:** Phase 1 local MCP, with extension points for Phases 2 and 3
+Related architecture:
 
-**Related Documents**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
-- `docs/requirements/functional-requirements.md`
-- `docs/requirements/non-functional-requirements.md`
-- `docs/requirements/data-ownership.md`
-- `docs/architecture/system-architecture.md`
-- `docs/architecture/data-model.md`
-- `docs/architecture/scanning-and-evidence.md`
-
----
+- [system-architecture](/architecture/system-architecture.md)
+- [data-model](/architecture/data-model.md)
+- [scanning-and-evidence](/architecture/scanning-and-evidence.md)
 
 ## 1. Purpose
 

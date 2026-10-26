@@ -1,22 +1,20 @@
+---
+type: Architecture
+title: "Vyasa (व्यास) — Local Storage"
+description: How Vyasa persists its index, configuration, and scan history locally in SQLite.
+tags: [sqlite, storage, index]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
+
 # Vyasa (व्यास) — Local Storage
 
-**Document:** `docs/architecture/local-storage.md`  
-**Product:** Vyasa — Workspace Intelligence MCP  
-**Status:** Draft v0.1  
-**Scope:** Phase 1 SQLite storage, with extension points for Phases 2 and 3
+Related architecture:
 
-**Related Documents**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
-- `docs/requirements/functional-requirements.md`
-- `docs/requirements/non-functional-requirements.md`
-- `docs/requirements/data-ownership.md`
-- `docs/architecture/system-architecture.md`
-- `docs/architecture/data-model.md`
-- `docs/architecture/scanning-and-evidence.md`
-- `docs/architecture/mcp-interface.md`
-
----
+- [system-architecture](/architecture/system-architecture.md)
+- [data-model](/architecture/data-model.md)
+- [scanning-and-evidence](/architecture/scanning-and-evidence.md)
+- [mcp-interface](/architecture/mcp-interface.md)
 
 ## 1. Purpose
 

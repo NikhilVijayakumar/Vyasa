@@ -1,20 +1,18 @@
+---
+type: Architecture
+title: "Vyasa (व्यास) — Scanning and Evidence"
+description: Deterministic workspace discovery, detectors, evidence model, and observation statuses.
+tags: [scanning, detectors, evidence, provenance]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
+
 # Vyasa (व्यास) — Scanning and Evidence
 
-**Document:** `docs/architecture/scanning-and-evidence.md`  
-**Product:** Vyasa — Workspace Intelligence MCP  
-**Status:** Draft v0.1  
-**Scope:** Phase 1 local scanning, with extension rules for Phases 2 and 3
+Related architecture:
 
-**Related Documents:**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
-- `docs/requirements/functional-requirements.md`
-- `docs/requirements/non-functional-requirements.md`
-- `docs/requirements/data-ownership.md`
-- `docs/architecture/system-architecture.md`
-- `docs/architecture/data-model.md`
-
----
+- [system-architecture](/architecture/system-architecture.md)
+- [data-model](/architecture/data-model.md)
 
 ## 1. Purpose
 
@@ -80,7 +78,7 @@ A detector must not claim comprehensive coverage of a technology, framework, tes
 
 Scanning records observations; it does not override the field ownership model.
 
-A detector may observe a project name, for example, but the final resolved value must follow the field-specific ownership and precedence rules in `docs/requirements/data-ownership.md`.
+A detector may observe a project name, for example, but the final resolved value must follow the field-specific ownership and precedence rules of that field, applied during metadata resolution (§12).
 
 ---
 
@@ -617,14 +615,28 @@ Internal dependency matching is a separate deterministic resolution step after e
 
 ### 9.11 OKF Detector
 
-The meaning of OKF has not yet been confirmed.
+**Purpose:** Determine whether the repository contains one or more bundles in Google Cloud's [Open Knowledge Format](/technologies/okf.md), which version they declare, and whether they conform.
 
-Until its definition, repository representation, and validity rules are agreed:
+OKF here always means the Open Knowledge Format specification (v0.2 current, v0.1 accepted). No other expansion is considered.
 
-- The detector must not be implemented based on an assumed expansion.
-- The system may report the feature as unsupported or not assessed.
-- The registry must not interpret missing detection as a confirmed disabled state.
-- The exact detector specification must be added after the term is clarified.
+**Recognition rule.** A bundle is recognized only by an `index.md` whose YAML frontmatter declares `okf_version`. The directory containing that file is the bundle root. Frontmatter with a `type` key alone is not evidence, because static-site generators and documentation tools use the same convention.
+
+Indicators, kept separate:
+
+1. **Bundle declared** — repository-relative path of each declaring `index.md`, and the declared version.
+2. **Version supported** — `0.1` and `0.2` are supported; any other value is reported as `unsupported` with the declared value as evidence.
+3. **Concept count** — number of non-reserved `.md` files under the bundle root (excluding nested bundle roots).
+4. **Conformance (OKF §11)** — count of concept files without parseable frontmatter or without a non-empty `type`; zero means conformant.
+5. **Trust coverage** — counts of concepts carrying `generated`, `verified`, and `status: deprecated`, if included in the detector specification.
+
+The detector must:
+
+- Search within the repository using the scanner's normal exclusions, depth, file-count, and file-size limits.
+- Read frontmatter only; never store concept bodies, `sources` values, or executor/attester code, and never run attesters or executors.
+- Report multiple bundles independently; a nested bundle root ends the parent bundle's scope.
+- Report `not_detected` when no declaring `index.md` exists after a complete inspection, `inaccessible` when the search could not complete, and `unsupported` for an unknown declared version.
+- Treat an undeclared directory of frontmatter documents as `not_detected`, documenting this as a known limitation rather than guessing.
+- Preserve evidence paths for each indicator.
 
 ### 9.12 README Quality Assessment
 
@@ -1087,7 +1099,7 @@ The scanning and evidence architecture is ready for Phase 1 implementation when:
 8. Unknown, not detected, unsupported, inaccessible, stale, and conflicting states are distinguishable.
 9. OpenSpec detection distinguishes directory presence, configuration validity, and meaningful artifact presence.
 10. README quality is not assessed subjectively.
-11. OKF detection remains unimplemented until its meaning and rules are confirmed.
+11. OKF detection recognizes only bundles declared through `okf_version`, and reports version support and conformance separately.
 12. Incremental scanning has documented invalidation rules.
 13. Failed or interrupted scans do not falsely claim complete verification.
 14. One detector's failure does not unnecessarily invalidate other observations.
@@ -1108,7 +1120,7 @@ The scanning and evidence architecture is ready for Phase 1 implementation when:
 | SE-004 | Canonical profile path and schema | Profile detector |
 | SE-005 | Generated draft lifecycle and git-ignore policy | Optional draft generation |
 | SE-006 | Supported OpenSpec format and validity rules | OpenSpec detector |
-| SE-007 | Meaning and representation of OKF | OKF detection |
+| SE-007 | ~~Meaning and representation of OKF~~ Resolved: Google Cloud OKF; rules in §9.11 | OKF detection |
 | SE-008 | README quality checklist or not-assessed-only policy | Quality assessment |
 | SE-009 | Evidence retention and fingerprint strategy | SQLite indexing |
 | SE-010 | Incremental invalidation rules and detector versioning | Incremental scanner |

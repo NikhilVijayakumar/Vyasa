@@ -1,7 +1,13 @@
-# Vyasa (व्यास) — Product Vision
+---
+type: Product
+title: "Product Vision"
+description: Why Vyasa exists, who it serves, its principles, success criteria, and non-goals.
+tags: [product, vision, principles]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
 
-**Product:** Vyasa — Workspace Intelligence MCP  
-**Document Status:** Draft v0.1
+# Vyasa (व्यास) — Product Vision
 
 ## 1. Vision
 

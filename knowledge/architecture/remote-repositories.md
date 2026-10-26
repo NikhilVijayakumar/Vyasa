@@ -1,24 +1,22 @@
+---
+type: Architecture
+title: "Vyasa (व्यास) — Remote Repository Discovery"
+description: Discovery of GitHub and Bitbucket repositories through provider APIs without cloning.
+tags: [github, bitbucket, phase-3]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
+
 # Vyasa (व्यास) — Remote Repository Discovery
 
-**Document:** `docs/architecture/remote-repositories.md`  
-**Product:** Vyasa — Workspace Intelligence MCP  
-**Status:** Draft v0.1  
-**Scope:** Phase 3 — GitHub and Bitbucket Cloud discovery and remote metadata inspection
+Related architecture:
 
-**Related Documents**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
-- `docs/requirements/functional-requirements.md`
-- `docs/requirements/non-functional-requirements.md`
-- `docs/requirements/data-ownership.md`
-- `docs/architecture/system-architecture.md`
-- `docs/architecture/data-model.md`
-- `docs/architecture/scanning-and-evidence.md`
-- `docs/architecture/mcp-interface.md`
-- `docs/architecture/local-storage.md`
-- `docs/architecture/synchronization.md`
-
----
+- [system-architecture](/architecture/system-architecture.md)
+- [data-model](/architecture/data-model.md)
+- [scanning-and-evidence](/architecture/scanning-and-evidence.md)
+- [mcp-interface](/architecture/mcp-interface.md)
+- [local-storage](/architecture/local-storage.md)
+- [synchronization](/architecture/synchronization.md)
 
 ## 1. Purpose
 
@@ -563,7 +561,7 @@ It must not guess framework dependencies or architecture from filenames alone.
 
 OpenSpec detection must follow the same versioned validation rules as local scanning.
 
-The meaning of OKF remains unresolved. Remote OKF detection must not be implemented until its meaning, file representation, and validity rules are confirmed.
+OKF detection follows the local rules in [Scanning and Evidence §9.11](/architecture/scanning-and-evidence.md), applied to files retrieved at a pinned revision: only `index.md` files and concept frontmatter are fetched, within the remote inspection limits.
 
 ---
 
@@ -1147,7 +1145,7 @@ GitHub and Bitbucket Cloud should share the same domain-level contract, but thei
 | RR-013 | MCP operational tools | Finalize discovery and inspection schemas |
 | RR-014 | Remote request limits | Set and test file, repository, and duration limits |
 | RR-015 | Provider rate limits | Implement provider-specific backoff and error handling |
-| RR-016 | OKF detection | Defer until meaning and validation rules are confirmed |
+| RR-016 | OKF detection | Resolved: Google Cloud OKF; reuse the local detector at a pinned revision (§10.5) |
 
 These decisions must be resolved or explicitly accepted as implementation defaults before the corresponding functionality is built.
 

@@ -1,23 +1,21 @@
+---
+type: Architecture
+title: "Vyasa (व्यास) — Synchronization"
+description: How shared project metadata is synchronized through the Google Sheets registry.
+tags: [sync, google-sheets, phase-2]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
+
 # Vyasa (व्यास) — Synchronization
 
-**Document:** `docs/architecture/synchronization.md`  
-**Product:** Vyasa — Workspace Intelligence MCP  
-**Status:** Draft v0.1  
-**Scope:** Phase 2 — Google Sheets shared registry and synchronization
+Related architecture:
 
-**Related Documents**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
-- `docs/requirements/functional-requirements.md`
-- `docs/requirements/non-functional-requirements.md`
-- `docs/requirements/data-ownership.md`
-- `docs/architecture/system-architecture.md`
-- `docs/architecture/data-model.md`
-- `docs/architecture/scanning-and-evidence.md`
-- `docs/architecture/mcp-interface.md`
-- `docs/architecture/local-storage.md`
-
----
+- [system-architecture](/architecture/system-architecture.md)
+- [data-model](/architecture/data-model.md)
+- [scanning-and-evidence](/architecture/scanning-and-evidence.md)
+- [mcp-interface](/architecture/mcp-interface.md)
+- [local-storage](/architecture/local-storage.md)
 
 ## 1. Purpose
 
@@ -178,7 +176,7 @@ One row represents the documentation and standards summary for a logical project
 | `Documentation Structure` | Summary of recognized documentation structure | Scanner-generated |
 | `OpenSpec Enabled` | Whether supported OpenSpec indicators were detected | Scanner-generated |
 | `OpenSpec Configuration` | Configuration detection and validation summary | Scanner-generated |
-| `OKF Enabled` | OKF-related status, once defined and supported | Pending definition |
+| `OKF Enabled` | Whether a declared, supported OKF bundle was detected; non-conforming bundles shown as such | Scanner-generated |
 | `Agent Instructions` | Summary of recognized instruction files | Scanner-generated |
 | `Tests Present` | Whether supported test indicators were detected | Scanner-generated |
 | `Documentation Entry Point` | Repository-relative documentation entry point, if known | Scanner-generated |

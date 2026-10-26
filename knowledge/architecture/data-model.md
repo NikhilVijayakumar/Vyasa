@@ -1,17 +1,17 @@
+---
+type: Architecture
+title: "Vyasa (व्यास) — Data Model"
+description: Entities, identifiers, observations, evidence, and relationships stored in the Vyasa index.
+tags: [data-model, index, evidence]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
+
 # Vyasa (व्यास) — Data Model
 
-**Document:** `docs/architecture/data-model.md`  
-**Product:** Vyasa — Workspace Intelligence MCP  
-**Status:** Draft v0.1  
-**Related Documents:**
-- `docs/product/vision.md`
-- `docs/product/scope-and-roadmap.md`
-- `docs/requirements/functional-requirements.md`
-- `docs/requirements/non-functional-requirements.md`
-- `docs/requirements/data-ownership.md`
-- `docs/architecture/system-architecture.md`
+Related architecture:
 
----
+- [system-architecture](/architecture/system-architecture.md)
 
 ## 1. Purpose
 
@@ -1014,7 +1014,7 @@ The following decisions must be finalized before the affected implementation beg
 | DM-005 | Retention policy for metadata observations and scan history | Phase 1 |
 | DM-006 | Physical SQLite schema, indexes, and migration strategy | Phase 1 |
 | DM-007 | Approved lifecycle status vocabulary and ownership | Phase 1 |
-| DM-008 | Definition of OKF and its metadata representation | Phase 1 |
+| DM-008 | ~~Definition of OKF and its metadata representation~~ Resolved: Google Cloud OKF; one observation per declared bundle (root path, declared version, concept count, non-conforming count), per scanning §9.11 | Phase 1 |
 | DM-009 | Deterministic README quality criteria, or not-assessed-only policy | Phase 1 |
 | DM-010 | Google Sheets field mapping and export allowlist | Phase 2 |
 | DM-011 | Portfolio-field ownership and synchronization conflict rules | Phase 2 |

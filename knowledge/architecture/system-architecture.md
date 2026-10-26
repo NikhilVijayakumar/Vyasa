@@ -1,8 +1,15 @@
+---
+type: Architecture
+title: "Vyasa (व्यास) — System Architecture"
+description: Layers, components, runtime model, and technology choices of the Vyasa MCP server.
+tags: [architecture, components, python, mcp]
+status: draft
+generated: { by: human:nikhil-vijayakumar, at: 2026-10-26T00:00:00Z }
+---
+
 # Vyasa (व्यास) — System Architecture
 
-**Document:** `docs/architecture/system-architecture.md`  
 **Product:** Vyasa — Workspace Intelligence MCP  
-**Status:** Draft v0.1  
 **Architecture style:** Modular, local-first, protocol-oriented  
 **Primary language:** Python  
 **Initial storage:** SQLite  
@@ -689,7 +696,7 @@ Logical storage areas include:
 - Synchronization state, introduced in Phase 2.
 - Remote discovery state, introduced in Phase 3.
 
-The exact tables, indexes, constraints, and migrations belong in `docs/architecture/local-storage.md`.
+The exact tables, indexes, constraints, and migrations belong in [local-storage](/architecture/local-storage.md).
 
 ### 12.1 Storage Principles
 
@@ -754,7 +761,7 @@ If Google Sheets is unavailable, local queries and indexing must continue to wor
 
 Synchronization failure must not invalidate successful local scans or overwrite locally stored data with incomplete responses.
 
-The synchronization adapter must follow the field ownership and conflict policy defined in `docs/requirements/data-ownership.md`.
+The synchronization adapter must follow the field ownership and conflict policy of the field being synchronized; see [synchronization](/architecture/synchronization.md).
 
 ## 14. Phase 3 — Remote Repository Discovery
 
