@@ -1,0 +1,271 @@
+name: qa
+version: 1
+description: >
+  QA delivery workflow: the intent-driven lifecycle plus a test plan
+  artifact that fixes verification layers, coverage, test data, and
+  gates before implementation is broken into tasks.
+
+# ============================================================
+# ARTIFACT LIFECYCLE
+#
+# proposal -> specs -> design -> testplan -> adr -> tasks
+#
+# The testplan artifact is the QA team's addition to the shared
+# intent-driven spine: it states how the change will be verified and
+# what evidence counts, before tasks are broken down.
+# ============================================================
+
+artifacts:
+
+  # ----------------------------------------------------------
+  # 1. PROPOSAL
+  # ----------------------------------------------------------
+  - id: proposal
+    generates: proposal.md
+    description: >
+      Defines the problem, intent, scope, constraints, and the expected
+      verification outcome.
+    template: proposal.md
+    instruction: |
+      Establish why the change is needed and what outcome is
+      expected before deciding how to verify it.
+
+      Inspect the existing repository, existing suites, and relevant
+      project documentation. Reuse existing conventions and decisions.
+
+      Identify scope, exclusions, dependencies, risks, and the
+      behavior that must be proven.
+
+      This is the QA team's workflow. Apply the QA focus:
+      requirement traceability and coverage, acceptance scenarios,
+      test data, defect evidence, and verification gates.
+
+      Consult the QA skills under `skills/qa/` when the change needs
+      verification planning: `test-design`, `test-case-design`,
+      `test-data-design`, and `traceability-and-coverage`.
+
+      Consult the `grill-me` skill when available and applicable to
+      challenge assumptions before finalizing the proposal.
+
+      Identify the OpenSpec change ID and intended Git branch.
+      Keep the proposal limited to one logical change.
+    requires: []
+
+  # ----------------------------------------------------------
+  # 2. SPECIFICATIONS
+  # ----------------------------------------------------------
+  - id: specs
+    generates: specs/**/*.md
+    description: >
+      Defines observable requirements and behavioral scenarios with
+      traceability to the intended change.
+    template: specs.md
+    instruction: |
+      Define observable, specific, and testable system behavior.
+
+      Use Given/When/Then scenarios where appropriate and consult
+      the `gherkin-authoring` skill when available.
+
+      Consult the `test-strategy` skill when available to keep
+      requirements verifiable and to place each behavior in the
+      verification layer that owns it.
+
+      Cover positive behavior, negative behavior, validation,
+      boundary conditions, and error handling where applicable.
+
+      A requirement that cannot be observed and verified is not a
+      requirement. Flag ambiguous requirements for clarification
+      instead of guessing their intent.
+
+      Preserve existing behavior unless the approved change
+      explicitly modifies it.
+
+      Reference existing requirements and dependencies.
+      Do not invent undocumented product or backend behavior.
+
+      Gherkin scenarios are specifications; they are not
+      automatically executable tests without suitable tooling.
+    requires:
+      - proposal
+
+  # ----------------------------------------------------------
+  # 3. DESIGN
+  # ----------------------------------------------------------
+  - id: design
+    generates: design.md
+    description: >
+      Defines the technical approach, affected components, interfaces,
+      data flows, and important trade-offs for the change under test.
+    template: design.md
+    instruction: |
+      Describe how the approved requirements will be implemented, and
+      where the seams for verification are.
+
+      Identify component responsibilities, boundaries, interfaces,
+      contracts, data flows, dependencies, and failure handling.
+
+      Identify the seams the test plan will rely on: injectable
+      dependencies, fixtures, test data boundaries, and the
+      environments the change is verified in.
+
+      Reuse existing architecture and document reasons for
+      introducing new patterns or technologies.
+
+      Consult the `architecture-review` skill when available and
+      applicable.
+
+      Identify significant architectural decisions that require a
+      durable ADR. Avoid unnecessary design complexity for small,
+      local changes.
+    requires:
+      - proposal
+
+  # ----------------------------------------------------------
+  # 4. TEST PLAN (QA addition)
+  # ----------------------------------------------------------
+  - id: testplan
+    generates: testplan.md
+    description: >
+      Fixes the verification approach: layers, coverage matrix, test
+      data, environments, execution, and entry and exit gates.
+    template: testplan.md
+    instruction: |
+      State how this change will be verified and what counts as
+      evidence, before tasks are broken down.
+
+      Assign every behavior to the verification layer that owns it.
+      State the layer, the scope it covers, the tool that runs it, and
+      who owns it. A behavior with no layer is unverified behavior.
+
+      Build the coverage matrix from the specification requirements:
+      requirement, layer, test or check, and expected evidence. Name
+      the gaps explicitly rather than leaving them implicit.
+
+      State the test data and environment requirements, including how
+      data is created, isolated, and kept synthetic.
+
+      State the entry criteria for running the checks and the exit
+      criteria for calling the change verified. State what blocks
+      completion.
+
+      State how defects are raised and what evidence a defect carries.
+
+      Do not claim coverage that no executed check produced. If a
+      check was not run, say so.
+
+      Consult `test-strategy` for layer boundaries, `test-design`
+      and `test-case-design` for the checks themselves,
+      `test-data-design` for fixtures, and
+      `traceability-and-coverage` for the coverage matrix.
+    requires:
+      - specs
+      - design
+
+  # ----------------------------------------------------------
+  # 5. ARCHITECTURE DECISION RECORD
+  # ----------------------------------------------------------
+  - id: adr
+    generates: adr.md
+    description: >
+      Records significant architectural decisions or explicitly documents
+      why no new ADR is required for this change.
+    template: adr.md
+    instruction: |
+      Review the proposed design and test plan and determine whether a
+      new durable architectural decision is required.
+
+      When a decision is required, document its context, decision,
+      alternatives, rationale, trade-offs, and consequences using the
+      project's ADR conventions.
+
+      When an existing ADR already covers the decision, reference it
+      rather than creating a duplicate.
+
+      When no new architectural decision is needed, explicitly state
+      that no new ADR is required and explain briefly why.
+
+      Consult the `architectural-decision-records` skill when
+      available. Store durable decisions according to the consuming
+      project's knowledge and documentation policy.
+    requires:
+      - design
+      - testplan
+
+  # ----------------------------------------------------------
+  # 6. TASKS
+  # ----------------------------------------------------------
+  - id: tasks
+    generates: tasks.md
+    description: >
+      Defines ordered, traceable implementation and verification tasks
+      organized into small, testable vertical slices.
+    template: tasks.md
+    instruction: |
+      Create an actionable checklist based on the approved
+      specifications, design, test plan, and architectural decisions.
+
+      Break work into small, reviewable vertical slices.
+
+      Map tasks to requirements and to the checks the test plan
+      requires, so no planned check is dropped and no task has no
+      requirement behind it.
+
+      Include implementation, testing, verification, and necessary
+      documentation work.
+
+      Follow the `test-driven-development` skill when available.
+      Plan Red-Green-Refactor cycles for applicable code changes.
+
+      Use the `acceptance-test-authoring` skill to turn the test plan
+      into verifiable acceptance checks, and the `test-execution-review`
+      skill when reporting what actually ran.
+
+      Include applicable quality checks and explicit completion
+      criteria. Keep all tasks within the approved scope.
+
+      Do not mark work complete before it has been performed and its
+      result verified.
+    requires:
+      - specs
+      - design
+      - adr
+
+# ============================================================
+# IMPLEMENTATION GATE
+# ============================================================
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    Implement only the approved OpenSpec change.
+
+    Before modifying code:
+    - Follow the `openspec-git-discipline` skill.
+    - Confirm the correct feature or fix branch.
+    - Review the approved proposal, specifications, design, test
+      plan, ADR decision, and tasks.
+    - Inspect the relevant project conventions and skills.
+    - Confirm the required implementation tasks are actionable.
+
+    During implementation:
+    - Follow the project's technology-specific conventions.
+    - Use Red-Green-Refactor for applicable code changes.
+    - Implement one testable vertical slice at a time.
+    - Run the checks the test plan assigns to each task.
+    - When a check fails, consult the `test-debugging` skill when
+      available to diagnose it with evidence; never weaken or delete
+      a test to make implementation pass.
+    - Do not weaken requirements or tests merely to make
+      implementation pass.
+    - Keep task checkboxes synchronized with actual progress.
+    - Do not introduce unrelated changes or bypass Git safeguards.
+
+    Before considering implementation complete:
+    - Verify the implementation against the approved requirements and
+      the test plan's exit criteria.
+    - Use the `code-reviewer` skill to review the change.
+    - Report the checks actually executed: passed, failed, skipped,
+      blocked, and not run.
+    - Do not claim successful verification without evidence.

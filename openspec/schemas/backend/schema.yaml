@@ -1,0 +1,304 @@
+name: backend
+version: 1
+description: >
+  Backend delivery workflow: the intent-driven lifecycle plus an API and
+  data contract artifact that fixes the server-facing contract,
+  authorization boundaries, and migration impact before technical design.
+
+# ============================================================
+# ARTIFACT LIFECYCLE
+#
+# proposal -> specs -> api-contract -> design -> adr -> tasks
+#
+# The api-contract artifact is the backend team's addition to the shared
+# intent-driven spine: it fixes the interface other teams build against
+# before the technical design commits to a persistence or service shape.
+# ============================================================
+
+artifacts:
+
+  # ----------------------------------------------------------
+  # 1. PROPOSAL
+  # ----------------------------------------------------------
+  - id: proposal
+    generates: proposal.md
+    description: >
+      Defines the problem, intent, scope, constraints, affected services
+      and data, and the expected backend outcome.
+    template: proposal.md
+    instruction: |
+      Establish why the change is needed and what outcome is
+      expected before deciding how to implement it.
+
+      Inspect the existing repository, existing API and schema
+      definitions, and relevant project documentation. Reuse existing
+      conventions and decisions.
+
+      Identify scope, exclusions, dependencies, risks, affected
+      services, endpoints, and data.
+
+      This is the backend team's workflow. Apply the backend focus:
+      API contracts, data model, authorization boundaries, failure
+      modes, data integrity, and migration impact.
+
+      Consult the backend skills under `skills/backend/` when the
+      change touches the server boundary: `api-contract-testing`,
+      `graphql-testing`, `database-integration-testing`, and
+      `security-and-privacy-review`. For NestJS and PostgreSQL work,
+      consult `nestjs-architecture-principles` for module boundaries
+      and dependency structure, `graphql-schema` when GraphQL SDL
+      changes, and `postgresql-best-practices` for relational design,
+      constraints, and migrations.
+
+      Consult the `grill-me` skill when available and applicable to
+      challenge assumptions before finalizing the proposal.
+
+      Identify the OpenSpec change ID and intended Git branch.
+      Keep the proposal limited to one logical change.
+    requires: []
+
+  # ----------------------------------------------------------
+  # 2. SPECIFICATIONS
+  # ----------------------------------------------------------
+  - id: specs
+    generates: specs/**/*.md
+    description: >
+      Defines observable requirements and behavioral scenarios with
+      traceability to the intended change.
+    template: specs.md
+    instruction: |
+      Define observable, specific, and testable system behavior.
+
+      Use Given/When/Then scenarios where appropriate and consult
+      the `gherkin-authoring` skill when available.
+
+      Consult the `test-strategy` skill when available to keep
+      requirements verifiable and to place each behavior in the
+      server-side verification layer that owns it: unit, contract,
+      integration, or persistence.
+
+      Cover positive behavior, negative behavior, validation,
+      boundary conditions, and error handling where applicable.
+      Authorization failures are behavior: state them.
+
+      Preserve existing behavior unless the approved change
+      explicitly modifies it.
+
+      Reference existing requirements and dependencies.
+      Do not invent undocumented product or backend behavior.
+
+      Gherkin scenarios are specifications; they are not
+      automatically executable tests without suitable tooling.
+    requires:
+      - proposal
+
+  # ----------------------------------------------------------
+  # 3. API AND DATA CONTRACT (backend addition)
+  # ----------------------------------------------------------
+  - id: api-contract
+    generates: api-contract.md
+    description: >
+      Fixes the server-facing contract: operations, payloads, error model,
+      authorization boundaries, data model, and migration impact.
+    template: api-contract.md
+    instruction: |
+      Fix the server-facing contract before the technical design
+      commits to a persistence or service shape.
+
+      Describe every affected operation: its inputs, outputs, error
+      responses, and the authorization it requires. Other teams build
+      against this contract, so an unstated default is a decision
+      nobody made.
+
+      State the error model explicitly: which conditions produce which
+      error, what shape the error takes, and whether the error leaks
+      detail the caller must not see.
+
+      State the authorization boundary: which role or scope may invoke
+      which operation, what the server enforces, and what is only a
+      client-side convenience.
+
+      Describe the data model: entities, fields, types, constraints,
+      and the invariants the database must hold.
+
+      Describe migration and backward compatibility: how existing
+      callers and stored data survive the change, and the order in
+      which the change is rolled out.
+
+      Trace each operation and field back to the specification
+      requirements it satisfies. Record unresolved contract questions
+      as explicit open questions.
+
+      Consult `api-contract-testing` and `graphql-testing` for
+      contract expectations, `graphql-schema` for GraphQL types,
+      fields, nullability, pagination, and error shapes,
+      `postgresql-best-practices` for the relational model and its
+      constraints, `database-integration-testing` for persistence
+      constraints, and `security-and-privacy-review` when access,
+      secrets, or sensitive data are affected.
+    requires:
+      - specs
+
+  # ----------------------------------------------------------
+  # 4. DESIGN
+  # ----------------------------------------------------------
+  - id: design
+    generates: design.md
+    description: >
+      Defines the technical approach, affected components, interfaces,
+      data flows, and important trade-offs for the backend.
+    template: design.md
+    instruction: |
+      Describe how the approved requirements and the API and data
+      contract will be implemented.
+
+      Identify component responsibilities, boundaries, interfaces,
+      contracts, data flows, dependencies, and failure handling.
+
+      Consider security, performance, scalability, data integrity, and
+      maintainability in proportion to the change.
+
+      Reuse existing architecture and document reasons for
+      introducing new patterns or technologies.
+
+      Consult the `architecture-review` skill when available and
+      applicable, and the backend skills under `skills/backend/` for
+      the patterns this project already uses.
+
+      Consult `nestjs-architecture-principles` for module boundaries,
+      dependency inversion, and service responsibilities, and
+      `nestjs-features-performance` when the design introduces runtime
+      primitives, caching, queues, or scaling decisions. Consult
+      `postgresql-best-practices` for schema, index, transaction, and
+      migration design.
+
+      Identify significant architectural decisions that require a
+      durable ADR. Avoid unnecessary design complexity for small,
+      local changes.
+    requires:
+      - proposal
+      - api-contract
+
+  # ----------------------------------------------------------
+  # 5. ARCHITECTURE DECISION RECORD
+  # ----------------------------------------------------------
+  - id: adr
+    generates: adr.md
+    description: >
+      Records significant architectural decisions or explicitly documents
+      why no new ADR is required for this change.
+    template: adr.md
+    instruction: |
+      Review the proposed design and determine whether a new durable
+      architectural decision is required.
+
+      When a decision is required, document its context, decision,
+      alternatives, rationale, trade-offs, and consequences using the
+      project's ADR conventions.
+
+      When an existing ADR already covers the decision, reference it
+      rather than creating a duplicate.
+
+      When no new architectural decision is needed, explicitly state
+      that no new ADR is required and explain briefly why.
+
+      Consult the `architectural-decision-records` skill when
+      available. Store durable decisions according to the consuming
+      project's knowledge and documentation policy.
+    requires:
+      - design
+
+  # ----------------------------------------------------------
+  # 6. TASKS
+  # ----------------------------------------------------------
+  - id: tasks
+    generates: tasks.md
+    description: >
+      Defines ordered, traceable implementation and verification tasks
+      organized into small, testable vertical slices.
+    template: tasks.md
+    instruction: |
+      Create an actionable checklist based on the approved
+      specifications, API and data contract, design, and architectural
+      decisions.
+
+      Break work into small, reviewable vertical slices.
+
+      Map tasks to requirements, contract operations, and acceptance
+      scenarios where practical.
+
+      Include implementation, testing, verification, and necessary
+      migration and documentation work.
+
+      Follow the `test-driven-development` skill when available.
+      Plan Red-Green-Refactor cycles for applicable code changes.
+
+      Consult `nestjs-professional-software-engineering` for NestJS
+      implementation practice and version-appropriate syntax, and
+      `postgresql-best-practices` for migration and indexing tasks.
+
+      Use the `acceptance-test-authoring` skill to turn specifications
+      and contract expectations into verifiable acceptance checks.
+
+      Use the `test-strategy` skill when available to choose the
+      server-side verification layer for each task, using the backend
+      skills under `skills/backend/`.
+
+      Include applicable quality checks and explicit completion
+      criteria. Keep all tasks within the approved scope.
+
+      Do not mark work complete before it has been performed and its
+      result verified.
+    requires:
+      - specs
+      - design
+      - adr
+
+# ============================================================
+# IMPLEMENTATION GATE
+# ============================================================
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    Implement only the approved OpenSpec change.
+
+    Before modifying code:
+    - Follow the `openspec-git-discipline` skill.
+    - Confirm the correct feature or fix branch.
+    - Review the approved proposal, specifications, API and data
+      contract, design, ADR decision, and tasks.
+    - Inspect the relevant project conventions and skills.
+    - For Staffing backend work, select backend-documentation-correctness.
+      Select backend-nestjs-architecture-review for module boundaries,
+      backend-security-review for security boundaries,
+      backend-graphql-api-contract-review for GraphQL contracts, and
+      backend-prisma-postgresql-integrity-review for persistence changes.
+      Use backend-nestjs-test-verification for authorized verification tasks.
+    - Confirm the required implementation tasks are actionable.
+
+    During implementation:
+    - Follow the project's technology-specific conventions.
+    - Use Red-Green-Refactor for applicable code changes.
+    - Implement one testable vertical slice at a time.
+    - Keep the server boundary authoritative: enforce authorization
+      on the server, not only in the client.
+    - Run relevant tests and quality checks.
+    - When a check fails, consult the `test-debugging` skill when
+      available to diagnose it with evidence; never weaken or delete
+      a test to make implementation pass.
+    - Do not weaken requirements or tests merely to make
+      implementation pass.
+    - Keep task checkboxes synchronized with actual progress.
+    - Do not introduce unrelated changes or bypass Git safeguards.
+
+    Before considering implementation complete:
+    - Verify the implementation against the approved requirements and
+      the API and data contract.
+    - Use the `code-reviewer` skill to review the change.
+    - Report tests and checks actually executed.
+    - Identify failures, skipped checks, unavailable tooling, and
+      unresolved verification gaps.
+    - Do not claim successful verification without evidence.

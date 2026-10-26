@@ -1,0 +1,329 @@
+# Default schema for changes created without an explicit --schema.
+# A team change selects its own schema (see teams: below).
+schema: backend
+
+# ============================================================
+# SHARED PROJECT CONTEXT
+# ============================================================
+# These instructions apply to OpenSpec artifacts and lifecycle
+# operations. Keep this section technology-agnostic.
+# ============================================================
+
+context: |
+  This repository uses an intent-driven Spec-Driven Development
+  (SDD) workflow built on OpenSpec.
+
+  The framework is shared across frontend, backend, mobile, QA,
+  and other engineering disciplines.
+
+  The framework standardizes the engineering lifecycle while
+  allowing projects to extend it with technology-specific
+  architectures, conventions, skills, and verification tools.
+
+  All feature development must follow this lifecycle:
+
+  Explore
+  → Proposal
+  → Specification
+  → Design
+  → ADR (when warranted)
+  → Tasks
+  → Implementation
+  → Verification
+  → Merge and Archive
+
+  ============================================================
+  SHARED ENGINEERING PRINCIPLES
+  ============================================================
+
+  - Inspect the existing repository, architecture, specifications,
+    tests, and conventions before proposing changes.
+  - Document first: complete or update the applicable proposal,
+    observable specifications, design/ADR decision, and tasks before
+    changing implementation behavior. If implementation uncovers a
+    requirements or design gap, update the approved artifacts first.
+  - Reuse existing project patterns and documented decisions.
+  - Keep each OpenSpec change limited to one logical change.
+  - Requirements must describe observable and testable behavior.
+  - Use BDD/Gherkin when defining behavioral scenarios.
+  - Follow test-driven development for implementation changes
+    where applicable, using Red-Green-Refactor.
+  - Record significant architectural decisions and their rationale.
+  - Verify implementation against the approved specifications.
+  - Report failed, skipped, unavailable, and unverified checks.
+  - Do not claim tests or verification succeeded without evidence.
+  - Do not introduce unrelated changes or undocumented assumptions.
+  - Do not require a particular language, framework, cloud provider,
+    architecture, test runner, or documentation structure globally.
+
+  ============================================================
+  PROJECT KNOWLEDGE
+  ============================================================
+
+  - Inspect existing project documentation before creating new
+    knowledge or duplicating existing documentation.
+  - Respect the consuming project's documented sources of truth,
+    evidence requirements, conventions, and known gaps.
+  - Do not invent undocumented product or backend behavior.
+  - A structured knowledge base such as OKF is optional.
+  - If the project has an established knowledge system, follow it.
+  - Store durable knowledge according to project conventions,
+    separately from temporary change-specific artifacts.
+  - OpenSpec capability folders in this repository use `fun-NN-<slug>`
+    for product behavior and `tech-NN-<discipline>-<slug>` for technical
+    specifications. `NN` is a stable, two-digit identifier, allocated
+    sequentially within its family and never reused or renumbered. Use the
+    same canonical folder name in change delta specs. Store implementation
+    audits and status matrices under `docs/`, not as capability specs.
+
+  ============================================================
+  TEAM AND TECHNOLOGY EXTENSIONS
+  ============================================================
+
+  - Projects may add discipline-specific and technology-specific
+    instructions, skills, schemas, templates, and quality gates.
+  - Project adapters declare metadata.scope matching their categorized skill home.
+    Imported team skills retain upstream names. All homes are available to every agent.
+  - For backend changes, select relevant `backend-*` extension skills from
+    `skills/README.md`; do not select backend extensions for frontend-only work.
+    Shared skills remain discipline-neutral and should be selected by relevance.
+  - Frontend, backend, mobile, QA, and other teams may use
+    different implementation and verification tools.
+  - Extensions must complement the shared workflow and must not
+    silently weaken shared safety, traceability, or verification
+    requirements.
+  - Use only skills that are available in the repository or
+    explicitly configured for the consuming project.
+  - Apply conditional skills when the change has the relevant
+    architectural, UI/UX, testing, or technology impact.
+
+  ============================================================
+  GIT AND CHANGE TRACEABILITY
+  ============================================================
+
+  The default branching policy is:
+
+  - main: release branch.
+  - develop: integration branch.
+  - feature/<change-id>-<short-description>: new functionality.
+  - fix/<change-id>-<short-description>: bug fixes.
+
+  Normal feature and fix branches originate from develop and merge
+  into develop after review and verification.
+
+  Releases are promoted from develop to main through the
+  repository's release process.
+
+  Production hotfixes may originate from main and must be
+  reconciled back into develop.
+
+  The OpenSpec change identifier must be traceable across the
+  change directory, branch name, pull request, relevant commits,
+  and verification report.
+
+  Product change identifiers are prefixed with the proposing
+  team (fe-, be-, qa-); framework and process changes keep the
+  openspec- prefix. Changes created before this convention are
+  exempt and are not renamed solely to satisfy it.
+
+  Follow the consuming repository's protected-branch settings.
+  Never bypass required review or branch-protection controls.
+
+# ============================================================
+# TEAMS
+# ============================================================
+# Proposals are typed by the proposing team: three engineering
+# disciplines (fe, be, qa), not technology stacks. Each team
+# selects its own workflow schema and owns its own skill home;
+# the shared context and rules below still apply to every team.
+#
+# schema:  the team schema a change of this team uses. Select it
+#          when creating the change:
+#          openspec new change "<id>" --schema <schema>
+# skills:  the team's skill home. Shared skills live in
+#          skills/shared and apply to every team.
+# focus:   technology-agnostic focus areas that tune proposals.
+#
+# Technology-specific skill names live in the team schemas and the
+# skill catalog (skills/README.md -> Team routing), keeping this
+# file technology-agnostic (see QA-003). Product change IDs carry
+# the team prefix per GIT AND CHANGE TRACEABILITY; framework and
+# process changes keep the openspec- prefix and use the project's
+# default schema.
+# ============================================================
+
+teams:
+  fe:
+    schema: frontend
+    skills: skills/frontend
+    focus:
+      - UI/UX impact, affected screens, and components
+      - Accessibility and localization behaviour
+      - Component behaviour and browser-level verification
+  be:
+    schema: backend
+    skills: skills/backend
+    focus:
+      - API contracts, data model, and authorization boundaries
+      - Failure modes, data integrity, and migration impact
+      - Test-layer placement for server-side behaviour
+  qa:
+    schema: qa
+    skills: skills/qa
+    focus:
+      - Requirement traceability and coverage
+      - Acceptance scenarios, test data, and defect evidence
+      - Verification gates and honest reporting
+
+# ============================================================
+# ARTIFACT RULES
+# ============================================================
+
+rules:
+  proposal:
+    - Define the problem, intended outcome, scope, and constraints.
+    - Identify affected components, dependencies, and risks.
+    - Identify whether architecture or UI/UX is affected.
+    - Identify the OpenSpec change ID and intended Git branch.
+    - Identify the proposing team (fe, be, qa) and apply its focus
+      and skill routing from the teams section and the skill
+      catalog's team routing table.
+    - Use the grill-me skill when available to challenge assumptions.
+    - Keep the proposal limited to one logical change.
+
+  specs:
+    - Define specific, observable, and testable requirements.
+    - Include positive, negative, validation, and error scenarios where
+      applicable.
+    - Use the gherkin-authoring skill when available.
+    - Use the test-strategy skill when available to keep
+      requirements verifiable and identify which test layer
+      each behavior belongs to.
+    - Identify dependencies on existing behavior and contracts.
+    - Avoid prescribing implementation details unless necessary.
+    - Reuse existing specifications and avoid conflicting behavior.
+    - Do not treat Gherkin text as an executable test unless the required runner
+      and step definitions are configured.
+
+  # ============================================================
+  # TEAM ARTIFACT RULES
+  #
+  # These keys exist in exactly one team schema (frontend: ui-spec,
+  # backend: api-contract, qa: testplan), so each rule applies only
+  # to changes using that team's schema. The rules stay
+  # technology-agnostic here; the team schema names the team's own
+  # skills.
+  # ============================================================
+  ui-spec:
+    - Fix every affected screen and component, including loading, empty, error, partial, and permission-dependent states.
+    - State the keyboard, focus, semantics, and responsive expectations.
+    - State the accessibility and localization expectations where copy or layout is affected.
+    - Trace each screen and state back to a specification requirement.
+    - Record unresolved visual questions as open questions instead of assumptions.
+
+  api-contract:
+    - State every affected operation with its request, success response, and error responses.
+    - State the error model and the authorization the server enforces per operation.
+    - State the data model, its invariants, and the migration and backward-compatibility path.
+    - Trace each operation and field back to a specification requirement.
+    - Record unresolved contract questions as open questions instead of assumptions.
+
+  testplan:
+    - Assign every behavior to the verification layer that owns it, with tooling and owner.
+    - Build the requirement-to-check coverage matrix and name the gaps explicitly.
+    - State the test data, environments, entry criteria, exit criteria, and blocking conditions.
+    - Use the test-strategy skill when available for layer boundaries and coverage expectations.
+    - Do not claim coverage that no executed check produced.
+
+  design:
+    - For frontend UI changes, reference durable design guidance and record token,
+      component, pattern, or feature impact, applicable states and visual review.
+    - For frontend shared UI, record reference priority and observed versus proposed
+      design decisions, component source provenance, default/variant/state contracts,
+      individual documentation coverage and applicable motion behavior.
+    - Keep frontend technology choices in project extensions, not shared defaults.
+    - Identify affected components and their responsibilities.
+    - Document relevant interfaces, contracts, and data flows.
+    - Document error handling and important failure modes.
+    - Consider security, performance, scalability, and maintainability.
+    - Reuse existing architecture and documented decisions.
+    - Use the architecture-review skill when available and applicable.
+    - Use the c4-diagrams skill when diagrams materially clarify boundaries.
+    - Do not require a full architecture review for every small change.
+
+  adr:
+    - Use the architectural-decision-records skill when available.
+    - Record significant and durable architectural decisions.
+    - Document context, decision, alternatives, trade-offs, consequences, and
+      relevant references.
+    - Reuse or reference an existing ADR when appropriate.
+    - For changes that do not require a new ADR, explicitly record that no new
+      architectural decision is needed.
+    - Store durable ADRs according to the consuming project's documentation
+      conventions.
+
+  tasks:
+    - For frontend changes, include relevant token freshness, dependency boundary,
+      accessibility, localization and visual checks; human approval stays explicit.
+    - For frontend shared UI, include source/contract/documentation coverage checks
+      and normal/reduced-motion evidence; rejected visual evidence cannot satisfy acceptance.
+    - Break implementation into small, reviewable vertical slices.
+    - Map tasks to requirements and acceptance scenarios where possible.
+    - Include implementation, testing, and verification work.
+    - Use the test-driven-development skill when available.
+    - Follow Red-Green-Refactor for applicable code changes.
+    - Use the acceptance-test-authoring skill to define verifiable
+      acceptance checks traced to the specifications.
+    - Use the test-strategy skill when available to choose the
+      verification layers for each task and to tag automated
+      checks with their specification requirement identifiers.
+    - Include documentation and migration tasks when required.
+    - Keep tasks within the approved change scope.
+    - Do not combine unrelated features or refactoring.
+
+# ============================================================
+# LIFECYCLE OPERATION GUIDANCE
+# ============================================================
+
+operations:
+  apply:
+    guidance:
+      - Inspect the approved OpenSpec artifacts before implementation.
+      - Complete or update the applicable proposal, specifications, design, ADR
+        decision, and actionable tasks before changing implementation behavior.
+        If a gap is found, update the artifacts before continuing
+        implementation.
+      - Verify the current branch and its associated change ID.
+      - Follow the openspec-git-discipline skill together with the
+        git-flow-branch-creator, git-commit, and git-guardrails-claude-code
+        skills.
+      - Confirm the required proposal, specifications, design, ADR decision, and
+        tasks are complete before implementation.
+      - Follow the project's technology-specific instructions and applicable
+        skills.
+      - Use Red-Green-Refactor for applicable implementation work.
+      - Do not weaken requirements or tests merely to make implementation pass.
+      - Run relevant tests and quality checks.
+      - When a check fails, use the test-debugging skill when
+        available to diagnose the failure with evidence before
+        changing anything; never weaken a test to make it pass.
+      - Use the code-reviewer skill to review the change before considering
+        it complete.
+      - Record actual verification results and unresolved gaps.
+      - Do not commit directly to protected branches.
+
+  archive:
+    guidance:
+      - Verify implementation against the approved OpenSpec change.
+      - Confirm relevant tests and quality checks have been evaluated.
+      - Report failed, skipped, unavailable, and unverified checks.
+      - Confirm unrelated changes were not included.
+      - Confirm the change has been integrated according to the consuming
+        repository's Git policy before archiving.
+      - Use the neat-freak skill to reconcile documentation, agent instructions,
+        and durable project knowledge with what was built.
+      - Update durable project knowledge when required.
+      - Preserve the traceability between requirements, tasks, implementation,
+        tests, and the archived change.
+githubCopilot:
+  cloudAgent: true
