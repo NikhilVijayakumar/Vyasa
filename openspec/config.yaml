@@ -101,21 +101,24 @@ context: |
   GIT AND CHANGE TRACEABILITY
   ============================================================
 
-  The default branching policy is:
+  Branching policy (openspec-git-discipline is authoritative):
 
-  - main: release branch.
-  - develop: integration branch.
-  - feature/<change-id>-<short-description>: new functionality.
-  - fix/<change-id>-<short-description>: bug fixes.
+  - master: production; changes only by release or hotfix merges,
+    each tagged vMAJOR.MINOR.PATCH.
+  - develop: integration; created from master if missing; changes
+    only by merges.
+  - feature/<change-id>-<short-description>: from develop, merged
+    back into develop when implementation and verification are done.
+  - fix/<change-id>-<short-description>: pre-release defect; from
+    develop, merged back into develop.
+  - hotfix/<change-id>-<short-description>: production defect; from
+    master, merged back into master and tagged as a patch release,
+    then master is merged into develop.
 
-  Normal feature and fix branches originate from develop and merge
-  into develop after review and verification.
-
-  Releases are promoted from develop to main through the
-  repository's release process.
-
-  Production hotfixes may originate from main and must be
-  reconciled back into develop.
+  A release merges develop into master with --no-ff and tags the
+  merge commit. There are no release branches. Never commit
+  directly to master or develop. Push, release, and tag only when
+  the user asks.
 
   The OpenSpec change identifier must be traceable across the
   change directory, branch name, pull request, relevant commits,
