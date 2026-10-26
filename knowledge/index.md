@@ -15,4 +15,5 @@ Rules for this bundle are in `profile.json`; `python3 scripts/verify_knowledge.p
 * [Concepts](concepts/) - Domain ideas that the rest of the knowledge builds on
 * [Decisions](decisions/) - Durable architectural decisions (ADRs)
 * [Practices](practices/) - How we build and verify Vyasa
+* [Runbooks](runbooks/) - What to do when something goes wrong
 * [Technologies](technologies/) - Formats and tools Vyasa detects or builds on
