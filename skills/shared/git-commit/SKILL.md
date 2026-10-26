@@ -59,7 +59,9 @@ Before analyzing or committing, follow **Sync, commit, push** in
 `openspec-git-discipline`: `git fetch origin --prune`, report any incoming
 commits on this branch's upstream and on its base (`develop`, or `master` for
 a hotfix), pull them in, and resolve conflicts with the user. Do not commit
-until the branch contains every remote change. Never commit on `master` or
+until the branch contains every remote change. Exception: a new branch with
+no upstream (just created from an up-to-date base) has nothing to pull; commit
+directly and push with `-u`. Never commit on `master` or
 `develop` directly.
 
 ### 1. Analyze Diff

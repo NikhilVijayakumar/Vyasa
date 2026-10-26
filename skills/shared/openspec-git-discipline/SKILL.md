@@ -51,6 +51,11 @@ There are no release branches: a release is a merge of `develop` into
 Every commit — and every merge into `develop` or `master` — goes through
 this sequence. Never commit on a stale branch.
 
+**Exception — new branch:** a feature, fix, or hotfix branch you just created
+from an up-to-date base and never pushed has no upstream, so there is nothing
+to pull. Commit directly, then `git push -u origin <branch>`. Once the branch
+has an upstream, every later commit follows the full sequence.
+
 1. **Fetch:** `git fetch origin --prune`.
 2. **Check for remote changes** and report them before going on:
    ```bash
