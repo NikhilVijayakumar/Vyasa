@@ -1,18 +1,21 @@
 ---
 name: database-integration-testing
 description: >-
-  Verifies PostgreSQL persistence behavior: constraints, transactions, queries,
+  Verifies SQLite persistence behavior: constraints, transactions, queries,
   and database-dependent business rules against a real disposable database
-  instance. Use when changing repositories, migrations, schema, or rules whose
+  file. Use when changing repositories, migrations, schema, or rules whose
   correctness lives in the database rather than in application code.
 ---
 
 # Database Integration Testing
 
-Test against a **real PostgreSQL instance**, not an in-memory imitation —
-constraints, transaction semantics, and query behavior are exactly what an
-emulator gets wrong. Recommended: a disposable database per run (containerized
-or compose-provisioned); substitute the project's database tooling if different.
+Test against a **real SQLite database** opened with the same connection
+settings production uses (`PRAGMA foreign_keys`, journal mode, busy timeout) —
+not a mock repository. Constraints, transaction semantics, and query behavior
+are exactly what a mock gets wrong. Recommended: a fresh database file in a
+temporary directory per test or per run (`tmp_path` with pytest); use
+`:memory:` only when the behavior under test does not depend on file-level
+locking, WAL, or reopening the database.
 
 ## What to test here
 
@@ -40,16 +43,16 @@ or compose-provisioned); substitute the project's database tooling if different.
 
 ## Boundaries
 
-- API contract shapes and authorization → `graphql-testing`.
-- The application-layer rules around a query → `graphql-testing` unit tests;
-  here only when the rule *is* the SQL/constraint.
+- MCP tool and integration contract shapes → `api-contract-testing`.
+- The application-layer rules around a query → unit tests; here only when the
+  rule *is* the SQL/constraint.
 - Strategy → `test-strategy`; failure diagnosis (constraint violation
   messages, stuck transactions are prime evidence) → `test-debugging`.
-- Do not test through the browser; UI journeys are `playwright-testing`.
+- Do not test through a running MCP client; protocol round-trips belong to contract tests.
 
 ## Rules
 
-- Treat a constraint violation or deadlock observed while testing as evidence
+- Treat a constraint violation or `database is locked` error observed while testing as evidence
   about the schema or code — diagnose it; never swallow it with retries.
 - Tag tests with specification IDs (`FR-xx.y`, `FUN-xx`).
 - Never weaken or delete a check (or a constraint) to make tests pass.
