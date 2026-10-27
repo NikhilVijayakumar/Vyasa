@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from vyasa.domain.git_remote import GitRemote
+from vyasa.domain.languages import LanguageOutcome
 from vyasa.domain.profile import ProfileResult
 
 ELIGIBLE = "eligible"
@@ -71,6 +72,7 @@ class Candidate:
     remote: GitRemote | None = None
     remote_status: str | None = None
     profile: ProfileResult | None = None
+    languages: LanguageOutcome | None = None
 
 
 MAX_WARNING_EXAMPLES = 5

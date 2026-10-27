@@ -35,6 +35,18 @@ class LanguageReport:
         return True if self.complete else None
 
 
+@dataclass(frozen=True)
+class LanguageOutcome:
+    """What the scan learned about one checkout: a report, or the reason detection failed."""
+
+    report: LanguageReport | None = None
+    failed: str | None = None
+    seconds: float = 0.0
+
+
+DETECTION_ERROR = "detection_error"
+
+
 def languages_of(names: Iterable[str], types: FileTypes) -> tuple[tuple[tuple[str, int], ...], tuple[str, ...]]:
     """Count language labels by extension and collect labels declared by manifest names."""
     counts: Counter[str] = Counter()

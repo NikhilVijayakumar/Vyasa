@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import sqlite3
+import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
 from vyasa.application.indexing.store import StoredRun, store_run
 from vyasa.application.scanning.discovery import discover_repositories
-from vyasa.domain.discovery import DiscoveryRun
+from vyasa.application.scanning.file_composition import default_file_types
+from vyasa.application.scanning.languages import detect_languages
+from vyasa.domain.discovery import COMPLETE, ELIGIBLE, PARTIAL, DiscoveryRun, ScanWarning
+from vyasa.domain.languages import DETECTION_ERROR, LanguageOutcome, LanguageReport
 from vyasa.domain.workspace_config import WorkspaceConfig
+
+NOT_DETECTED_ADVICE = "Languages could not be detected for these checkouts; their other data was stored. Rescan to retry."
 
 
 @dataclass(frozen=True)
@@ -25,12 +31,34 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _with_languages(run: DiscoveryRun, detect: Callable[[Path], LanguageReport]) -> DiscoveryRun:
+    """Detect languages for each eligible checkout. A failure is kept for that checkout and makes the run partial."""
+    found, failed = [], []
+    for candidate in run.repositories:
+        if candidate.outcome != ELIGIBLE:
+            found.append(candidate)
+            continue
+        started = time.monotonic()
+        try:
+            outcome = LanguageOutcome(report=detect(candidate.path), seconds=time.monotonic() - started)
+        except Exception:  # one checkout must not stop the others; the reason is a fixed code, never the message
+            outcome = LanguageOutcome(failed=DETECTION_ERROR, seconds=time.monotonic() - started)
+            failed.append(candidate.path)
+        found.append(replace(candidate, languages=outcome))
+    if not failed:
+        return replace(run, repositories=tuple(found))
+    warning = ScanWarning("language_detection", len(failed), tuple(failed[:5]), NOT_DETECTED_ADVICE)
+    return replace(run, repositories=tuple(found), status=PARTIAL if run.status == COMPLETE else run.status,
+                   warnings=(*run.warnings, warning))
+
+
 def scan_workspace(
     config: WorkspaceConfig,
     connection: sqlite3.Connection,
     *,
     owner: str,
     discover: Callable[[Path], DiscoveryRun] = discover_repositories,
+    detect: Callable[[Path], LanguageReport] | None = None,
     now: Callable[[], datetime] = _utc_now,
 ) -> tuple[RootResult, ...]:
     """Discover and store each configured root in turn. Nothing outside the configured roots is visited.
@@ -38,8 +66,11 @@ def scan_workspace(
     A root that cannot be read is stored as a failed run and the others still run. A held writer lock
     raises ``OPERATION_IN_PROGRESS``.
     """
+    if detect is None:
+        types = default_file_types()
+        detect = lambda path: detect_languages(path, types)  # noqa: E731
     results = []
     for root in config.roots:
-        run = discover(root)
+        run = _with_languages(discover(root), detect)
         results.append(RootResult(root, run, store_run(connection, run, owner=owner, now=now)))
     return tuple(results)

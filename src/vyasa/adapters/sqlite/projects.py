@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 
 from vyasa.domain.discovery import Candidate
+from vyasa.domain.languages import LanguageOutcome
 from vyasa.domain.profile import ABSENT, PROFILE_PATH, ProfileResult
 from vyasa.domain.index import (
     ACTIVE,
@@ -143,6 +144,75 @@ def _store_profile(connection: sqlite3.Connection, checkout_id: int, profile: Pr
     )
 
 
+KEPT_OBSERVATIONS = 2
+
+
+def _store_languages(connection: sqlite3.Connection, checkout_id: int, outcome: LanguageOutcome | None, run_id: str, stamp: str) -> None:
+    """Add one observation and keep the newest two. No outcome means the checkout was not assessed: nothing changes."""
+    if outcome is None:
+        return
+    report = outcome.report
+    if report is None:
+        status, stopped, reason, version = "failed", None, outcome.failed, 0
+    else:
+        status = "complete" if report.complete else "partial"
+        stopped, reason, version = report.stopped_by, None, report.evidence.types_version
+    observation = connection.execute(
+        "INSERT INTO language_observations (checkout_id, run_id, observed_at, status, stopped_by, types_version, reason, duration_ms)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (checkout_id, run_id, stamp, status, stopped, version, reason, round(outcome.seconds * 1000)),
+    ).lastrowid
+    if report is not None:
+        connection.executemany(
+            "INSERT INTO checkout_languages (observation_id, label, status, files) VALUES (?, ?, ?, ?)",
+            [(observation, label, "files_detected", count) for label, count in report.files_detected]
+            + [(observation, label, "declared", None) for label in report.declared],
+        )
+    connection.execute(
+        "DELETE FROM language_observations WHERE checkout_id = ? AND observation_id NOT IN"
+        " (SELECT observation_id FROM language_observations WHERE checkout_id = ? ORDER BY observation_id DESC LIMIT ?)",
+        (checkout_id, checkout_id, KEPT_OBSERVATIONS),
+    )
+
+
+_CURRENT = "(SELECT MAX(observation_id) FROM language_observations WHERE checkout_id = c.checkout_id)"
+
+
+def present_languages(connection: sqlite3.Connection, project_id: str) -> list[tuple[str, str]]:
+    """(label, status) pairs from the current observation of each active checkout of a project."""
+    return [
+        (r[0], r[1])
+        for r in connection.execute(
+            "SELECT l.label, l.status FROM checkouts c JOIN checkout_languages l ON l.observation_id = " + _CURRENT +
+            " WHERE c.project_id = ? AND c.state = 'active'",
+            (project_id,),
+        )
+    ]
+
+
+def checkout_languages(connection: sqlite3.Connection, checkout_id: int) -> dict:
+    """The current language observation of one checkout, or not_observed. Counts are never summed across checkouts."""
+    row = connection.execute(
+        "SELECT observation_id, status, stopped_by, observed_at, types_version, reason FROM language_observations"
+        " WHERE checkout_id = ? ORDER BY observation_id DESC LIMIT 1",
+        (checkout_id,),
+    ).fetchone()
+    if row is None:
+        return {"status": "not_observed", "stopped_by": None, "observed_at": None, "types_version": None, "items": []}
+    items = [
+        {"label": r[0], "status": r[1], "files": r[2]}
+        for r in connection.execute(
+            "SELECT label, status, files FROM checkout_languages WHERE observation_id = ? ORDER BY label, status",
+            (row["observation_id"],),
+        )
+    ]
+    result = {"status": row["status"], "stopped_by": row["stopped_by"], "observed_at": row["observed_at"],
+              "types_version": row["types_version"], "items": items}
+    if row["reason"]:
+        result["reason"] = row["reason"]
+    return result
+
+
 def project_profile(connection: sqlite3.Connection, project_id: str) -> dict:
     """The profile shown for a project: an active checkout first, readable before not, then the earliest seen."""
     row = connection.execute(
@@ -246,6 +316,7 @@ def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run
                 (str(root), *fields, ACTIVE, stamp, run_id, row["checkout_id"]),
             )
         _store_profile(connection, checkout_id, candidate.profile, run_id, stamp)
+        _store_languages(connection, checkout_id, candidate.languages, run_id, stamp)
         refresh_state(connection, project_id, stamp)
         connection.execute("UPDATE projects SET last_seen_at = ? WHERE project_id = ?", (stamp, project_id))
         connection.execute("COMMIT")

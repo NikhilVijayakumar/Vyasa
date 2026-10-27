@@ -226,3 +226,39 @@ def test_guide_tool_returns_the_domain_guide(index):
 def test_guide_tool_takes_no_input(index):
     [tool] = [t for t in tools(index) if t.name == "get_profile_guide"]
     assert tool.input_schema.get("properties", {}) == {}
+
+
+# -- languages ---------------------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def lang_index(tmp_path):
+    from dataclasses import replace
+
+    from vyasa.domain.file_composition import Evidence, WalkLimits
+    from vyasa.domain.languages import LanguageOutcome, LanguageReport
+
+    path = tmp_path / "index.sqlite3"
+    w = open_index(path)
+    found = LanguageOutcome(LanguageReport((("Python", 2),), (), None, Evidence(2, (), WalkLimits())))
+    store(w, make_run([replace(repo("alpha"), languages=found), repo("beta")]))
+    w.close()
+    return path
+
+
+def test_search_filters_by_language_through_the_tool(lang_index):
+    body = call(lang_index, "search_projects", {"language": ["python"], "language_status": "files_detected"}).structured_content
+    assert [p["display_name"] for p in body["data"]["projects"]] == ["alpha"]
+    assert body["data"]["projects"][0]["language_matches"] == [{"label": "Python", "statuses": ["files_detected"]}]
+
+
+def test_unknown_language_is_a_structured_error(lang_index):
+    result = call(lang_index, "search_projects", {"language": "Pyhton"})
+    assert result.is_error and result.structured_content["error"]["code"] == "INVALID_INPUT"
+    assert "Python" in result.structured_content["error"]["message"]
+
+
+def test_details_carry_languages_per_checkout(lang_index):
+    pid = call(lang_index, "search_projects", {"query": "alpha"}).structured_content["data"]["projects"][0]["project_id"]
+    (checkout,) = call(lang_index, "get_project", {"project_id": pid}).structured_content["data"]["checkouts"]
+    assert checkout["languages"]["items"] == [{"label": "Python", "status": "files_detected", "files": 2}]
