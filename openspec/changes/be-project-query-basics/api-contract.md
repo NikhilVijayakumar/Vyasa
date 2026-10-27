@@ -20,11 +20,11 @@ All functions take a read-only `sqlite3.Connection` and a clock, and never write
 
 | Operation | Kind | Access | Input | Success output | Errors |
 |---|---|---|---|---|---|
-| `search_projects(connection, *, query=None, state=None, provider=None, identity_status=None, limit=20, cursor=None, include_paths=False, now=None)` | Python function | Read | see below | envelope; `data` = `{"projects": [...], "page": {"limit", "next_cursor", "has_more"}}` | `INVALID_INPUT`, `INVALID_CURSOR` |
-| `get_project(connection, project_id, *, include_paths=False, now=None)` | Python function | Read | project id | envelope; `data` = project record | `INVALID_INPUT`, `PROJECT_NOT_FOUND` |
-| `get_index_status(connection, *, now=None)` | Python function | Read | none | envelope; `data` = status | none |
+| `search_projects(connection, *, query=None, state=None, provider=None, identity_status=None, limit=20, cursor=None, now=<clock>)` | Python function | Read | see below | envelope; `data` = `{"projects": [...], "page": {"limit", "next_cursor", "has_more"}}` | `INVALID_INPUT`, `INVALID_CURSOR` |
+| `get_project(connection, project_id, *, include_paths=False, now=<clock>)` | Python function | Read | project id | envelope; `data` = project record | `INVALID_INPUT`, `PROJECT_NOT_FOUND` |
+| `get_index_status(connection, *, now=<clock>)` | Python function | Read | none | envelope; `data` = status | none |
 
-Inputs: `query` string, 1 to 200 characters; `state`, `provider`, `identity_status` each a list of allowed values (a single string is accepted as one value); `limit` integer 1 to 100; `cursor` string; `include_paths` boolean; `project_id` non-empty string.
+Inputs: `query` string, 1 to 200 characters; `state`, `provider`, `identity_status` each a list of allowed values (a single string is accepted as one value); `limit` integer 1 to 100; `cursor` string; `include_paths` boolean (`get_project` only; search results hold no paths); `project_id` non-empty string.
 
 Allowed values: `state`: `active`, `missing`, `inaccessible`. `identity_status`: `resolved`, `provisional`, `ambiguous`. `provider`: `github`, `bitbucket`, `gitlab`, `other`, `local`, `none` (a checkout with no stored provider counts as `none`).
 
@@ -32,7 +32,7 @@ Search result item: `project_id`, `display_name`, `state`, `identity_status`, `p
 
 Project record: `project_id`, `display_name`, `state`, `identity` (`status`, `source`, `aliases` sorted), `checkouts` (list ordered by first seen then id: `state`, `kind`, `markers`, `git`, `remote` (`provider` or `"none"`, `host`, `identity`, `status`), `first_seen_at`, `last_seen_at`, `path` only with `include_paths`), `review_candidates` (`kind`, `rule`, `confidence`, `criteria`, `review_status`), `created_at`, `updated_at`, `last_seen_at`.
 
-Status: `freshness`, `schema_version`, `latest_run` (`status`, `finished_at`, `counts`) or `null`, `projects` (`total`, `active`, `missing`, `inaccessible`), `open_candidates`.
+Status: `latest_run` (`status`, `finished_at`, `counts`) or `null`, `projects` (`total`, `active`, `missing`, `inaccessible`), `open_candidates`; freshness and the schema version are in `meta`. The scanned root is never returned.
 
 Envelope: `{"schema_version": "1", "data": ..., "meta": {"generated_at", "index_version", "freshness"}}`; times ISO 8601 UTC.
 
