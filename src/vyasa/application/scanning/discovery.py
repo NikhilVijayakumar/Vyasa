@@ -17,12 +17,15 @@ from vyasa.domain.discovery import (
     FAILED,
     INACCESSIBLE,
     MALFORMED,
+    MAX_WARNING_EXAMPLES,
     OUTCOMES,
     PARTIAL,
+    SKIP_ADVICE,
     SKIPPED_BY_POLICY,
     Candidate,
     DiscoveryOptions,
     DiscoveryRun,
+    ScanWarning,
 )
 from vyasa.domain.workspace_config import ACCESSIBLE, MISSING, NOT_A_DIRECTORY
 
@@ -57,15 +60,17 @@ def discover_repositories(
         issues = (Candidate(root, INACCESSIBLE, reason=ROOT_REASONS.get(root_state, "root_unreadable")),)
         excluded = 0
         status = FAILED
+        skips: tuple[Candidate, ...] = ()
     else:
         findings = find_repositories(root, options)
         repositories = tuple(sorted(findings.repositories, key=_order))
-        # Real problems first, so a full list never hides one behind policy skips (sort is stable).
-        issues = tuple(sorted(findings.issues, key=lambda c: c.outcome == SKIPPED_BY_POLICY))
+        issues = tuple(c for c in findings.issues if c.outcome != SKIPPED_BY_POLICY)
+        skips = tuple(c for c in findings.issues if c.outcome == SKIPPED_BY_POLICY)
         excluded = findings.excluded
+        # Only failures change the status; policy skips are warnings the person acts on.
         status = PARTIAL if issues else COMPLETE
 
-    counted = Counter(issue.outcome for issue in issues)
+    counted = Counter(issue.outcome for issue in (*issues, *skips))
     counts = {outcome: counted[outcome] for outcome in (INACCESSIBLE, MALFORMED, SKIPPED_BY_POLICY)}
     counts[EXCLUDED] = excluded
     counts["eligible"] = len(repositories)
@@ -82,4 +87,21 @@ def discover_repositories(
         repositories=repositories,
         issues=shown,
         issues_omitted=len(issues) - len(shown),
+        warnings=_warnings(skips),
+    )
+
+
+def _warnings(skips: tuple[Candidate, ...]) -> tuple[ScanWarning, ...]:
+    """One warning per reason, counting every skipped directory and keeping a few examples."""
+    by_reason: dict[str, list[Path]] = {}
+    for skipped in skips:
+        by_reason.setdefault(skipped.reason or "unknown", []).append(skipped.path)
+    return tuple(
+        ScanWarning(
+            reason=reason,
+            count=len(paths),
+            examples=tuple(paths[:MAX_WARNING_EXAMPLES]),
+            advice=SKIP_ADVICE.get(reason, "Review these directories."),
+        )
+        for reason, paths in sorted(by_reason.items())
     )

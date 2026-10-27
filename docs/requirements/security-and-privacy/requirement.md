@@ -88,7 +88,7 @@ Accepted as open until you confirm the recommended direction in the grill log.
 |---|---|---|
 | SP-001 | No application-level encryption in phase 1; rely on OS permissions and disk encryption. | Q3 |
 | SP-002 | OS credential store through an optional keyring extra; environment variables as a controlled fallback. | Q8 |
-| SP-003 | Defaults: depth 6, 1 MiB per file, 5,000 inventory entries, 60 s per project. | Q13 |
+| SP-003 | Defaults: depth 8 (owner, 2026-10-27), 1 MiB per file, 5,000 inventory entries, 60 s per project. | Q13 |
 | SP-011 | No secret scanning feature; redact on output only. | Q2 |
 | SP-012 | Only public-host remote URLs are shareable by default. | Q6 |
 | SP-013 | Threat-model review before phases 2 and 3. | Q11 |

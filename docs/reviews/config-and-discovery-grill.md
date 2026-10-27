@@ -34,7 +34,8 @@ A review of changes `be-workspace-config` and `be-discover-one-root`, run with t
 
 - **Finding:** On the real workspace the status is `partial` and always will be: 3,132 skips, all `max_depth`, none a failure. A status that is always partial carries no information, and a person would stop reading it. Failures (`inaccessible`, `malformed`) are what a person must act on.
 - **Recommendation:** `partial` only when something failed (inaccessible or malformed). Policy skips stay in the counts and the list, and the record says the run is `complete` within its limits. Update the spec scenarios "Depth limit" and "Directory link not followed" and the decision to match.
-- **Status:** Decision needed
+- **Owner decision 2026-10-27:** a policy skip does not make the run partial. The user is informed with a warning, per reason, with advice, and decides whether to add an ignore entry to the repository or fix the cause. Implemented: warnings aggregate skips and never change the status; the default depth is now 8 (his repositories sit at most 3 levels below a root).
+- **Status:** Fixed
 
 **Q6. Is an unbounded walk acceptable?** (P2)
 
@@ -70,14 +71,14 @@ A review of changes `be-workspace-config` and `be-discover-one-root`, run with t
 **Q11. Keep or drop a root nested inside another?** (P2)
 
 - **Finding:** The configuration keeps both and warns. The workspace-discovery package (Q8) recommends dropping the inner one with a warning. It does not matter for a single root, but it does when several run together.
-- **Recommendation:** Drop the inner root with a warning, as the package says, so one repository is never scanned twice. Decide before the multi-root change.
-- **Status:** Decision needed
+- **Owner decision 2026-10-27:** drop the inner root with a warning. Implemented in the configuration loader; the outer root wins whatever the order.
+- **Status:** Fixed
 
 ## Outcome
 
-Five defects fixed with failing tests first (Q2, Q3, Q7, and the two pointer look-alikes), three questions verified (Q1, Q4, Q8), and two decisions for you:
+Five defects fixed with failing tests first (Q2, Q3, Q7, and the two pointer look-alikes), three questions verified (Q1, Q4, Q8), and both decisions were taken by the owner and implemented:
 
-- **Q5 — partial status.** Recommended: only failures make a run partial.
-- **Q11 — nested roots.** Recommended: drop the inner root with a warning.
+- **Q5 — partial status.** Only failures make a run partial; skips are warnings with advice.
+- **Q11 — nested roots.** The inner root is dropped with a warning.
 
-Test count: 134 passing, none skipped on Windows.
+The default discovery depth is 8. Test count: 136 passing, none skipped on Windows.

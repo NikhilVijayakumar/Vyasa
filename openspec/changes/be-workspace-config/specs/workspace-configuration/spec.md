@@ -84,12 +84,12 @@ The system SHALL load every path in `workspace.roots`, expanding a leading `~`, 
 - **WHEN** the configuration is loaded with a known home directory
 - **THEN** the root is that home directory joined with `work`
 
-#### Scenario: Nested roots kept and reported
+#### Scenario: Nested root dropped and reported
 
-- **GIVEN** one listed root lies inside another
+- **GIVEN** one listed root lies inside another, in either order
 - **WHEN** the configuration is loaded
-- **THEN** both are returned
-- **AND** a warning names the nesting
+- **THEN** only the outer root is returned
+- **AND** a warning names the dropped root
 
 ### Requirement: Common file encodings are accepted
 

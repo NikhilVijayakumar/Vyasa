@@ -20,7 +20,7 @@ Proposed (draft). It becomes stable when reviewed and accepted.
 
 # Context
 
-The file composition detector counts files by extension. The accepted scan limits cap a project's inventory at 5,000 entries and traversal at depth 6 to bound reading and parsing. Counting reads no content. Measured over 63 projects in one workspace on 2026-10-27, with build and dependency directories excluded: depth 6 would leave 30 counts partial, 5,000 entries would leave 5, the deepest project reaches depth 13, and the largest holds 14,315 entries. Code extensions are also what the language detector needs, so two lists could drift apart.
+The file composition detector counts files by extension. The accepted scan limits cap a project's inventory at 5,000 entries and traversal at depth 8 to bound reading and parsing. Counting reads no content. Measured over 63 projects in one workspace on 2026-10-27, with build and dependency directories excluded: depth 8 would leave 14 counts partial, 5,000 entries would leave 5, the deepest project reaches depth 13, and the largest holds 14,315 entries. Code extensions are also what the language detector needs, so two lists could drift apart.
 
 # Decision
 
@@ -28,7 +28,7 @@ File types are one versioned data file with a version number, a list of code ext
 
 # Alternatives considered
 
-- **Reuse the inventory limits (depth 6, 5,000 entries).** Simple, but about half the measured counts would be partial and the derived indicator unknown for them.
+- **Reuse the inventory limits (depth 8, 5,000 entries).** Simple, but about a fifth of the measured counts would be partial and the derived indicator unknown for them.
 - **No cap for counting.** Counting reads nothing, but a huge tree can still exhaust the time limit and memory for the walk.
 - **Separate lists for the language and file composition detectors.** Independent, but the two would disagree at the edges.
 

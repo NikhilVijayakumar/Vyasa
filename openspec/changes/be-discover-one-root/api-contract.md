@@ -20,7 +20,7 @@ In: `vyasa.application.scanning.discovery.discover_repositories` and the types i
 |---|---|---|---|---|---|
 | `discover_repositories(root, options, now, new_id)` | Python function | Lists directories under `root`; opens only `.git` pointer files (at most 1 KiB each); writes nothing; runs nothing | `root: Path or str`, `options: DiscoveryOptions`, `now` and `new_id` callables (defaults: current UTC time, random hex) | `DiscoveryRun` | none; problems are in the record |
 
-`DiscoveryOptions` (defaults): `max_depth = 6`, `exclusions = DISCOVERY_EXCLUSIONS`, `max_issues = 100`.
+`DiscoveryOptions` (defaults): `max_depth = 8`, `exclusions = DISCOVERY_EXCLUSIONS`, `max_issues = 100`.
 
 `DISCOVERY_EXCLUSIONS`: `.git`, `node_modules`, `.venv`, `venv`, `__pycache__`, `build`, `dist`, `target`, `.tox`, `.idea`, `.vscode`, `.cache`, `.mypy_cache`, `.pytest_cache`, `.ruff_cache`.
 
@@ -32,7 +32,9 @@ Outcomes: `eligible`, `excluded`, `inaccessible`, `malformed`, `skipped_by_polic
 
 Reason codes: `root_not_found`, `root_not_a_directory`, `root_unreadable`, `unreadable_directory`, `unreadable_git_file`, `missing_head`, `invalid_git_file`, `git_link`, `symlink`, `max_depth`.
 
-`DiscoveryRun`: `run_id`, `root`, `started_at`, `finished_at` (timezone-aware UTC), `status` (`complete`, `partial`, `failed`), `tool_version`, `options`, `counts` (all five outcomes, integers), `repositories` (eligible candidates sorted by path), `issues` (at most `max_issues` non-eligible candidates: inaccessible and malformed first, then policy skips, each group in walk order), `issues_omitted` (integer).
+`DiscoveryRun`: `run_id`, `root`, `started_at`, `finished_at` (timezone-aware UTC), `status` (`complete`, `partial`, `failed`), `tool_version`, `options`, `counts` (all five outcomes, integers), `repositories` (eligible candidates sorted by path), `issues` (at most `max_issues` inaccessible or malformed candidates in walk order), `issues_omitted` (integer), `warnings` (tuple of `ScanWarning`).
+
+`ScanWarning`: `reason` (`max_depth`, `symlink`, or `git_link`), `count` (every directory skipped for that reason), `examples` (at most 5 paths), `advice` (what to do). Warnings are sorted by reason.
 
 ## 4. Error Model
 
@@ -42,8 +44,8 @@ Reason codes: `root_not_found`, `root_not_a_directory`, `root_unreadable`, `unre
 | Root not a directory | none | status `failed`, issue `root_not_a_directory` | Yes |
 | Root cannot be listed | none | status `failed`, issue `root_unreadable` | Yes |
 | Directory cannot be listed | none | issue `unreadable_directory`; status `partial` | Yes |
-| Bad `.git` entry | none | issue `missing_head`, `invalid_git_file`, `unreadable_git_file`, or `git_link`; status `partial` | Yes |
-| Link or depth skip | none | issue `symlink` or `max_depth`; status `partial` | Yes |
+| Bad `.git` entry | none | issue `missing_head`, `invalid_git_file`, or `unreadable_git_file`; status `partial` | Yes |
+| Link, linked `.git`, or depth skip | none | warning `symlink`, `git_link`, or `max_depth`; status unchanged | Yes |
 
 No exception is raised for a filesystem problem.
 
@@ -56,8 +58,9 @@ The root comes from validated configuration. Everything under it is untrusted re
 | Entity | Field | Type | Required | Constraint or invariant |
 |---|---|---|---|---|
 | DiscoveryRun | `counts` | map outcome to int | Yes | `eligible` equals `len(repositories)`; the others count every candidate, including omitted issues |
-| DiscoveryRun | `issues` | tuple | Yes | Length at most `max_issues`; `len(issues) + issues_omitted` equals the number of non-eligible, non-excluded candidates |
-| DiscoveryRun | `status` | enum | Yes | `failed` only for a root problem; `partial` iff any of `inaccessible`, `malformed`, `skipped_by_policy` is above zero; otherwise `complete` |
+| DiscoveryRun | `issues` | tuple | Yes | Length at most `max_issues`; `len(issues) + issues_omitted` equals the `inaccessible` plus `malformed` counts |
+| DiscoveryRun | `warnings` | tuple | Yes | The `count` values sum to the `skipped_by_policy` count |
+| DiscoveryRun | `status` | enum | Yes | `failed` only for a root problem; `partial` iff `inaccessible` or `malformed` is above zero; otherwise `complete`. Policy skips never change it |
 | Candidate | `reason` | string | Yes unless eligible | One of the listed codes |
 
 ## 7. Migrations and Backward Compatibility
@@ -72,8 +75,8 @@ New. The refactor of the checkout walk (shared pruning) and the root check keeps
 | Nested repositories stay separate | `discover_repositories` | `repositories` | Repository inside a repository |
 | Every candidate has one closed outcome | `discover_repositories` | `outcome`, `reason` | Git directory without HEAD; Malformed Git file; Unreadable Git file; Unreadable directory |
 | Traversal boundaries | `discover_repositories` | `options` | Depth limit; Repository at the depth limit; Excluded directory; Git directory is not counted as excluded; Directory link not followed; Linked Git entry |
-| Run status | `discover_repositories` | `status` | Complete run; Partial run; Failed run; Root is not a directory; Unreadable root |
-| Run record | `discover_repositories` | all fields | Record contents; Issues are bounded but counted; Repeatable result; Independent of listing order |
+| Run status | `discover_repositories` | `status` | Complete run; Partial run; Skips do not make a run partial; Failed run; Root is not a directory; Unreadable root |
+| Run record | `discover_repositories` | all fields | Record contents; Failures are bounded but counted; Skips are summarized; A failure is never hidden by skips; Repeatable result; Independent of listing order |
 | Nothing is executed or read beyond pointers | `discover_repositories` | none | Only pointer files are opened |
 
 ## 9. Contract Review

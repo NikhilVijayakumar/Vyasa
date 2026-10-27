@@ -124,15 +124,21 @@ def test_duplicate_roots_are_merged(tmp_path):
 
 def test_home_is_expanded(tmp_path):
     home = tmp_path / "home"
-    result = load(tmp_path, toml_roots("~/work", "~"), home=home)
-    assert result.roots == (Path(os.path.normpath(home / "work")), Path(os.path.normpath(home)))
+    result = load(tmp_path, toml_roots("~/work", "~/other"), home=home)
+    assert result.roots == (Path(os.path.normpath(home / "work")), Path(os.path.normpath(home / "other")))
+    assert load(tmp_path, toml_roots("~"), home=home).roots == (Path(os.path.normpath(home)),)
 
 
-def test_nested_roots_are_kept_and_reported(tmp_path):
+def test_nested_root_is_dropped_and_reported(tmp_path):
     outer, inner = tmp_path / "outer", tmp_path / "outer" / "inner"
     result = load(tmp_path, toml_roots(outer, inner))
-    assert result.roots == (outer, inner)
-    assert len(result.warnings) == 1 and "inside" in result.warnings[0]
+    assert result.roots == (outer,)
+    assert len(result.warnings) == 1 and "dropped" in result.warnings[0]
+
+
+def test_the_outer_root_wins_whatever_the_order(tmp_path):
+    outer, inner = tmp_path / "outer", tmp_path / "outer" / "inner"
+    assert load(tmp_path, toml_roots(inner, outer)).roots == (outer,)
 
 
 def test_sibling_roots_with_a_common_prefix_are_not_nested(tmp_path):

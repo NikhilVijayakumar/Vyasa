@@ -80,7 +80,7 @@ Layered as `knowledge/architecture/system-architecture/structure.md` proposes: a
 ### Risks
 | Risk | Impact | Mitigation or Investigation |
 |---|---|---|
-| The inventory depth of 6 makes about half of real counts partial | Most counts unknown | Counting uses its own depth of 20 (measured: 0 of 63 projects partial at 16); the limits are parameters |
+| The inventory depth of 8 makes about a fifth of real counts partial | Most counts unknown | Counting uses its own depth of 20 (measured: 0 of 63 projects partial at 16); the limits are parameters |
 | First code in the repository sets structure | Layout churn | Follow the proposed layout; create only the packages used |
 | Time limit makes tests flaky | Unreliable tests | The clock is injected; no test sleeps |
 
@@ -88,7 +88,7 @@ Layered as `knowledge/architecture/system-architecture/structure.md` proposes: a
 - A checkout path is given; discovery is not needed to test the core.
 
 ### Open Questions
-- [ ] Owner confirmation of the counting depth of 20 (grill Q1); the earlier confirmation of the entry cap assumed depth 6.
+- [ ] Owner confirmation of the counting depth of 20 (grill Q1); the earlier confirmation of the entry cap assumed the inventory depth.
 
 ## 8. Acceptance Summary
 

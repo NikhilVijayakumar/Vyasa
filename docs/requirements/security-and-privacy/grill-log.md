@@ -124,7 +124,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q13. What are the default scan limits (SP-003)?**
 
-- **Recommendation:** Depth 6, 1 MiB per file (256 KiB for profiles), 5,000 inventory entries per project, 60 s per project, all configurable. A limit reached means skipped, never absent.
+- **Recommendation:** Depth 8, 1 MiB per file (256 KiB for profiles), 5,000 inventory entries per project, 60 s per project, all configurable. A limit reached means skipped, never absent.
 - **Why:** Conservative starting points to be benchmarked.
 - **Status:** Decision needed
 - **Feeds:** SEC-015
