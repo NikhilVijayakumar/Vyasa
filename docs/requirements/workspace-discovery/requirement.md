@@ -27,7 +27,7 @@ A developer points Vyasa at one or more workspace roots. Vyasa finds the eligibl
 
 - **Included:**
   - Configuration of roots, exclusions, depth, symlink policy, and limits.
-  - Candidate discovery, nested repositories, and per-candidate outcomes.
+  - Candidate discovery: projects by Git, by manifest, and by README with docs; project boundaries and opt-in nested repositories; per-candidate outcomes.
   - Scan reporting: partial results, run history, and redacted diagnostics.
 - **Excluded:**
   - Metadata extraction (metadata-and-evidence).
@@ -90,7 +90,6 @@ Accepted as open until you confirm the recommended direction in the grill log.
 
 | Decision | Recommended direction | Grill |
 |---|---|---|
-| DFR-003 | Non-Git directories qualify only with a recognized marker (profile or supported manifest), never bare. | Q3 |
 | NFD-006 / SP-004 | Do not follow directory symlinks by default; opt-in resolves targets and rejects any outside the roots. | Q6 |
 | SP-003 | Defaults: depth 8 (owner, 2026-10-27), 1 MiB per file, 5,000 inventory entries per project, 60 s per project. | Q14 |
 | SP-005 | Keep the last 50 runs or 90 days, whichever is larger. | Q11 |

@@ -36,16 +36,16 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q3. Does a directory without Git count as a project (DFR-003)?**
 
-- **Recommendation:** Yes, only with a recognized marker at its root: a canonical profile, or a supported manifest such as `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`. A bare directory is never a project.
-- **Why:** Prevents noise (scratch folders, downloads) while still covering real projects that are not under version control.
-- **Status:** Decision needed
+- **Recommendation:** Yes. A directory is a project with a `.git` entry; or with a manifest (`pyproject.toml`, `requirements.txt`, `setup.py`, `package.json`, `Cargo.toml`, `go.mod`, or a `.uproject`), with Git optional and looked for in child folders (Unreal keeps it in `Source`); or with a README and a docs folder, as a project that has not started, unless it holds another project. Source files or a README alone are not enough.
+- **Why:** Prevents noise (scratch folders, downloads) while covering Unreal projects, projects without version control, and ideas that are only documents. Owner decision 2026-10-27.
+- **Status:** Settled
 - **Feeds:** FR-002 S2, S4; DFR-003
 
 **Q4. How are nested repositories, submodules, and worktrees treated?**
 
-- **Recommendation:** Each Git root is its own candidate. A submodule is recorded as a component association of its parent, not a separate project. A linked worktree is another checkout of the same repository, not a new project. Metadata is never merged by directory nesting.
-- **Why:** Matches the identity rule that nesting is not merge evidence and avoids duplicate projects from worktrees.
-- **Status:** Recommended
+- **Recommendation:** A project is a boundary: Vyasa recognizes it and does not walk inside it, so nested projects and submodules are not found by default. A user who has them can enable nested repositories; then each is its own candidate and nothing is merged by directory nesting. A linked worktree is a sibling directory and is found normally.
+- **Why:** Owner decision 2026-10-27: his projects in general contain no other project, and walking inside them produced hundreds of skips on a real workspace.
+- **Status:** Settled
 - **Feeds:** FR-002 S3
 
 **Q5. What is traversed, how deep, and what is excluded by default?**
@@ -194,6 +194,5 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 ## Decisions for you
 
-- **Q3** — Does a directory without Git count as a project (DFR-003)?
 - **Q11** — How long is scan history kept (SP-005)?
 - **Q14** — Where do limits live and what happens when one is hit (SP-003)?

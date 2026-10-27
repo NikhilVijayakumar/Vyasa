@@ -20,13 +20,15 @@ In: `vyasa.application.scanning.discovery.discover_repositories` and the types i
 |---|---|---|---|---|---|
 | `discover_repositories(root, options, now, new_id)` | Python function | Lists directories under `root`; opens only `.git` pointer files (at most 1 KiB each); writes nothing; runs nothing | `root: Path or str`, `options: DiscoveryOptions`, `now` and `new_id` callables (defaults: current UTC time, random hex) | `DiscoveryRun` | none; problems are in the record |
 
-`DiscoveryOptions` (defaults): `max_depth = 8`, `exclusions = DISCOVERY_EXCLUSIONS`, `max_issues = 100`.
+`DiscoveryOptions` (defaults): `max_depth = 8`, `exclusions = DISCOVERY_EXCLUSIONS`, `max_issues = 100`, `markers = DISCOVERY_MARKERS`, `marker_suffixes = (".uproject",)`, `descend_into_repositories = False`.
+
+`DISCOVERY_MARKERS`: `pyproject.toml`, `requirements.txt`, `setup.py`, `package.json`, `cargo.toml`, `go.mod` (compared case-insensitively). `DOCUMENTATION_DIRS`: `docs`, `doc`, `documentation`.
 
 `DISCOVERY_EXCLUSIONS`: `.git`, `node_modules`, `.venv`, `venv`, `__pycache__`, `build`, `dist`, `target`, `.tox`, `.idea`, `.vscode`, `.cache`, `.mypy_cache`, `.pytest_cache`, `.ruff_cache`.
 
-`Candidate`: `path` (`Path`), `outcome`, `kind` (`repository`, `submodule`, `linked_worktree`, or `None`), `reason` (string or `None`).
+`Candidate`: `path` (`Path`), `outcome`, `kind` (`repository`, `submodule`, `linked_worktree`, `project`, `documentation`, or `None`), `reason` (string or `None`), `markers` (tuple of manifest file names found in the directory), `git` (`"."` when the directory has its own Git, the name of the child directory holding it, or `None`).
 
-Kinds are decided from the `.git` pointer target: `linked_worktree` when it ends in `<git directory>/worktrees/<name>` (the parent of `worktrees` ends in `.git`), `submodule` when it contains `.git/modules`, otherwise `repository`.
+A directory is a project when it has a `.git` entry, a manifest, or a README with a docs folder (and no project below it); it is not entered further unless `descend_into_repositories` is set. Kinds for a `.git` entry are decided from the pointer target: `linked_worktree` when it ends in `<git directory>/worktrees/<name>` (the parent of `worktrees` ends in `.git`), `submodule` when it contains `.git/modules`, otherwise `repository`.
 
 Outcomes: `eligible`, `excluded`, `inaccessible`, `malformed`, `skipped_by_policy`.
 

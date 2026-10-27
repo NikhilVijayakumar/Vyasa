@@ -17,6 +17,8 @@ OUTCOMES = (ELIGIBLE, EXCLUDED, INACCESSIBLE, MALFORMED, SKIPPED_BY_POLICY)
 KIND_REPOSITORY = "repository"
 KIND_SUBMODULE = "submodule"
 KIND_LINKED_WORKTREE = "linked_worktree"
+KIND_PROJECT = "project"  # recognized by a manifest, with Git elsewhere or not at all
+KIND_DOCUMENTATION = "documentation"  # a README and a docs folder, nothing else yet
 
 COMPLETE = "complete"
 PARTIAL = "partial"
@@ -30,6 +32,16 @@ DISCOVERY_EXCLUSIONS: frozenset[str] = frozenset(
 )
 
 
+# A directory holding one of these files is a project even without Git. Names compare case-insensitively.
+DISCOVERY_MARKERS: frozenset[str] = frozenset(
+    {"pyproject.toml", "requirements.txt", "setup.py", "package.json", "cargo.toml", "go.mod"}
+)
+DISCOVERY_MARKER_SUFFIXES: tuple[str, ...] = (".uproject",)
+
+# A README together with one of these directories marks a project that has not started yet.
+DOCUMENTATION_DIRS: frozenset[str] = frozenset({"docs", "doc", "documentation"})
+
+
 @dataclass(frozen=True)
 class DiscoveryOptions:
     """Bounds for one discovery. See the repository recognition decision."""
@@ -37,16 +49,26 @@ class DiscoveryOptions:
     max_depth: int = 8
     exclusions: frozenset[str] = DISCOVERY_EXCLUSIONS
     max_issues: int = 100
+    markers: frozenset[str] = DISCOVERY_MARKERS
+    marker_suffixes: tuple[str, ...] = DISCOVERY_MARKER_SUFFIXES
+    descend_into_repositories: bool = False
 
 
 @dataclass(frozen=True)
 class Candidate:
-    """One thing discovery looked at. ``reason`` is set for every outcome except eligible."""
+    """One thing discovery looked at. ``reason`` is set for every outcome except eligible.
+
+    ``markers`` are the manifest files found in the project directory; ``git`` is where its Git
+    entry is: ``"."`` for the directory itself, the name of a child directory (Unreal keeps it in
+    ``Source``), or ``None``.
+    """
 
     path: Path
     outcome: str
     kind: str | None = None
     reason: str | None = None
+    markers: tuple[str, ...] = ()
+    git: str | None = None
 
 
 MAX_WARNING_EXAMPLES = 5

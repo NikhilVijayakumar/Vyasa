@@ -93,7 +93,7 @@ The system SHALL reject a file larger than 64 KiB as a whole, reporting it, and 
 
 ### Requirement: Discovery honors the file
 
-The system SHALL NOT enter a directory below a repository that matches the patterns of that repository's ignore file or of an enclosing repository's, SHALL count it as excluded, and SHALL NOT report it as a skip.
+When nested repositories are enabled, the system SHALL NOT enter a directory below a repository that matches the patterns of that repository's ignore file or of an enclosing repository's, SHALL count it as excluded, and SHALL NOT report it as a skip. Discovery does not enter projects by default, so it does not read their ignore files by default; file composition always does.
 
 #### Scenario: Ignored directory is not entered
 

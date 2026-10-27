@@ -62,7 +62,7 @@ Scan limits and symlink defaults; read-only access and Git policy; partial resul
 See `api-contract.md`.
 
 ### Key Workflows
-Check root → walk: at each directory, find `.git` and classify it; drop `.git` from the names; prune; at the depth limit report each remaining directory as skipped and do not enter → count, bound, status → record.
+Check root → walk: at each directory, recognize a project (`.git`, then a manifest, then README and docs); a project is recorded and, by default, not entered; otherwise drop `.git` from the names; prune; at the depth limit report each remaining directory as skipped and do not enter → count, bound, status → record.
 
 ## 5. Data and State Management
 

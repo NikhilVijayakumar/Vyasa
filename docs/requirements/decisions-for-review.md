@@ -107,7 +107,6 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 
 | Q | Question | Recommended answer |
 |---|---|---|
-| Q3 | Does a directory without Git count as a project (DFR-003)? | Yes, only with a recognized marker at its root: a canonical profile, or a supported manifest such as `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`. A bare directory is never a project. |
 | Q11 | How long is scan history kept (SP-005)? | The last 50 runs or 90 days, whichever is larger, both configurable; per-item detail for the last 10 runs. |
 | Q14 | Where do limits live and what happens when one is hit (SP-003)? | Configuration holds `max_depth` (8), `max_file_bytes` (1 MiB; 256 KiB for profiles), `max_inventory_entries` (5,000), and `project_timeout` (60 s). Hitting a limit gives `skipped_by_policy` naming the limit, never a claim that the thing is absent. |
 
