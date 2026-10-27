@@ -1,7 +1,7 @@
 # Requirement: Project Identity and Review Candidates
 
 - **Package:** `docs/requirements/project-identity/`
-- **Status:** Grilled — recommended answers await your confirmation
+- **Status:** Grilled — owner confirmed Q2, Q4, Q5, Q14 on 2026-10-27; Q15 still open (review-candidates change)
 - **Roadmap phase:** P1
 - **Owns:** FR-003, FR-020, NFR-004
 - **Grill log:** [grill-log.md](grill-log.md)
@@ -68,7 +68,7 @@ Observable behaviour is specified as Gherkin scenarios in `features/`. Scenarios
 
 ## Open Decisions
 
-Accepted as open until you confirm the recommended direction in the grill log.
+Confirmed by the owner on 2026-10-27, except where a row says otherwise.
 
 | Decision | Recommended direction | Grill |
 |---|---|---|

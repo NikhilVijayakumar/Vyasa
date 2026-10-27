@@ -152,7 +152,4 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 ## Decisions for you
 
-- **Q4** — A project disappears. What happens (FR-007 S4)?
-- **Q7** — How do overlapping refreshes behave (NFD-005)?
-- **Q13** — How are the proposed performance targets validated (NFD-003/004)?
-- **Q15** — What do current, stale, partial, and unknown mean?
+None open. Q4, Q6, Q7, Q13 and Q15 were confirmed by the owner on 2026-10-27.
