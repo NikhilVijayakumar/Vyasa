@@ -16,6 +16,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.types import CallToolResult, TextContent, ToolAnnotations
 
 from vyasa.adapters.sqlite.database import open_index
+from vyasa.application import profile_context
 from vyasa.application import query as queries
 from vyasa.application.indexing.store import index_path
 from vyasa.domain.index import INTERNAL_ERROR, UNAVAILABLE, IndexStoreError
@@ -82,6 +83,11 @@ def build_server(index_file: Path) -> MCPServer:
     def get_project(project_id: str) -> CallToolResult:
         """Get one project by its opaque `project_id` (from search_projects): identity and aliases, checkouts with their remote, detected `languages` and file `composition` (code, documentation, other counts and a `documentation_only` indicator; per checkout, from the latest scan, never summed; `not_observed` or `not_counted` when never scanned) and `markers` (readme, docs, agent instruction, OpenSpec and test markers as detected with relative paths, not_detected, or unknown, or `not_assessed` when the checkout was not assessed) and `frameworks` (per ecosystem: detected with each root manifest's status and scoped dependencies, not_detected, or unknown; nested manifests counted; technologies with the scopes they were declared in; `not_assessed` when not assessed), open review candidates, and timestamps. A missing remote is reported as provider `none`."""
         return _run(index_file, queries.get_project, project_id)
+
+    @server.tool(annotations=READ_ONLY)
+    def get_profile_context(project_id: str) -> CallToolResult:
+        """Give a coding agent what Vyasa observed about one project, to write or update its profile from evidence: the checkouts with their languages, file counts, markers, and frameworks from the latest scan; the profile as read; for each checkout the differences between the declared profile and those observations (findings for a person to review, claimed only where the scan was complete); and a short workflow. Use `project_id` from search_projects. Vyasa never launches an agent and never writes the profile: the agent writes `.vyasa/project-profile.toml` itself, after calling get_profile_guide."""
+        return _run(index_file, profile_context.profile_context, project_id)
 
     @server.tool(annotations=READ_ONLY)
     def get_index_status() -> CallToolResult:

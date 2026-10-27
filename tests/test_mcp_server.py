@@ -21,7 +21,7 @@ from vyasa.domain.git_remote import GitRemote  # noqa: E402
 
 SNAPSHOT = Path(__file__).parent / "snapshots" / "mcp_tools.json"
 SRC = Path(__file__).resolve().parents[1] / "src"
-TOOLS = ["get_index_status", "get_profile_guide", "get_project", "search_projects"]
+TOOLS = ["get_index_status", "get_profile_context", "get_profile_guide", "get_project", "search_projects"]
 
 
 def remote(identity):
@@ -54,7 +54,7 @@ def tools(index_file):
 # -- listing and pinning --------------------------------------------------------------------------------
 
 
-def test_exactly_four_read_tools(index):
+def test_exactly_five_read_tools(index):
     listed = tools(index)
     assert sorted(t.name for t in listed) == TOOLS
     assert all(t.description and t.input_schema for t in listed)
@@ -385,3 +385,30 @@ def test_details_carry_frameworks_per_checkout(framework_index):
     frameworks = checkout["frameworks"]
     assert [t["key"] for t in frameworks["technologies"]] == ["fastapi"] and frameworks["technologies"][0]["name"] == "FastAPI"
     assert {e["ecosystem"]: e["state"] for e in frameworks["ecosystems"]}["python"] == "detected"
+
+
+# -- profile context ---------------------------------------------------------------------------------------------
+
+
+def test_profile_context_tool_serves_the_stored_bundle(index):
+    pid = call(index, "search_projects", {"query": "alpha"}).structured_content["data"]["projects"][0]["project_id"]
+    result = call(index, "get_profile_context", {"project_id": pid})
+    assert not result.is_error
+    data = result.structured_content["data"]
+    assert data["source"]["kind"] == "index" and data["project_id"] == pid and data["display_name"] == "alpha"
+    assert data["checkouts"][0]["differences"] == [] and data["profile"]["status"] == "absent" and data["workflow"]
+    assert "path" not in data["checkouts"][0] and str(index.parent) not in json.dumps(result.structured_content)
+
+
+@pytest.mark.parametrize("arguments,code", [({"project_id": "nope"}, "PROJECT_NOT_FOUND"), ({"project_id": ""}, "INVALID_INPUT")])
+def test_profile_context_tool_failures_are_structured(index, arguments, code):
+    result = call(index, "get_profile_context", arguments)
+    assert result.is_error and result.structured_content["error"]["code"] == code
+
+
+def test_profile_context_tool_is_read_only_and_pinned(index):
+    [tool] = [t for t in tools(index) if t.name == "get_profile_context"]
+    a = tool.annotations
+    assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == (True, False, True, False)
+    assert tool.input_schema["required"] == ["project_id"]
+    assert "never launches an agent" in tool.description and "never writes the profile" in tool.description
