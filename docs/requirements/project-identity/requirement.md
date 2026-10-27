@@ -1,7 +1,7 @@
 # Requirement: Project Identity and Review Candidates
 
 - **Package:** `docs/requirements/project-identity/`
-- **Status:** Grilled — owner confirmed Q2, Q4, Q5, Q14 on 2026-10-27; Q15 still open (review-candidates change)
+- **Status:** Reviewed — owner confirmed Q2, Q4, Q5, Q14, Q15 on 2026-10-27
 - **Roadmap phase:** P1
 - **Owns:** FR-003, FR-020, NFR-004
 - **Grill log:** [grill-log.md](grill-log.md)
