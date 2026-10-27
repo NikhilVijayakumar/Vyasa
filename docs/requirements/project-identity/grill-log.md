@@ -159,8 +159,6 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 ## Decisions for you
 
-- **Q2** — How are remote URLs normalized (DFR-005)?
-- **Q4** — How is the project ID built (DO-004, DM-001)?
-- **Q5** — What identity does a repository without a remote get?
-- **Q14** — What makes a project an obsolescence candidate?
-- **Q15** — Where is a reviewer's decision stored?
+- **Q15** — Where is a reviewer's decision stored? Open; needed only by `be-review-candidates`.
+
+Q2, Q4, Q5 and Q14 were confirmed by the owner on 2026-10-27.

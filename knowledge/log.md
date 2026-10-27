@@ -1,6 +1,8 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Update**: [Index Lifecycle States and Single Writer](/decisions/index-lifecycle-and-single-writer.md) now says absence is only inferred when the whole tree was seen (no depth, link, or Git-link skips).
+* **Creation**: Added the draft decision [Index Lifecycle States and Single Writer](/decisions/index-lifecycle-and-single-writer.md).
 * **Creation**: Added the draft decision [Git Remote Provider Labels](/decisions/git-remote-provider-labels.md); the Git Detector (§9.2) now states how the provider is derived.
 * **Creation**: Added the draft decision [Repository-Provided Ignore File](/decisions/repository-ignore-file.md).
 * **Creation**: Added the draft decision [Repository Recognition and Discovery Run Status](/decisions/repository-recognition-and-run-status.md).
