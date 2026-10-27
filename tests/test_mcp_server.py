@@ -262,3 +262,40 @@ def test_details_carry_languages_per_checkout(lang_index):
     pid = call(lang_index, "search_projects", {"query": "alpha"}).structured_content["data"]["projects"][0]["project_id"]
     (checkout,) = call(lang_index, "get_project", {"project_id": pid}).structured_content["data"]["checkouts"]
     assert checkout["languages"]["items"] == [{"label": "Python", "status": "files_detected", "files": 2}]
+
+
+# -- composition -------------------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def comp_index(tmp_path):
+    from dataclasses import replace
+
+    from vyasa.domain.file_composition import Evidence, FileComposition, WalkLimits
+    from vyasa.domain.languages import LanguageOutcome, LanguageReport
+
+    path = tmp_path / "index.sqlite3"
+    w = open_index(path)
+    evidence = Evidence(2, (), WalkLimits())
+    docs = LanguageOutcome(LanguageReport((), (), None, evidence), composition=FileComposition(0, 4, 0, None, evidence))
+    code = LanguageOutcome(LanguageReport((("Python", 3),), (), None, evidence), composition=FileComposition(3, 1, 0, None, evidence))
+    store(w, make_run([replace(repo("notes"), languages=docs), replace(repo("app"), languages=code)]))
+    w.close()
+    return path
+
+
+def test_search_filters_documentation_only_through_the_tool(comp_index):
+    for value, expected in ((True, ["notes"]), (False, ["app"])):
+        body = call(comp_index, "search_projects", {"documentation_only": value}).structured_content
+        assert [p["display_name"] for p in body["data"]["projects"]] == expected
+
+
+def test_non_boolean_documentation_only_is_rejected_by_the_tool_schema(comp_index):
+    result = call(comp_index, "search_projects", {"documentation_only": "maybe"})
+    assert result.is_error
+
+
+def test_details_carry_composition_per_checkout(comp_index):
+    pid = call(comp_index, "search_projects", {"query": "notes"}).structured_content["data"]["projects"][0]["project_id"]
+    (checkout,) = call(comp_index, "get_project", {"project_id": pid}).structured_content["data"]["checkouts"]
+    assert checkout["composition"]["total"] == 4 and checkout["composition"]["documentation_only"] is True

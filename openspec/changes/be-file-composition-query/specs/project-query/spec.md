@@ -112,7 +112,7 @@ The system SHALL return, for each checkout in `get_project`, a `composition` obj
 - **WHEN** the details are read
 - **THEN** its composition shows the last observation and the checkout state is `missing`
 
-### Requirement: Queries do not touch the filesystem
+### Requirement: Composition queries do not touch the filesystem
 
 The system SHALL answer the filter and the details from stored observations only.
 
