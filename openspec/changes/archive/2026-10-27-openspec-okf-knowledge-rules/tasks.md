@@ -53,7 +53,7 @@
 ## 7. Final Verification
 
 - [x] 7.1 `python3 -m unittest scripts/test_verify_knowledge.py`
-- [ ] 7.2 `python3 scripts/verify_workflows.py` — 1 failure, the skill-reference check (missing agent skill links, not from this change); every other check passes
+- [x] 7.2 `python scripts/verify_workflows.py` — all checks pass after `sync_skills.py` recreated the agent skill links
 - [x] 7.3 `openspec validate openspec-okf-knowledge-rules`
 - [x] 7.4 Check each spec scenario has a test; record commands, outcomes, failures, skips.
 - [x] 7.5 Review the diff for scope; check the contract, including the no-body-echo rule.
@@ -65,6 +65,6 @@
 
 ## 9. Review, Merge, and Archive
 
-- [ ] 9.1 Pull request with the change ID.
-- [ ] 9.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 9.1 Pull request with the change ID.
+- [x] 9.2 `git fetch`, merge into `develop` after review and verification (never force-push).
 - [ ] 9.3 Archive the change.
