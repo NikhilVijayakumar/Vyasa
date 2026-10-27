@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from vyasa.adapters.sqlite import projects, review
 from vyasa.application.indexing.store import freshness
 from vyasa.application.scanning.file_composition import default_file_types
+from vyasa.application.scanning.frameworks import default_registry
 from vyasa.domain.markers import MARKERS
 from vyasa.domain.index import (
     INVALID_CURSOR,
@@ -78,6 +79,20 @@ def _languages(value: object) -> list[str] | None:
     return sorted({allowed[v.casefold()] for v in values})
 
 
+def _technologies(value: object) -> list[str] | None:
+    """Canonical registry keys for a case-insensitive request, or an error that lists every allowed key."""
+    if value is None:
+        return None
+    allowed = {key.casefold(): key for key in default_registry().keys()}
+    values = [value] if isinstance(value, str) else value
+    if not isinstance(values, (list, tuple)) or not values or not all(isinstance(v, str) and v for v in values):
+        raise IndexStoreError(INVALID_INPUT, "technology must be a key or a list of keys")
+    bad = [v for v in values if v.casefold() not in allowed]
+    if bad:
+        raise IndexStoreError(INVALID_INPUT, f"technology: unknown value {bad[0]!r}; allowed: {', '.join(sorted(allowed.values()))}")
+    return sorted({allowed[v.casefold()] for v in values})
+
+
 def _like(text: str) -> str:
     """A LIKE pattern matching ``text`` literally anywhere."""
     escaped = text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
@@ -110,6 +125,7 @@ def search_projects(
     documentation_only: object = None,
     marker: object = None,
     marker_state: object = None,
+    technology: object = None,
     limit: int = DEFAULT_LIMIT,
     cursor: str | None = None,
     now: Callable[[], datetime] = _utc_now,
@@ -132,6 +148,7 @@ def search_projects(
         raise IndexStoreError(INVALID_INPUT, "marker_state needs marker")
     if marker_state is not None and (not isinstance(marker_state, str) or marker_state not in MARKER_STATES):
         raise IndexStoreError(INVALID_INPUT, f"marker_state: unknown value {marker_state!r}; allowed: {', '.join(MARKER_STATES)}")
+    technologies = _technologies(technology)
     labels = _languages(language)
     kinds = _choices("language_status", language_status, LANGUAGE_STATUSES)
     after = _decode(cursor) if cursor else None
@@ -194,6 +211,15 @@ def search_projects(
             where.append(current + " AND EXISTS (SELECT 1 FROM checkout_markers m WHERE m.observation_id = o.observation_id"
                          f" AND m.marker IN ({', '.join('?' * len(wanted))})))")
             args += wanted
+    if technologies:
+        where.append(
+            "EXISTS (SELECT 1 FROM checkouts c JOIN language_observations o ON o.observation_id ="
+            " (SELECT MAX(observation_id) FROM language_observations WHERE checkout_id = c.checkout_id)"
+            " JOIN checkout_technologies t ON t.observation_id = o.observation_id"
+            " WHERE c.project_id = p.project_id AND c.state = 'active'"
+            f" AND t.key IN ({', '.join('?' * len(technologies))}))"
+        )
+        args += technologies
     if after:
         where.append("(lower(p.display_name), p.project_id) > (?, ?)")
         args += list(after)
@@ -245,6 +271,15 @@ def search_projects(
     return _envelope(connection, data, now())
 
 
+def _with_names(frameworks: dict) -> dict:
+    """Add the registry's display name and category to each technology; unknown to this registry version they are null."""
+    registry = default_registry()
+    for item in frameworks["technologies"]:
+        entry = registry.entry(item["key"])
+        item["name"], item["category"] = (entry.name, entry.category) if entry else (None, None)
+    return frameworks
+
+
 def get_project(
     connection: sqlite3.Connection,
     project_id: str,
@@ -277,6 +312,7 @@ def get_project(
             "languages": projects.checkout_languages(connection, c["checkout_id"]),
             "composition": projects.checkout_composition(connection, c["checkout_id"]),
             "markers": projects.checkout_markers(connection, c["checkout_id"]),
+            "frameworks": _with_names(projects.checkout_frameworks(connection, c["checkout_id"])),
             "first_seen_at": c["first_seen_at"],
             "last_seen_at": c["last_seen_at"],
         }

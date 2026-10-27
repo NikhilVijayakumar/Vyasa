@@ -11,6 +11,7 @@ from pathlib import Path
 
 from vyasa.domain.discovery import Candidate
 from vyasa.domain.file_composition import documentation_only
+from vyasa.domain.frameworks import ECOSYSTEMS, FrameworkReport
 from vyasa.domain.languages import LanguageOutcome
 from vyasa.domain.markers import MARKERS
 from vyasa.domain.profile import ABSENT, PROFILE_PATH, ProfileResult
@@ -162,11 +163,15 @@ def _store_languages(connection: sqlite3.Connection, checkout_id: int, outcome: 
     counts = outcome.composition
     observation = connection.execute(
         "INSERT INTO language_observations (checkout_id, run_id, observed_at, status, stopped_by, types_version, reason, duration_ms,"
-        " code_files, documentation_files, other_files, markers_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        " code_files, documentation_files, other_files, markers_version, frameworks_version)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (checkout_id, run_id, stamp, status, stopped, version, reason, round(outcome.seconds * 1000),
          *((counts.code, counts.documentation, counts.other) if counts and report else (None, None, None)),
-         outcome.markers.rules_version if outcome.markers and report else None),
+         outcome.markers.rules_version if outcome.markers and report else None,
+         outcome.frameworks.registry_version if outcome.frameworks and report else None),
     ).lastrowid
+    if report is not None and outcome.frameworks is not None:
+        _store_frameworks(connection, observation, outcome.frameworks)
     if report is not None and outcome.markers is not None:
         connection.executemany(
             "INSERT INTO checkout_markers (observation_id, marker, total, rules, paths) VALUES (?, ?, ?, ?, ?)",
@@ -215,6 +220,68 @@ def checkout_composition(connection: sqlite3.Connection, checkout_id: int) -> di
     return {"status": row["status"], "stopped_by": row["stopped_by"], "observed_at": row["observed_at"], "code": code,
             "documentation": docs, "other": other, "total": code + docs + other,
             "documentation_only": documentation_only(code, docs, row["status"] == "complete")}
+
+
+def _store_frameworks(connection: sqlite3.Connection, observation: int, found: FrameworkReport) -> None:
+    for manifest in found.manifests:
+        connection.execute(
+            "INSERT INTO checkout_manifests (observation_id, path, ecosystem, status, reason, total_dependencies, skipped, workspace)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (observation, manifest.path, manifest.ecosystem, manifest.status, manifest.reason, manifest.total_dependencies,
+             manifest.skipped, int(manifest.workspace)),
+        )
+        connection.executemany(
+            "INSERT INTO checkout_dependencies (observation_id, path, name, constraint_text, scope) VALUES (?, ?, ?, ?, ?)",
+            [(observation, manifest.path, d.name, d.constraint, d.scope) for d in manifest.dependencies],
+        )
+    connection.executemany(
+        "INSERT INTO checkout_technologies (observation_id, key, scopes, manifests) VALUES (?, ?, ?, ?)",
+        [(observation, t.key, json.dumps(list(t.scopes)), json.dumps(list(t.manifests))) for t in found.technologies],
+    )
+    connection.executemany(
+        "INSERT INTO checkout_nested_manifests (observation_id, ecosystem, count) VALUES (?, ?, ?)",
+        [(observation, ecosystem, count) for ecosystem, count in found.nested],
+    )
+
+
+def checkout_frameworks(connection: sqlite3.Connection, checkout_id: int) -> dict:
+    """The frameworks of the current observation of one checkout. Absence is only claimed after a complete assessment."""
+    row = connection.execute(
+        "SELECT observation_id, status, stopped_by, observed_at, frameworks_version FROM language_observations"
+        " WHERE checkout_id = ? ORDER BY observation_id DESC LIMIT 1",
+        (checkout_id,),
+    ).fetchone()
+    if row is None or row["frameworks_version"] is None:
+        return {"status": "not_assessed", "registry_version": None, "stopped_by": None, "observed_at": None,
+                "ecosystems": [], "technologies": []}
+    observation = row["observation_id"]
+    manifests: dict[str, list[dict]] = {e: [] for e in ECOSYSTEMS}
+    for m in connection.execute(
+        "SELECT path, ecosystem, status, reason, total_dependencies, skipped, workspace FROM checkout_manifests"
+        " WHERE observation_id = ? ORDER BY path", (observation,)
+    ):
+        dependencies = [
+            {"name": d["name"], "constraint": d["constraint_text"], "scope": d["scope"]}
+            for d in connection.execute(
+                "SELECT name, constraint_text, scope FROM checkout_dependencies WHERE observation_id = ? AND path = ?"
+                " ORDER BY name, scope", (observation, m["path"]))
+        ]
+        manifests[m["ecosystem"]].append({
+            "path": m["path"], "status": m["status"], "reason": m["reason"], "total_dependencies": m["total_dependencies"],
+            "skipped": m["skipped"], "workspace": bool(m["workspace"]), "dependencies": dependencies,
+        })
+    nested = dict(connection.execute("SELECT ecosystem, count FROM checkout_nested_manifests WHERE observation_id = ?", (observation,)))
+    missing = "not_detected" if row["status"] == "complete" else "unknown"
+    ecosystems = [
+        {"ecosystem": e, "state": "detected" if manifests[e] else missing, "manifests": manifests[e], "nested_not_parsed": nested.get(e, 0)}
+        for e in ECOSYSTEMS
+    ]
+    technologies = [
+        {"key": t["key"], "scopes": json.loads(t["scopes"]), "manifests": json.loads(t["manifests"])}
+        for t in connection.execute("SELECT key, scopes, manifests FROM checkout_technologies WHERE observation_id = ? ORDER BY key", (observation,))
+    ]
+    return {"status": row["status"], "registry_version": row["frameworks_version"], "stopped_by": row["stopped_by"],
+            "observed_at": row["observed_at"], "ecosystems": ecosystems, "technologies": technologies}
 
 
 def checkout_markers(connection: sqlite3.Connection, checkout_id: int) -> dict:

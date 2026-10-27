@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-28
+* **Creation**: Added the draft decision [Frameworks Come From Strictly Read Root Manifests With Scoped Dependencies and Honest States](/decisions/framework-detection-from-manifests.md).
 * **Update**: [Project Markers Are Presence-Only With Three States and Capped Relative Paths](/decisions/project-marker-observations.md) accepted (status stable) after implementation and verification.
 
 ## 2026-10-27
