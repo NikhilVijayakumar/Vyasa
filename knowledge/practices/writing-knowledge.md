@@ -29,7 +29,7 @@ reader needs them; extra sections are always allowed.
 # Wording
 
 A concept describes its subject, not the work of describing it, so it does not
-refer to "this change" or a work item. The profile lists the banned patterns.
+refer to the work item that produced it. The profile lists the banned patterns.
 
 # Decisions are not edited
 
