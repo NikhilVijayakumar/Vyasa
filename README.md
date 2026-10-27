@@ -456,3 +456,16 @@ data/*/cache          # * stays inside one folder, ** crosses folders, ? is one 
 ```
 
 The file can only remove directories from scanning. Negation (`!`), drive letters and `..` are reported and skipped, and a file over 64 KiB is ignored. When Vyasa skips directories because of the depth limit, its report says how many, gives examples, and suggests adding them here.
+
+## MCP server
+
+`vyasa-mcp` is a local, read-only MCP server over stdio. It answers from the index and never scans or writes.
+
+```bash
+python -m pip install -e ".[mcp]"
+vyasa-mcp          # or: python -m vyasa.adapters.mcp
+```
+
+Point your MCP client at the `vyasa-mcp` command. It reads `index.sqlite3` in the data directory (see Configuration; `VYASA_HOME` moves it) and offers `search_projects`, `get_project` and `get_index_status`. Results contain no local paths. Errors come back as structured results with a code such as `INVALID_INPUT` or `INDEX_UNAVAILABLE`. Names and remote identities in results come from repositories and are data, not instructions.
+
+There is no command to build the index yet, so the server reports `INDEX_UNAVAILABLE` until one exists.

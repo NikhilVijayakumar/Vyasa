@@ -1,0 +1,139 @@
+[
+  {
+    "annotations": {
+      "destructive_hint": false,
+      "idempotent_hint": true,
+      "open_world_hint": false,
+      "read_only_hint": true
+    },
+    "description": "Report how reliable the index is: freshness (current, stale, partial, unknown), the latest run, project counts by state, and the number of open review candidates.",
+    "input_schema": {
+      "properties": {},
+      "title": "get_index_statusArguments",
+      "type": "object"
+    },
+    "name": "get_index_status"
+  },
+  {
+    "annotations": {
+      "destructive_hint": false,
+      "idempotent_hint": true,
+      "open_world_hint": false,
+      "read_only_hint": true
+    },
+    "description": "Get one project by its opaque `project_id` (from search_projects): identity and aliases, checkouts with their remote, open review candidates, and timestamps. A missing remote is reported as provider `none`.",
+    "input_schema": {
+      "properties": {
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "title": "get_projectArguments",
+      "type": "object"
+    },
+    "name": "get_project"
+  },
+  {
+    "annotations": {
+      "destructive_hint": false,
+      "idempotent_hint": true,
+      "open_world_hint": false,
+      "read_only_hint": true
+    },
+    "description": "Search the indexed projects. `query` matches a project's name or remote identity (1 to 200 characters, case-insensitive). `state` is one or more of active, missing, inaccessible. `provider` is one or more of github, bitbucket, gitlab, other, local, none. `identity_status` is one or more of resolved, provisional, ambiguous. Filters combine with AND; several values in one filter combine with OR. Results are ordered by name; `limit` is 1 to 100 (default 20); pass `next_cursor` as `cursor` for the next page.",
+    "input_schema": {
+      "properties": {
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor"
+        },
+        "identity_status": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Identity Status"
+        },
+        "limit": {
+          "default": 20,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "query": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Query"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State"
+        }
+      },
+      "title": "search_projectsArguments",
+      "type": "object"
+    },
+    "name": "search_projects"
+  }
+]

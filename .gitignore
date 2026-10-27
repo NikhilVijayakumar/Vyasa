@@ -5,3 +5,5 @@
 /.idea/vcs.xml
 /.idea/Vyasa.iml
 __pycache__/
+
+*.egg-info/
