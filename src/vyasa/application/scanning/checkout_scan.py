@@ -22,6 +22,7 @@ from vyasa.domain.file_composition import (
     WalkLimits,
 )
 from vyasa.domain.languages import CheckoutScan, LanguageReport, languages_of
+from vyasa.domain.markers import MarkerRules, markers_of
 
 
 def scan_checkout(
@@ -30,6 +31,7 @@ def scan_checkout(
     limits: WalkLimits = WalkLimits(),
     exclusions: Iterable[str] = DEFAULT_EXCLUSIONS,
     clock: Callable[[], float] = time.monotonic,
+    rules: MarkerRules | None = None,
 ) -> CheckoutScan:
     """Counts and languages under ``root``. Raises ValueError if ``root`` is not a directory."""
     if not Path(root).is_dir():
@@ -48,4 +50,5 @@ def scan_checkout(
     return CheckoutScan(
         composition=FileComposition(counts[CODE], counts[DOCUMENTATION], counts[OTHER], walked.stopped_by, evidence),
         languages=LanguageReport(found, declared, walked.stopped_by, evidence),
+        markers=markers_of(walked.files, walked.directories, rules, walked.stopped_by) if rules else None,
     )

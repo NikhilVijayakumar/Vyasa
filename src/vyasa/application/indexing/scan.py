@@ -13,6 +13,7 @@ from vyasa.application.indexing.store import StoredRun, store_run
 from vyasa.application.scanning.discovery import discover_repositories
 from vyasa.application.scanning.checkout_scan import scan_checkout
 from vyasa.application.scanning.file_composition import default_file_types
+from vyasa.application.scanning.markers import default_marker_rules
 from vyasa.domain.discovery import COMPLETE, ELIGIBLE, PARTIAL, DiscoveryRun, ScanWarning
 from vyasa.domain.languages import DETECTION_ERROR, CheckoutScan, LanguageOutcome
 from vyasa.domain.workspace_config import WorkspaceConfig
@@ -41,7 +42,8 @@ def _with_languages(run: DiscoveryRun, detect: Callable[[Path], CheckoutScan]) -
         started = time.monotonic()
         try:
             scan = detect(candidate.path)
-            outcome = LanguageOutcome(report=scan.languages, composition=scan.composition, seconds=time.monotonic() - started)
+            outcome = LanguageOutcome(report=scan.languages, composition=scan.composition, markers=scan.markers,
+                                   seconds=time.monotonic() - started)
         except Exception:  # one checkout must not stop the others; the reason is a fixed code, never the message
             outcome = LanguageOutcome(failed=DETECTION_ERROR, seconds=time.monotonic() - started)
             failed.append(candidate.path)
@@ -68,8 +70,8 @@ def scan_workspace(
     raises ``OPERATION_IN_PROGRESS``.
     """
     if detect is None:
-        types = default_file_types()
-        detect = lambda path: scan_checkout(path, types)  # noqa: E731
+        types, rules = default_file_types(), default_marker_rules()
+        detect = lambda path: scan_checkout(path, types, rules=rules)  # noqa: E731
     results = []
     for root in config.roots:
         run = _with_languages(discover(root), detect)
