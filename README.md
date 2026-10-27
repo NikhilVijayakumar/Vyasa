@@ -432,3 +432,14 @@ python -m pytest
 ```
 
 Requires Python 3.12 or newer. The tests are platform independent; tests that need a directory symlink or a Windows junction skip with a stated reason where the platform cannot create one.
+
+## Configuration
+
+Vyasa scans only the workspace roots you list; nothing is scanned by default. Create `config.toml` in the data directory (`%LOCALAPPDATA%\Vyasa` on Windows, `~/Library/Application Support/Vyasa` on macOS, `~/.local/share/vyasa` on Linux), or point `VYASA_CONFIG` at a file, or set `VYASA_HOME` to move the data directory:
+
+```toml
+[workspace]
+roots = ["E:/Python", "D:/Projects", "~/work"]
+```
+
+Use absolute paths. On Windows write them with forward slashes or in single quotes, for example `'E:\Python'`. Roots may sit on different drives. A root inside another is kept and reported.

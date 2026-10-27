@@ -22,3 +22,4 @@ Architecture decision records. All are drafts until reviewed and accepted; each 
 * [Retention Defaults](retention-defaults.md) - Observations keep the current and previous value; run history and logs are bounded by count and age.
 * [Knowledge Profile Enforces Sections and Supersession](knowledge-profile-section-rules.md) - The bundle profile requires named sections per type, bans open questions in stable concepts, and makes a deprecated decision name its replacement.
 * [File Composition Data and Limits](file-composition-data-and-limits.md) - File types are versioned data shared with the language detector, and counting has its own depth and entry limits because it reads no content.
+* [Configuration File Format and Location](configuration-file-format-and-location.md) - One TOML file found by explicit path, then environment variable, then the data directory; no root is ever implied, and an invalid file is rejected as a whole.
