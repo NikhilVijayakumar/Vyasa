@@ -74,7 +74,7 @@ A canonical profile is a project-maintained source of declared metadata.
 
 It is read by Vyasa and represented through metadata observations.
 
-The proposed structured format is `.vyasa/project-profile.yaml`, but the final path and schema remain subject to approval.
+The proposed structured format is `.vyasa/project-profile.toml`, but the final path and schema remain subject to approval.
 
 The model must not require both a structured profile and a root-level `VYASA.md` to be independent authorities for the same fields.
 
@@ -82,7 +82,7 @@ The model must not require both a structured profile and a root-level `VYASA.md`
 
 A generated draft is non-authoritative and optional.
 
-The proposed draft path is `.vyasa/project-profile.draft.yaml`, git-ignored by default.
+The proposed draft path is `.vyasa/project-profile.draft.toml`, git-ignored by default.
 
 Draft generation must:
 

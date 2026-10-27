@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 
 from vyasa.domain.discovery import Candidate
+from vyasa.domain.profile import ABSENT, PROFILE_PATH, ProfileResult
 from vyasa.domain.index import (
     ACTIVE,
     DUPLICATE_CHECKOUT,
@@ -131,6 +132,35 @@ def refresh_state(connection: sqlite3.Connection, project_id: str, stamp: str) -
     )
 
 
+def _store_profile(connection: sqlite3.Connection, checkout_id: int, profile: ProfileResult | None, run_id: str, stamp: str) -> None:
+    profile = profile or ProfileResult(ABSENT)
+    connection.execute(
+        "INSERT INTO checkout_profiles (checkout_id, status, fields, problems, read_at, run_id) VALUES (?, ?, ?, ?, ?, ?)"
+        " ON CONFLICT (checkout_id) DO UPDATE SET status = excluded.status, fields = excluded.fields,"
+        " problems = excluded.problems, read_at = excluded.read_at, run_id = excluded.run_id",
+        (checkout_id, profile.status, json.dumps(profile.fields, sort_keys=True),
+         json.dumps([{"field": f, "reason": r} for f, r in profile.problems]), stamp, run_id),
+    )
+
+
+def project_profile(connection: sqlite3.Connection, project_id: str) -> dict:
+    """The profile shown for a project: an active checkout first, readable before not, then the earliest seen."""
+    row = connection.execute(
+        "SELECT p.status, p.fields, p.problems FROM checkouts c LEFT JOIN checkout_profiles p USING (checkout_id)"
+        " WHERE c.project_id = ? ORDER BY (c.state = 'active') DESC, (p.status IN ('valid', 'invalid')) DESC,"
+        " c.first_seen_at, c.checkout_id LIMIT 1",
+        (project_id,),
+    ).fetchone()
+    if row is None or row["status"] is None:
+        return {"status": ABSENT, "source": PROFILE_PATH, "declared": {}, "problems": []}
+    return {
+        "status": row["status"],
+        "source": PROFILE_PATH,
+        "declared": {k: {"value": v, "status": "declared"} for k, v in json.loads(row["fields"]).items()},
+        "problems": json.loads(row["problems"]),
+    }
+
+
 def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run_id: str, now: datetime) -> str:
     """Store one eligible repository in its own transaction. Returns what happened to it.
 
@@ -164,14 +194,15 @@ def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run
                 outcome = ADDED
             else:
                 project_id, outcome = owner, ATTACHED
-            connection.execute(
+            checkout_id = connection.execute(
                 "INSERT INTO checkouts (project_id, path, path_key, root, kind, markers, git, remote_provider,"
                 " remote_host, remote_identity, remote_status, state, first_seen_at, last_seen_at, last_run_id)"
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (project_id, str(candidate.path), key, str(root), *fields, ACTIVE, stamp, stamp, run_id),
-            )
+            ).lastrowid
         else:
             project_id = row["project_id"]
+            checkout_id = row["checkout_id"]
             if owner is not None and owner != project_id:
                 detail = json.dumps({"alias": identity, "owner": owner}, sort_keys=True)
                 if not connection.execute(
@@ -214,6 +245,7 @@ def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run
                 " WHERE checkout_id = ?",
                 (str(root), *fields, ACTIVE, stamp, run_id, row["checkout_id"]),
             )
+        _store_profile(connection, checkout_id, candidate.profile, run_id, stamp)
         refresh_state(connection, project_id, stamp)
         connection.execute("UPDATE projects SET last_seen_at = ? WHERE project_id = ?", (stamp, project_id))
         connection.execute("COMMIT")

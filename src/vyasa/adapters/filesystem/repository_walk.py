@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from vyasa.adapters.filesystem.git_config import read_remote
+from vyasa.adapters.filesystem.profile_file import read_profile
 from vyasa.adapters.filesystem.ignore_file import read_ignore_file
 from vyasa.adapters.filesystem.pruning import prune
 from vyasa.domain.discovery import (
@@ -56,7 +57,8 @@ def classify_git_entry(directory: str, markers: tuple[str, ...] = ()) -> Candida
         if os.path.isfile(os.path.join(git, "HEAD")):
             remote, status = read_remote(directory)
             return Candidate(
-                path, ELIGIBLE, kind=KIND_REPOSITORY, markers=markers, git=".", remote=remote, remote_status=status
+                path, ELIGIBLE, kind=KIND_REPOSITORY, markers=markers, git=".", remote=remote, remote_status=status,
+                profile=read_profile(directory),
             )
         return Candidate(path, MALFORMED, reason="missing_head")
     try:
@@ -77,7 +79,10 @@ def classify_git_entry(directory: str, markers: tuple[str, ...] = ()) -> Candida
         kind = KIND_LINKED_WORKTREE
     elif any(a == GIT and b == "modules" for a, b in zip(segments, segments[1:])):
         kind = KIND_SUBMODULE
-    return Candidate(path, ELIGIBLE, kind=kind, markers=markers, git=".", remote_status=STATUS_UNAVAILABLE)
+    return Candidate(
+        path, ELIGIBLE, kind=kind, markers=markers, git=".", remote_status=STATUS_UNAVAILABLE,
+        profile=read_profile(directory),
+    )
 
 
 def _markers(filenames: list[str], options: DiscoveryOptions) -> tuple[str, ...]:
@@ -129,7 +134,7 @@ def find_repositories(root: Path | str, options: DiscoveryOptions) -> Findings:
             remote, status = read_remote(os.path.join(dirpath, git_child)) if git_child else (None, None)
             found = Candidate(
                 Path(dirpath), ELIGIBLE, kind=KIND_PROJECT, markers=markers, git=git_child,
-                remote=remote, remote_status=status,
+                remote=remote, remote_status=status, profile=read_profile(dirpath),
             )
             projects.append(found)
 

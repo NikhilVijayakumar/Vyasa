@@ -65,13 +65,13 @@ Observable behaviour is specified as Gherkin scenarios in `features/`. Scenarios
 
 ## Open Decisions
 
-Accepted as open until you confirm the recommended direction in the grill log.
+Q2 was revised by the owner on 2026-10-27: the format is TOML, not YAML, and the profile is filled once by a coding agent in each repository, guided over MCP. The draft command (Q6) is deferred; the other rows remain recommendations.
 
 | Decision | Recommended direction | Grill |
 |---|---|---|
-| DFR-004 / DO-001 | One YAML file at `.vyasa/project-profile.yaml`, schema_version 1. | Q2 |
+| DFR-004 / DO-001 | One TOML file at `.vyasa/project-profile.toml`, schema_version 1. | Q2 |
 | DO-002 | No root-level VYASA.md in phase 1. | Q2 |
-| DO-003 | Draft is opt-in, written to `.vyasa/project-profile.draft.yaml`, excluded through `.git/info/exclude`. | Q6 |
+| DO-003 | Draft is opt-in, written to `.vyasa/project-profile.draft.toml`, excluded through `.git/info/exclude`. | Q6 |
 | v1 fields | name, purpose, lifecycle, domain, tags, technologies, related_projects, documentation.entry_point, owners. | Q3 |
 
 ## Delivery

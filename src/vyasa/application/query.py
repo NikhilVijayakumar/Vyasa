@@ -214,6 +214,7 @@ def get_project(
             "aliases": sorted(projects.list_aliases(connection, project_id)),
         },
         "checkouts": checkouts,
+        "profile": projects.project_profile(connection, project_id),
         "review_candidates": candidates,
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],

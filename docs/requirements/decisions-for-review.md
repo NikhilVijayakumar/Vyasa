@@ -52,9 +52,9 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 
 | Q | Question | Recommended answer |
 |---|---|---|
-| Q2 | What format and path (DFR-004, DO-001, DO-002)? | One YAML file, `.vyasa/project-profile.yaml`, with `schema_version: 1`. No root-level `VYASA.md` in phase 1, to avoid two authorities for one field. The README remains the documentation. |
+| Q2 | What format and path (DFR-004, DO-001, DO-002)? | One TOML file, `.vyasa/project-profile.toml`, with `schema_version = 1`. No root-level `VYASA.md` in phase 1, to avoid two authorities for one field. The README remains the documentation. |
 | Q3 | Which fields in version 1? | `name`, `purpose` (500 characters), `lifecycle` (active, maintenance, experimental, deprecated, archived), `domain` and `tags` (lists), `technologies` (declared), `related_projects` (identity plus relation), `documentation.entry_point` (relative path), `owners` (strings). Absolute paths, URLs with credentials, and secrets are rejected by the validator. |
-| Q6 | How does draft generation work (DO-003)? | An explicit command `vyasa profile draft <project>`. It prints the exact path, writes only `.vyasa/project-profile.draft.yaml`, adds a rule to `.git/info/exclude` instead of editing the tracked `.gitignore`, refuses to overwrite without `--force`, and lists missing fields as comments. |
+| Q6 | How does draft generation work (DO-003)? | An explicit command `vyasa profile draft <project>`. It prints the exact path, writes only `.vyasa/project-profile.draft.toml`, adds a rule to `.git/info/exclude` instead of editing the tracked `.gitignore`, refuses to overwrite without `--force`, and lists missing fields as comments. |
 
 ## project-query
 
