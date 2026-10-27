@@ -11,6 +11,10 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+mcp = ["mcp>=2,<3"]
+
+[project.scripts]
+vyasa-mcp = "vyasa.adapters.mcp.launch:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
