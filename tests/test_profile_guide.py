@@ -21,18 +21,18 @@ def flatten(data: dict) -> set[str]:
 
 
 def test_the_example_is_a_valid_profile():
-    guide = p.profile_guide()
+    guide = p.profile_guide(1)
     result = p.validate_profile(tomllib.loads(guide["example"]))
     assert result.status == "valid" and result.problems == ()
 
 
 def test_the_example_uses_every_documented_field():
-    guide = p.profile_guide()
+    guide = p.profile_guide(1)
     assert flatten(tomllib.loads(guide["example"])) == {f["name"] for f in guide["fields"]}
 
 
 def test_limits_and_allowed_values_equal_the_validator_constants():
-    fields = {f["name"]: f for f in p.profile_guide()["fields"]}
+    fields = {f["name"]: f for f in p.profile_guide(1)["fields"]}
     assert fields["purpose"]["max_length"] == p.TEXT["purpose"]
     assert fields["name"]["max_length"] == p.TEXT["name"]
     assert fields["lifecycle"]["allowed_values"] == list(p.LIFECYCLES)
@@ -44,23 +44,23 @@ def test_limits_and_allowed_values_equal_the_validator_constants():
 
 
 def test_guide_basics():
-    guide = p.profile_guide()
+    guide = p.profile_guide(1)
     assert (guide["path"], guide["format"], guide["max_bytes"]) == (".vyasa/project-profile.toml", "toml", 65536)
     assert guide["schema_file"] == "schemas/project-profile.v1.json"
 
 
 def test_writer_rules_cover_the_essentials():
-    text = " ".join(p.profile_guide()["rules"]).lower()
+    text = " ".join(p.profile_guide(1)["rules"]).lower()
     for needle in ("once", "omit", "credentials", "absolute paths", "never writes", "next scan"):
         assert needle in text
 
 
 def test_the_committed_schema_equals_the_generated_one():
-    assert json.loads(SCHEMA_FILE.read_text()) == p.json_schema()
+    assert json.loads(SCHEMA_FILE.read_text()) == p.json_schema(1)
 
 
 def test_the_schema_matches_the_rules():
-    schema = p.json_schema()
+    schema = p.json_schema(1)
     props = schema["properties"]
     assert schema["required"] == ["schema_version"] and schema["additionalProperties"] is False
     assert props["purpose"]["maxLength"] == 500 and props["lifecycle"]["enum"] == list(p.LIFECYCLES)
@@ -69,7 +69,7 @@ def test_the_schema_matches_the_rules():
 
 
 def test_the_example_conforms_to_the_schema_bounds():
-    schema, data = p.json_schema(), tomllib.loads(p.profile_guide()["example"])
+    schema, data = p.json_schema(1), tomllib.loads(p.profile_guide(1)["example"])
     assert set(data) <= set(schema["properties"])
     for key, value in data.items():
         spec = schema["properties"][key]

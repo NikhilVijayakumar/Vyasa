@@ -90,7 +90,7 @@ def build_server(index_file: Path) -> MCPServer:
 
     @server.tool(annotations=READ_ONLY)
     def get_profile_guide() -> CallToolResult:
-        """Explain how to write a project's Vyasa profile: the file path and format, every field with its limits and allowed values, a complete example, and rules for the writer. Call this before writing `.vyasa/project-profile.toml` in a repository, then write the file yourself; Vyasa only reads it, on its next scan."""
+        """Explain how to write a project's Vyasa profile in schema version 2 (version 1 is still read): the file path and format, every field with its limits and allowed values, a complete example, and rules for the writer. Call this before writing `.vyasa/project-profile.toml` in a repository, then write the file yourself; Vyasa only reads it, on its next scan."""
         result = {"schema_version": queries.SCHEMA_VERSION, "data": profile_guide(), "meta": {"generated_at": datetime.now(timezone.utc).isoformat()}}
         return CallToolResult(content=[TextContent(type="text", text=json.dumps(result))], structured_content=result)
 

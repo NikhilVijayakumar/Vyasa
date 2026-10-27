@@ -6,8 +6,12 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 
+from vyasa.domain import profile_v2
+
 PROFILE_PATH = ".vyasa/project-profile.toml"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 1  # the first schema; see SUPPORTED_VERSIONS
+SUPPORTED_VERSIONS = (1, 2)
+CURRENT_VERSION = 2
 MAX_BYTES = 65536
 
 VALID = "valid"
@@ -69,9 +73,39 @@ def validate_profile(data: object) -> ProfileResult:
     if not isinstance(data, dict):
         return ProfileResult(UNREADABLE, {}, (("profile", "must be a table"),))
     version = data.get("schema_version")
-    if isinstance(version, bool) or version != SCHEMA_VERSION:
-        return ProfileResult(UNSUPPORTED, {}, (("schema_version", f"missing or unsupported (expected {SCHEMA_VERSION})"),))
+    if type(version) is not int or version not in SUPPORTED_VERSIONS:
+        return ProfileResult(UNSUPPORTED, {}, (("schema_version", "missing or unsupported (expected 1 or 2)"),))
+    if version == 2:
+        fields, found = profile_v2.validate_v2(data)
+        return ProfileResult(VALID if not found else INVALID, fields, tuple(found))
+    return _validate_v1(data)
 
+
+# The accessor: one logical name, read from whichever schema version declared it.
+_LOGICAL = {
+    "name": ("project.name", "name"),
+    "summary": ("project.summary",),
+    "purpose": ("project.description", "purpose"),
+    "lifecycle": ("project.lifecycle_status", "lifecycle"),
+    "domain": ("project.domain", "domain"),
+    "declared_languages": ("project.technology.declared_languages",),
+    "declared_frameworks": ("project.technology.declared_frameworks", "technologies"),
+    "documentation_entry": ("project.documentation.overview", "documentation.entry_point"),
+    "openspec_enabled": ("project.engineering.openspec.enabled",),
+}
+
+
+def declared(fields: dict, name: str) -> object:
+    """A declared value by logical name from stored profile fields of either version, or None when not declared."""
+    if name == "agent_instruction_paths":
+        return [row["path"] for row in fields.get("project.engineering.agent_instructions", [])]
+    for key in _LOGICAL[name]:
+        if key in fields:
+            return fields[key]
+    return None
+
+
+def _validate_v1(data: dict) -> ProfileResult:
     fields: dict = {}
     problems: list[tuple[str, str]] = []
 
@@ -154,7 +188,8 @@ def validate_profile(data: object) -> ProfileResult:
 
 # -- the guide and the schema file, built from the constants above so they cannot drift ------------------------
 
-SCHEMA_FILE = "schemas/project-profile.v1.json"
+SCHEMA_FILES = {1: "schemas/project-profile.v1.json", 2: "schemas/project-profile.v2.json"}
+SCHEMA_FILE = SCHEMA_FILES[1]
 DESCRIPTIONS = {
     "schema_version": "Always 1.",
     "name": "The project's own name, if it differs from its folder name.",
@@ -196,8 +231,8 @@ def _field(name: str, kind: str, required: bool = False, **extra: object) -> dic
     return {"name": name, "type": kind, "required": required, "description": DESCRIPTIONS[name], **extra}
 
 
-def profile_guide() -> dict:
-    """Everything a writer needs to produce a valid profile, built from the validation constants."""
+def _guide_v1() -> dict:
+    """The version 1 guide, built from the validation constants."""
     fields = [_field("schema_version", "integer", True, allowed_values=[SCHEMA_VERSION])]
     fields += [_field(key, "text", max_length=limit) for key, limit in TEXT.items()]
     fields.append(_field("lifecycle", "text", allowed_values=list(LIFECYCLES)))
@@ -229,8 +264,8 @@ def _list_schema(limit: int, name: str) -> dict:
     }
 
 
-def json_schema() -> dict:
-    """The profile as a JSON Schema, for editors and validators that read TOML through JSON."""
+def _schema_v1() -> dict:
+    """The version 1 profile as a JSON Schema."""
     properties = {"schema_version": {"const": SCHEMA_VERSION, "description": DESCRIPTIONS["schema_version"]}}
     properties.update({key: _text_schema(limit, key) for key, limit in TEXT.items()})
     properties["lifecycle"] = {"enum": list(LIFECYCLES), "description": DESCRIPTIONS["lifecycle"]}
@@ -257,3 +292,63 @@ def json_schema() -> dict:
         "required": ["schema_version"],
         "properties": properties,
     }
+
+
+# -- version 2 -------------------------------------------------------------------------------------------------
+
+EXAMPLE_V2 = 'schema_version = 2\n\n[project]\nid = "billing-api"\nname = "Billing API"\nsummary = "Issues and reconciles customer invoices for the storefront."\ndescription = "Creates invoices from orders, reconciles payments, and exposes the ledger to other services."\nproject_type = "service"\ndomain = "payments"\nlifecycle_status = "active"\ncreated_date = 2025-03-01\nlast_reviewed_date = 2026-10-01\n\n[project.owner]\nteam = "team-billing"\nrole = "maintainer"\ncontact_reference = "#billing"\n\n[project.business]\nproblem_statement = "Orders need invoices that finance can reconcile."\ntarget_users = ["storefront", "finance"]\nbusiness_objectives = ["Invoice every order within a minute"]\nnon_goals = ["Tax filing"]\n\n[project.scope]\nin_scope = ["Invoice creation", "Payment reconciliation"]\nout_of_scope = ["Customer notifications"]\n\n[[project.capabilities]]\nid = "invoicing"\nname = "Invoicing"\ndescription = "Creates and numbers invoices."\nstatus = "available"\nsource = "docs/invoicing.md"\n\n[project.technology]\ndeclared_languages = ["Python"]\ndeclared_frameworks = ["FastAPI", "pytest"]\ndeclared_datastores = ["PostgreSQL"]\n\n[project.architecture]\nstyle = "modular monolith"\nsummary = "One FastAPI service over PostgreSQL with a queue for reconciliation."\nentry_points = ["billing.main:app"]\nmajor_components = ["api", "ledger", "reconciler"]\narchitecture_document = "docs/architecture.md"\n\n[[project.interfaces]]\nname = "Billing HTTP API"\ntype = "api"\npurpose = "Create and read invoices."\ncontract_reference = "docs/openapi.yaml"\n\n[project.dependencies]\ninternal_projects = ["github.com/acme/ledger"]\nexternal_services = ["payment gateway"]\n\n[project.engineering.openspec]\nenabled = true\nroot = "openspec"\nconfiguration = "openspec/config.yaml"\n\n[[project.engineering.agent_instructions]]\npath = "AGENTS.md"\npurpose = "Working rules for coding agents."\n\n[project.engineering.testing]\nrequired_checks = ["pytest"]\n\n[project.engineering.security]\nclassification = "internal"\nsecurity_document = "docs/security.md"\n\n[project.documentation]\noverview = "README.md"\narchitecture = "docs/architecture.md"\ncontributing = "CONTRIBUTING.md"\n\n[project.collaboration]\ncoding_agents = ["claude-code"]\n\n[project.relationships]\nrelated_project_ids = ["ledger"]\n\n[project.profile_maintenance]\nmaintained_by = "team-billing"\nreview_frequency = "quarterly"\n'
+WRITER_RULES_V2 = (
+    *WRITER_RULES,
+    "Use schema version 2. Version 1 profiles are still read, but write version 2 so more can be declared.",
+    "Declare only what the project says about itself. Do not copy what Vyasa observed (languages, file counts, markers, detected frameworks), repository activity, delivery status, or portfolio priority into the profile: those are observed or owned elsewhere.",
+    "Use the observed facts from get_profile_context as evidence for what to declare, and leave a field out when the evidence does not support it.",
+    "project.id and the relationship ids are labels for other tools. Vyasa does not decide identity from them.",
+    "Keep values short and structured and point to the documents that hold the detail, using paths relative to the repository.",
+)
+
+
+def _guide_v2() -> dict:
+    fields = [{"name": "schema_version", "type": "integer", "required": True, "description": "Always 2 for this schema.", "allowed_values": [2]}]
+    return {
+        "path": PROFILE_PATH,
+        "format": "toml",
+        "schema_version": 2,
+        "supported_versions": list(SUPPORTED_VERSIONS),
+        "max_bytes": MAX_BYTES,
+        "schema_file": SCHEMA_FILES[2],
+        "fields": fields + profile_v2.guide_fields(),
+        "example": EXAMPLE_V2,
+        "rules": list(WRITER_RULES_V2),
+    }
+
+
+def _schema_v2() -> dict:
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "Vyasa project profile, schema version 2",
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["schema_version"],
+        "properties": {
+            "schema_version": {"const": 2, "description": "Always 2 for this schema."},
+            "project": {**profile_v2.project_schema(), "description": "The project, declared in depth."},
+        },
+    }
+
+
+def profile_guide(version: int = CURRENT_VERSION) -> dict:
+    """Everything a writer needs to produce a valid profile, built from the validation definitions."""
+    if version == 2:
+        return _guide_v2()
+    if version == 1:
+        return _guide_v1()
+    raise ValueError(f"unsupported profile version {version!r}")
+
+
+def json_schema(version: int = CURRENT_VERSION) -> dict:
+    """The profile as a JSON Schema, for editors and validators that read TOML through JSON."""
+    if version == 2:
+        return _schema_v2()
+    if version == 1:
+        return _schema_v1()
+    raise ValueError(f"unsupported profile version {version!r}")

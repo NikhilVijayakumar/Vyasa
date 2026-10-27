@@ -51,7 +51,7 @@ def test_one_bad_field_keeps_the_rest():
     assert result.fields["purpose"] == "Issues invoices." and "lifecycle" not in result.fields
 
 
-@pytest.mark.parametrize("data", [{}, {"name": "x"}, {"schema_version": 2}, {"schema_version": "1"}, {"schema_version": True}])
+@pytest.mark.parametrize("data", [{}, {"name": "x"}, {"schema_version": 3}, {"schema_version": "1"}, {"schema_version": True}])
 def test_missing_or_other_version_is_unsupported(data):
     result = validate_profile(data)
     assert result.status == "unsupported" and result.fields == {}

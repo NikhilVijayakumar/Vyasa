@@ -129,6 +129,71 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 - **Status:** Recommended
 - **Feeds:** FR-002 S3
 
+### Second grill: comprehensive profile and agent context
+
+**Q14. Is the proposed YAML profile at the repository root adopted?**
+
+- **Recommendation:** No. The TOML profile at `.vyasa/project-profile.toml` stays. Owner chose this option.
+- **Why:** TOML is in the standard library, a second authority was rejected, and the writer guide is already built; consumers read the profile through Vyasa, not the raw file.
+- **Status:** Settled
+- **Feeds:** FR-026
+
+**Q15. How deep is the next profile schema?**
+
+- **Recommendation:** Schema version 2 adopts the full proposed template as nested TOML tables: project identity, business purpose, scope, capabilities, declared technology, architecture, interfaces, dependencies, engineering references, documentation map, collaboration, relationships, and profile maintenance. Every field is optional and validated alone. Owner chose the full template, advised that some fields duplicate data other systems own.
+- **Why:** The owner wants one comprehensive, predefined schema that an agent fills from evidence.
+- **Status:** Settled
+- **Feeds:** FR-026
+
+**Q16. How do declared ids fit the remote-derived identity decision?**
+
+- **Recommendation:** `project.id` and the relationship ids are stored as declared labels only: shape-validated, no URLs or paths, shown in details and used only by the differences list. Vyasa's own project identity never reads them. Owner chose this option.
+- **Why:** A wrong or copied declared id must not merge or split projects.
+- **Status:** Settled
+- **Feeds:** FR-026
+
+**Q17. How do versions 1 and 2 coexist?**
+
+- **Recommendation:** Both are read. Version 1 files keep working unchanged; version 2 uses the nested tables and its fields are stored under dotted names such as `project.summary`, while version 1 keeps its names; one accessor reads a value from either version; the guide and JSON Schema describe version 2 and say version 1 is still read. Owner chose this option.
+- **Why:** No existing profile becomes unsupported.
+- **Status:** Settled
+- **Feeds:** FR-026
+
+**Q18. How does the agent get the deterministic facts?**
+
+- **Recommendation:** A read-only MCP tool and a CLI command return the same bundle: the checkout facts Vyasa observed, the profile as read, the differences list, and the writer workflow. Vyasa never launches an agent. Owner chose the tool and the command.
+- **Why:** Launching an agent breaks read-only scanning, explicit operations, and no LLM in the pipeline.
+- **Status:** Settled
+- **Feeds:** FR-027
+
+**Q19. Where does the CLI get its facts?**
+
+- **Recommendation:** A live read-only scan of that one checkout, held in a temporary in-memory index that is discarded; it writes nothing to disk and does not touch the real index. The MCP tool serves the stored observation. Each bundle states its source and observed time. Owner chose this option.
+- **Why:** An agent working in a repository may not have it indexed yet.
+- **Status:** Settled
+- **Feeds:** FR-027
+
+**Q20. Does the differences list ship now?**
+
+- **Recommendation:** Yes. A deterministic comparison of the declared profile with stored observations, labelled as findings for review and never correcting the profile. Owner chose this option.
+- **Why:** A declared technology that was not detected, or the reverse, is a useful review finding.
+- **Status:** Settled
+- **Feeds:** FR-027
+
+**Q21. Which comparisons are safe to make?**
+
+- **Recommendation:** Only where the observation supports them: a declared language or framework is reported as not detected only after a complete assessment; unmatched declared names are reported as not comparable; detected items are reported as undeclared only when the profile declares that category; declared OpenSpec or agent instruction references are compared with the markers.
+- **Why:** Partial results never imply absence.
+- **Status:** Recommended
+- **Feeds:** FR-027
+
+**Q22. How are secrets and contacts kept out of the profile?**
+
+- **Recommendation:** Every text field rejects a URL that carries credentials; the contact reference rejects email addresses and URLs; paths must be repository-relative; the unchanged size limit applies. A rejected field is dropped and reported, the others are kept.
+- **Why:** The profile is repository content and is shown to agents and other projects.
+- **Status:** Recommended
+- **Feeds:** FR-026
+
 ## Decisions for you
 
 - **Q2** — What format and path (DFR-004, DO-001, DO-002)?

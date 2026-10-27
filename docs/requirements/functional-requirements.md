@@ -58,6 +58,8 @@ Each scenario describes observable behaviour rather than prescribing internal im
 | FR-023 | Programming language detection | P1 | [language-detection](language-detection/requirement.md) |
 | FR-024 | Project marker detection | P1 | [project-markers](project-markers/requirement.md) |
 | FR-025 | Framework and technology detection | P1 | [framework-detection](framework-detection/requirement.md) |
+| FR-026 | Comprehensive project profile | P1 | [project-profile](project-profile/requirement.md) |
+| FR-027 | Profile context for coding agents | P1 | [project-profile](project-profile/requirement.md) |
 
 # 4. Where the requirements live
 
@@ -77,7 +79,7 @@ apply to every area, the deferred decisions, and the traceability rules.
 | [local-index](local-index/requirement.md) | FR-007, FR-008 | P1 |
 | [project-query](project-query/requirement.md) | FR-009, FR-010, FR-011, FR-012 | P1 |
 | [mcp-server](mcp-server/requirement.md) | FR-013 | P1 |
-| [project-profile](project-profile/requirement.md) | FR-014 | P1 |
+| [project-profile](project-profile/requirement.md) | FR-014, FR-026, FR-027 | P1 |
 | [shared-registry](shared-registry/requirement.md) | FR-016, FR-017 | P2 |
 | [remote-discovery](remote-discovery/requirement.md) | FR-018, FR-019 | P3 |
 

@@ -1,0 +1,857 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "additionalProperties": false,
+      "description": "The project, declared in depth.",
+      "properties": {
+        "architecture": {
+          "additionalProperties": false,
+          "properties": {
+            "architecture_document": {
+              "description": "The architecture document, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "entry_points": {
+              "description": "Ways the system is started or called.",
+              "items": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "major_components": {
+              "description": "The major components and their responsibilities.",
+              "items": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "style": {
+              "description": "The architectural style.",
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "summary": {
+              "description": "A short summary of the architecture; keep the detail in its document.",
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "trust_boundaries": {
+              "description": "Trust boundaries.",
+              "items": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        },
+        "business": {
+          "additionalProperties": false,
+          "properties": {
+            "business_objectives": {
+              "description": "What the project is meant to achieve.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "constraints": {
+              "description": "Business or engineering constraints.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "non_goals": {
+              "description": "What the project deliberately does not do.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "problem_statement": {
+              "description": "The problem the project solves.",
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "success_criteria": {
+              "description": "How success is recognized.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "target_users": {
+              "description": "Who the project is for.",
+              "items": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        },
+        "capabilities": {
+          "description": "What the project does, as capabilities rather than tasks.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "description": "What it does.",
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "description": "A label for the capability.",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+                "type": "string"
+              },
+              "name": {
+                "description": "The capability's name.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              "source": {
+                "description": "The document that describes it, relative to the repository.",
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "status": {
+                "description": "Its status, from the project's own records.",
+                "enum": [
+                  "planned",
+                  "in_progress",
+                  "available",
+                  "deprecated",
+                  "unknown"
+                ]
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "type": "object"
+          },
+          "maxItems": 30,
+          "type": "array"
+        },
+        "codename": {
+          "description": "An internal codename, if there is one.",
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "collaboration": {
+          "additionalProperties": false,
+          "properties": {
+            "branch_policy_reference": {
+              "description": "The branching policy document, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "coding_agents": {
+              "description": "Coding agents used on the project.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 10,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "contribution_rules": {
+              "description": "Rules for contributing.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "review_policy_reference": {
+              "description": "The review policy document, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "created_date": {
+          "description": "When the project was created, as YYYY-MM-DD.",
+          "format": "date",
+          "type": "string"
+        },
+        "dependencies": {
+          "additionalProperties": false,
+          "properties": {
+            "critical_dependencies": {
+              "description": "Dependencies it cannot work without.",
+              "items": {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "external_services": {
+              "description": "External services it depends on.",
+              "items": {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "internal_projects": {
+              "description": "Other projects it depends on, by remote identity or name.",
+              "items": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        },
+        "description": {
+          "description": "A short explanation of the project's purpose and boundaries.",
+          "maxLength": 1000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "documentation": {
+          "additionalProperties": false,
+          "properties": {
+            "api_reference": {
+              "description": "The API reference, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "architecture": {
+              "description": "The architecture document, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "contributing": {
+              "description": "The contribution guide, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "decisions": {
+              "description": "The decision records, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "developer_guide": {
+              "description": "The developer guide, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "operations": {
+              "description": "The operations guide, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "overview": {
+              "description": "The overview or README, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "requirements": {
+              "description": "The requirements, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "scope_and_roadmap": {
+              "description": "The scope and roadmap document, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "security": {
+              "description": "The security guidance, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "vision": {
+              "description": "The vision document, relative to the repository.",
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "domain": {
+          "description": "The business or technical domain.",
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "engineering": {
+          "additionalProperties": false,
+          "properties": {
+            "agent_instructions": {
+              "description": "Instruction files for coding agents.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "description": "The instruction file, relative to the repository.",
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "purpose": {
+                    "description": "What it covers.",
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "type": "object"
+              },
+              "maxItems": 10,
+              "type": "array"
+            },
+            "okf": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "description": "Whether the project keeps an OKF knowledge bundle: true, false, or \"unknown\".",
+                  "enum": [
+                    true,
+                    false,
+                    "unknown"
+                  ]
+                },
+                "format_version": {
+                  "description": "The OKF version the bundle declares.",
+                  "maxLength": 20,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "root": {
+                  "description": "The knowledge bundle directory, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "openspec": {
+              "additionalProperties": false,
+              "properties": {
+                "configuration": {
+                  "description": "The OpenSpec configuration file, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "enabled": {
+                  "description": "Whether the project uses OpenSpec: true, false, or \"unknown\".",
+                  "enum": [
+                    true,
+                    false,
+                    "unknown"
+                  ]
+                },
+                "root": {
+                  "description": "The OpenSpec directory, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "operations": {
+              "additionalProperties": false,
+              "properties": {
+                "backup_recovery_reference": {
+                  "description": "The backup and recovery document, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "deployment_document": {
+                  "description": "The deployment guide, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "monitoring_reference": {
+                  "description": "The monitoring document, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "runbook": {
+                  "description": "The operations runbook, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "security": {
+              "additionalProperties": false,
+              "properties": {
+                "authentication_summary": {
+                  "description": "How authentication works, in brief.",
+                  "maxLength": 500,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "classification": {
+                  "description": "How sensitive the project is.",
+                  "enum": [
+                    "public",
+                    "internal",
+                    "confidential",
+                    "restricted",
+                    "unknown"
+                  ]
+                },
+                "security_document": {
+                  "description": "The security document, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sensitive_data_summary": {
+                  "description": "What sensitive data it handles, in brief. Never include the data.",
+                  "maxLength": 500,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "testing": {
+              "additionalProperties": false,
+              "properties": {
+                "required_checks": {
+                  "description": "Checks required before merging.",
+                  "items": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 20,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "strategy_reference": {
+                  "description": "The test strategy document, relative to the repository.",
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "test_entry_points": {
+                  "description": "Where tests start or how they are run.",
+                  "items": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 20,
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "id": {
+          "description": "A label for this project that other tools may use. Vyasa never uses it to identify or merge projects.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+          "type": "string"
+        },
+        "interfaces": {
+          "description": "Interfaces the project offers or relies on.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contract_reference": {
+                "description": "The document or schema that defines it, relative to the repository.",
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "name": {
+                "description": "The interface's name.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              "purpose": {
+                "description": "What it is for.",
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "description": "The kind of interface.",
+                "enum": [
+                  "api",
+                  "mcp",
+                  "cli",
+                  "event",
+                  "library",
+                  "file",
+                  "other"
+                ]
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "type": "object"
+          },
+          "maxItems": 30,
+          "type": "array"
+        },
+        "last_reviewed_date": {
+          "description": "When a person last reviewed this profile, as YYYY-MM-DD.",
+          "format": "date",
+          "type": "string"
+        },
+        "lifecycle_status": {
+          "description": "Where the project stands. Use unknown if you cannot tell.",
+          "enum": [
+            "planned",
+            "active",
+            "maintenance",
+            "paused",
+            "deprecated",
+            "archived",
+            "unknown"
+          ]
+        },
+        "name": {
+          "description": "The project's name.",
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "owner": {
+          "additionalProperties": false,
+          "properties": {
+            "contact_reference": {
+              "description": "A channel or handle to reach the owner. Never an email address or a URL.",
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "role": {
+              "description": "The owning role, for example maintainer. Never an email address or a URL.",
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "team": {
+              "description": "The team responsible for the project. Never an email address or a URL.",
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "profile_maintenance": {
+          "additionalProperties": false,
+          "properties": {
+            "last_verified_commit": {
+              "description": "The commit at which the profile was last checked, 7 to 64 hexadecimal characters.",
+              "pattern": "^[0-9a-fA-F]{7,64}$",
+              "type": "string"
+            },
+            "maintained_by": {
+              "description": "Who keeps this profile up to date. Never an email address or a URL.",
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "review_frequency": {
+              "description": "How often it is reviewed.",
+              "enum": [
+                "weekly",
+                "monthly",
+                "quarterly",
+                "yearly",
+                "on_change",
+                "unknown"
+              ]
+            },
+            "verification_notes": {
+              "description": "Notes from the last check.",
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "project_type": {
+          "description": "What kind of project this is.",
+          "enum": [
+            "application",
+            "library",
+            "service",
+            "platform",
+            "tool",
+            "game",
+            "documentation",
+            "other",
+            "unknown"
+          ]
+        },
+        "relationships": {
+          "additionalProperties": false,
+          "properties": {
+            "parent_project_id": {
+              "description": "The declared label of a parent project. Never used for identity.",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+              "type": "string"
+            },
+            "related_project_ids": {
+              "description": "Declared labels of related projects. Never used for identity.",
+              "items": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "replaced_by_project_id": {
+              "description": "The declared label of the project that replaces this one. Never used for identity.",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+              "type": "string"
+            },
+            "replaces_project_ids": {
+              "description": "Declared labels of projects this one replaces. Never used for identity.",
+              "items": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        },
+        "scope": {
+          "additionalProperties": false,
+          "properties": {
+            "in_scope": {
+              "description": "What is in scope.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "known_limitations": {
+              "description": "Known limitations.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "out_of_scope": {
+              "description": "What is out of scope.",
+              "items": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 20,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        },
+        "summary": {
+          "description": "One sentence on what the project is.",
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "technology": {
+          "additionalProperties": false,
+          "properties": {
+            "declared_datastores": {
+              "description": "Databases and other stores it uses.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "declared_frameworks": {
+              "description": "Frameworks and libraries the project declares it uses.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "declared_integrations": {
+              "description": "Services it integrates with.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "declared_languages": {
+              "description": "Programming languages the project declares it uses.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "declared_platforms": {
+              "description": "Platforms it runs on.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "deployment_targets": {
+              "description": "Where it is deployed.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "infrastructure": {
+              "description": "Infrastructure it needs.",
+              "items": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 30,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "schema_version": {
+      "const": 2,
+      "description": "Always 2 for this schema."
+    }
+  },
+  "required": [
+    "schema_version"
+  ],
+  "title": "Vyasa project profile, schema version 2",
+  "type": "object"
+}
