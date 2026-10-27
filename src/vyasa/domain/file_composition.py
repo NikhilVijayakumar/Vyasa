@@ -5,7 +5,8 @@ Classification looks at the file name only. Nothing here touches the filesystem.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 
 CODE = "code"
 DOCUMENTATION = "documentation"
@@ -31,11 +32,13 @@ def extension(name: str) -> str:
 
 @dataclass(frozen=True)
 class FileTypes:
-    """Versioned extension lists. The two lists are disjoint."""
+    """Versioned extension lists (disjoint), plus language labels per code extension and per manifest name."""
 
     version: int
     code_extensions: frozenset[str]
     documentation_extensions: frozenset[str]
+    languages: Mapping[str, str] = field(default_factory=dict)
+    manifests: Mapping[str, str] = field(default_factory=dict)
 
     def classify(self, name: str) -> str:
         """Classify one file name as code, documentation, or other."""
