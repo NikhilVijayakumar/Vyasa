@@ -55,6 +55,7 @@ Each scenario describes observable behaviour rather than prescribing internal im
 | FR-020 | Duplicate and obsolete candidates | P1–P3 | [project-identity](project-identity/requirement.md) |
 | FR-021 | File composition | P1 | [file-composition](file-composition/requirement.md) |
 | FR-022 | Repository-provided ignore file | P1 | [workspace-discovery](workspace-discovery/requirement.md) |
+| FR-023 | Programming language detection | P1 | [language-detection](language-detection/requirement.md) |
 
 # 4. Where the requirements live
 
@@ -68,6 +69,7 @@ apply to every area, the deferred decisions, and the traceability rules.
 | [project-identity](project-identity/requirement.md) | FR-003, FR-020 | P1 |
 | [metadata-and-evidence](metadata-and-evidence/requirement.md) | FR-004, FR-005, FR-006 | P1 |
 | [file-composition](file-composition/requirement.md) | FR-021 | P1 |
+| [language-detection](language-detection/requirement.md) | FR-023 | P1 |
 | [local-index](local-index/requirement.md) | FR-007, FR-008 | P1 |
 | [project-query](project-query/requirement.md) | FR-009, FR-010, FR-011, FR-012 | P1 |
 | [mcp-server](mcp-server/requirement.md) | FR-013 | P1 |
