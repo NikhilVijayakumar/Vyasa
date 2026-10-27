@@ -21,6 +21,21 @@
       "open_world_hint": false,
       "read_only_hint": true
     },
+    "description": "Explain how to write a project's Vyasa profile: the file path and format, every field with its limits and allowed values, a complete example, and rules for the writer. Call this before writing `.vyasa/project-profile.toml` in a repository, then write the file yourself; Vyasa only reads it, on its next scan.",
+    "input_schema": {
+      "properties": {},
+      "title": "get_profile_guideArguments",
+      "type": "object"
+    },
+    "name": "get_profile_guide"
+  },
+  {
+    "annotations": {
+      "destructive_hint": false,
+      "idempotent_hint": true,
+      "open_world_hint": false,
+      "read_only_hint": true
+    },
     "description": "Get one project by its opaque `project_id` (from search_projects): identity and aliases, checkouts with their remote, open review candidates, and timestamps. A missing remote is reported as provider `none`.",
     "input_schema": {
       "properties": {

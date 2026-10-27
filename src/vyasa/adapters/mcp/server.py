@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import sys
 from collections.abc import Callable
+from datetime import datetime, timezone
 from pathlib import Path
 
 from mcp.server.mcpserver import MCPServer
@@ -18,6 +19,7 @@ from vyasa.adapters.sqlite.database import open_index
 from vyasa.application import query as queries
 from vyasa.application.indexing.store import index_path
 from vyasa.domain.index import INTERNAL_ERROR, UNAVAILABLE, IndexStoreError
+from vyasa.domain.profile import profile_guide
 
 INSTRUCTIONS = (
     "Vyasa answers questions about the software projects indexed on this machine. Every tool is read-only and "
@@ -77,6 +79,12 @@ def build_server(index_file: Path) -> MCPServer:
     def get_index_status() -> CallToolResult:
         """Report how reliable the index is: freshness (current, stale, partial, unknown), the latest run, project counts by state, and the number of open review candidates."""
         return _run(index_file, queries.get_index_status)
+
+    @server.tool(annotations=READ_ONLY)
+    def get_profile_guide() -> CallToolResult:
+        """Explain how to write a project's Vyasa profile: the file path and format, every field with its limits and allowed values, a complete example, and rules for the writer. Call this before writing `.vyasa/project-profile.toml` in a repository, then write the file yourself; Vyasa only reads it, on its next scan."""
+        result = {"schema_version": queries.SCHEMA_VERSION, "data": profile_guide(), "meta": {"generated_at": datetime.now(timezone.utc).isoformat()}}
+        return CallToolResult(content=[TextContent(type="text", text=json.dumps(result))], structured_content=result)
 
     return server
 

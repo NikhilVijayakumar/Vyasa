@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "documentation": {
+      "additionalProperties": false,
+      "properties": {
+        "entry_point": {
+          "description": "The main documentation file, as a path inside the repository.",
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "domain": {
+      "description": "The business or problem areas the project serves, for example payments.",
+      "items": {
+        "maxLength": 64,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 20,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "lifecycle": {
+      "description": "Where the project stands. Omit if you cannot tell.",
+      "enum": [
+        "active",
+        "maintenance",
+        "experimental",
+        "deprecated",
+        "archived"
+      ]
+    },
+    "name": {
+      "description": "The project's own name, if it differs from its folder name.",
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "owners": {
+      "description": "Teams or people responsible. Use names or handles, never contact secrets.",
+      "items": {
+        "maxLength": 100,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 20,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "purpose": {
+      "description": "One or two sentences on what the project is for. State only what the repository shows.",
+      "maxLength": 500,
+      "minLength": 1,
+      "type": "string"
+    },
+    "related_projects": {
+      "description": "Other projects this one depends on, is used by, or is related to.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "identity": {
+            "description": "The other project's remote identity (host/organization/repository) or its name.",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "relation": {
+            "description": "How the other project relates to this one.",
+            "enum": [
+              "depends_on",
+              "used_by",
+              "related"
+            ]
+          }
+        },
+        "required": [
+          "identity",
+          "relation"
+        ],
+        "type": "object"
+      },
+      "maxItems": 20,
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "description": "Always 1."
+    },
+    "tags": {
+      "description": "Short free-form labels.",
+      "items": {
+        "maxLength": 64,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 20,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "technologies": {
+      "description": "Main languages, frameworks, and services the project is built with.",
+      "items": {
+        "maxLength": 64,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 20,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version"
+  ],
+  "title": "Vyasa project profile, schema version 1",
+  "type": "object"
+}
