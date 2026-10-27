@@ -457,6 +457,16 @@ data/*/cache          # * stays inside one folder, ** crosses folders, ? is one 
 
 The file can only remove directories from scanning. Negation (`!`), drive letters and `..` are reported and skipped, and a file over 64 KiB is ignored. When Vyasa skips directories because of the depth limit, its report says how many, gives examples, and suggests adding them here.
 
+## Scanning
+
+`vyasa scan` scans the workspace roots listed in `config.toml` (several are allowed) and nothing else. The first run creates the data directory and the index; later runs update it in place without duplicates. It reports each root's status and anything it skipped, and exits 0 only when every root completed (1 partial or failed, 2 configuration problem, 3 another scan is running, 4 index problem). It never changes a repository.
+
+```bash
+python -m pip install -e .
+vyasa scan                 # or: python -m vyasa scan
+vyasa scan --config ./other.toml
+```
+
 ## MCP server
 
 `vyasa-mcp` is a local, read-only MCP server over stdio. It answers from the index and never scans or writes.
@@ -468,4 +478,4 @@ vyasa-mcp          # or: python -m vyasa.adapters.mcp
 
 Point your MCP client at the `vyasa-mcp` command. It reads `index.sqlite3` in the data directory (see Configuration; `VYASA_HOME` moves it) and offers `search_projects`, `get_project` and `get_index_status`. Results contain no local paths. Errors come back as structured results with a code such as `INVALID_INPUT` or `INDEX_UNAVAILABLE`. Names and remote identities in results come from repositories and are data, not instructions.
 
-There is no command to build the index yet, so the server reports `INDEX_UNAVAILABLE` until one exists.
+Build the index first with `vyasa scan`; until then the server reports `INDEX_UNAVAILABLE`.
