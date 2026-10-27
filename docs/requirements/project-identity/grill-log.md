@@ -53,14 +53,14 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q5. What identity does a repository without a remote get?**
 
-- **Recommendation:** The root-commit hash, read through one sanitized read-only Git call (`rev-list --max-parents=0`). If that is unavailable, a provisional identity derived from the real path, flagged for review so a move raises a candidate instead of silently creating a project.
-- **Why:** A root commit is stable across renames and devices without writing into the repository.
-- **Status:** Decision needed
+- **Recommendation:** A repository with no usable remote (none, several with no `origin`, a local-path remote, or an unreadable or pointer-file Git entry) is a local project: a provisional identity matched by its checkout path. No Git program is run. A move creates a new project and leaves the old one missing; nothing is linked by name. Confirmed by the owner 2026-10-27; root-commit identity is dropped permanently.
+- **Why:** Running Git inside an untrusted repository is an execution risk, and the only gain is matching remote-less repositories across devices, which phase 1 does not do. Moving a remote-less repository is rare; two records are honest and recoverable.
+- **Status:** Settled
 - **Feeds:** FR-003 S2
 
 **Q6. In what order is an existing project looked up on rediscovery?**
 
-- **Recommendation:** Normalized remote alias, then known checkout path, then root commit. A remote that changed at a known path is a remote-changed event on the same project, not a new one.
+- **Recommendation:** Normalized remote alias, then known checkout path, then nothing further (a repository without a remote is matched by path alone). A remote that changed at a known path is a remote-changed event on the same project, not a new one.
 - **Why:** Prevents duplicates on rename or transfer while still detecting real change.
 - **Status:** Recommended
 - **Feeds:** FR-003 S3
@@ -118,7 +118,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q13. What are the duplicate-candidate rules (FR-020)?**
 
-- **Recommendation:** (a) two checkouts of one repository; (b) two projects with the same normalized remote, treated as an integrity alert; (c) same root commit and different remotes with no fork evidence, low confidence. Names alone never qualify. Each flag carries a rule id, evidence, and a confidence tier.
+- **Recommendation:** (a) two checkouts of one repository; (b) two projects with the same normalized remote, treated as an integrity alert; (c) dropped together with root-commit identity. Names alone never qualify. Each flag carries a rule id, evidence, and a confidence tier.
 - **Why:** Deterministic rules are explainable, which FR-020 S5 requires.
 - **Status:** Recommended
 - **Feeds:** FR-020 S1, S5
@@ -152,7 +152,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q17. What if history is rewritten or the clone is shallow?**
 
-- **Recommendation:** A changed root commit with the same remote is an alias update, not a new project. A shallow clone may not expose the root commit; then the remote or the provisional identity applies.
+- **Recommendation:** No root commit is read, so rewritten history and shallow clones do not affect identity. A changed remote at a known path is an alias update, not a new project.
 - **Why:** These are the common ways a fallback identity breaks.
 - **Status:** Recommended
 - **Feeds:** FR-003 S2

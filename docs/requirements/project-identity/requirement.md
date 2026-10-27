@@ -68,13 +68,13 @@ Observable behaviour is specified as Gherkin scenarios in `features/`. Scenarios
 
 ## Open Decisions
 
-Confirmed by the owner on 2026-10-27, except where a row says otherwise.
+Confirmed by the owner on 2026-10-27, except where a row says otherwise. Q5 was revised by the owner on 2026-10-27 to local-only identity.
 
 | Decision | Recommended direction | Grill |
 |---|---|---|
 | DFR-005 / DM-002 | Normalize remotes to host/org/repo, lowercase for GitHub and Bitbucket; use origin, else the only remote. | Q2 |
 | DO-004 / DM-001 | Create the ID once from the first strongest evidence; later evidence becomes aliases; the ID is never recomputed. | Q4 |
-| DM-002 | No remote: root-commit hash through one sanitized read-only Git call; otherwise a provisional path-based identity flagged for review. | Q5 |
+| DM-002 | No usable remote: a local project with a provisional identity matched by path. No Git is run; root-commit identity is dropped permanently. | Q5 |
 | FR-020 | Duplicate rules are deterministic; obsolescence needs a declared state; time-based rules are opt-in. | Q14 |
 
 ## Delivery

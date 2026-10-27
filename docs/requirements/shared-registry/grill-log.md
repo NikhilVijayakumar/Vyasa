@@ -131,7 +131,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q14. Are projects with only a provisional identity exported?**
 
-- **Recommendation:** No. They are flagged and left out until they have a remote or a root-commit identity, since another device could not match them.
+- **Recommendation:** No. They are flagged and left out until they have a remote, since another device could not match them.
 - **Why:** A row nobody can match is clutter.
 - **Status:** Recommended
 - **Feeds:** FR-017 S2

@@ -175,3 +175,14 @@ def test_migration_backfills_aliases_and_keeps_projects(tmp_path):
     assert connection.execute("SELECT COUNT(*) FROM projects").fetchone()[0] == 3
     assert (tmp_path / "index.sqlite3.bak-v1").is_file()
     connection.close()
+
+
+@pytest.mark.parametrize("status", ["ambiguous", "unavailable", "none"])
+def test_unusable_remote_is_a_local_project_without_a_flag(db, status):
+    candidate = Candidate(ROOT / "a", "eligible", kind="repository", git=".", remote=None, remote_status=status)
+    store(db, make_run([candidate]))
+    row = project(db, "a")
+    assert (row["identity_status"], row["identity_source"], row["remote_status"]) == ("provisional", "path", status)
+    assert db.execute("SELECT COUNT(*) FROM review_flags").fetchone()[0] == 0
+    store(db, make_run([Candidate(ROOT / "moved", "eligible", kind="repository", git=".", remote_status=status)]))
+    assert db.execute("SELECT COUNT(*) FROM projects").fetchone()[0] == 2  # a move is a new project; nothing is linked
