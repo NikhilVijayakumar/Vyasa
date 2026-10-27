@@ -299,3 +299,47 @@ def test_details_carry_composition_per_checkout(comp_index):
     pid = call(comp_index, "search_projects", {"query": "notes"}).structured_content["data"]["projects"][0]["project_id"]
     (checkout,) = call(comp_index, "get_project", {"project_id": pid}).structured_content["data"]["checkouts"]
     assert checkout["composition"]["total"] == 4 and checkout["composition"]["documentation_only"] is True
+
+
+# -- markers -----------------------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def marker_index(tmp_path):
+    from dataclasses import replace
+
+    from vyasa.domain.file_composition import Evidence, WalkLimits
+    from vyasa.domain.languages import LanguageOutcome, LanguageReport
+    from vyasa.domain.markers import MarkerFound, MarkerReport
+
+    path = tmp_path / "index.sqlite3"
+    w = open_index(path)
+    languages = LanguageReport((), (), None, Evidence(2, (), WalkLimits()))
+    tested = LanguageOutcome(languages, markers=MarkerReport((MarkerFound("tests", 1, ("test_directory",), (("tests", None),)),), 1, None))
+    bare = LanguageOutcome(languages, markers=MarkerReport((), 1, None))
+    store(w, make_run([replace(repo("tested"), languages=tested), replace(repo("bare"), languages=bare)]))
+    w.close()
+    return path
+
+
+def test_search_filters_by_marker_through_the_tool(marker_index):
+    for args, expected in (
+        ({"marker": ["tests"]}, ["tested"]),
+        ({"marker": "tests", "marker_state": "detected"}, ["tested"]),
+        ({"marker": "tests", "marker_state": "not_detected"}, ["bare"]),
+    ):
+        body = call(marker_index, "search_projects", args).structured_content
+        assert [p["display_name"] for p in body["data"]["projects"]] == expected
+
+
+def test_unknown_marker_is_a_structured_error(marker_index):
+    result = call(marker_index, "search_projects", {"marker": "readmee"})
+    assert result.is_error and result.structured_content["error"]["code"] == "INVALID_INPUT"
+    assert "readme" in result.structured_content["error"]["message"]
+
+
+def test_details_carry_markers_per_checkout(marker_index):
+    pid = call(marker_index, "search_projects", {"query": "tested"}).structured_content["data"]["projects"][0]["project_id"]
+    (checkout,) = call(marker_index, "get_project", {"project_id": pid}).structured_content["data"]["checkouts"]
+    states = {i["marker"]: i["state"] for i in checkout["markers"]["items"]}
+    assert states["tests"] == "detected" and states["readme"] == "not_detected"
