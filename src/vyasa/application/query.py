@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 
 from vyasa.adapters.sqlite import projects, review
 from vyasa.application.indexing.store import freshness
+from vyasa.application.scanning.file_composition import default_file_types
 from vyasa.domain.index import (
     INVALID_CURSOR,
     INVALID_INPUT,
@@ -29,6 +30,7 @@ MAX_LIMIT = 100
 MAX_QUERY = 200
 IDENTITY_STATUSES = ("resolved", "provisional", "ambiguous")
 PROVIDERS = ("github", "bitbucket", "gitlab", "other", "local", "none")
+LANGUAGE_STATUSES = ("files_detected", "declared")
 
 
 def _utc_now() -> datetime:
@@ -59,6 +61,21 @@ def _choices(name: str, value: object, allowed: tuple[str, ...]) -> list[str] | 
     return sorted(set(values)) or None
 
 
+def _languages(value: object) -> list[str] | None:
+    """Canonical labels for a case-insensitive request, or an error that lists every allowed label."""
+    if value is None:
+        return None
+    types = default_file_types()
+    allowed = {label.casefold(): label for label in (*types.languages.values(), *types.manifests.values())}
+    values = [value] if isinstance(value, str) else value
+    if not isinstance(values, (list, tuple)) or not values or not all(isinstance(v, str) and v for v in values):
+        raise IndexStoreError(INVALID_INPUT, "language must be a label or a list of labels")
+    bad = [v for v in values if v.casefold() not in allowed]
+    if bad:
+        raise IndexStoreError(INVALID_INPUT, f"language: unknown value {bad[0]!r}; allowed: {', '.join(sorted(allowed.values()))}")
+    return sorted({allowed[v.casefold()] for v in values})
+
+
 def _like(text: str) -> str:
     """A LIKE pattern matching ``text`` literally anywhere."""
     escaped = text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
@@ -86,6 +103,8 @@ def search_projects(
     state: object = None,
     provider: object = None,
     identity_status: object = None,
+    language: object = None,
+    language_status: object = None,
     limit: int = DEFAULT_LIMIT,
     cursor: str | None = None,
     now: Callable[[], datetime] = _utc_now,
@@ -99,6 +118,8 @@ def search_projects(
     states = _choices("state", state, PROJECT_STATES)
     providers = _choices("provider", provider, PROVIDERS)
     statuses = _choices("identity_status", identity_status, IDENTITY_STATUSES)
+    labels = _languages(language)
+    kinds = _choices("language_status", language_status, LANGUAGE_STATUSES)
     after = _decode(cursor) if cursor else None
 
     # Clauses are fixed strings; every value is bound.
@@ -122,6 +143,17 @@ def search_projects(
             f" COALESCE(c.remote_provider, 'none') IN ({', '.join('?' * len(providers))}))"
         )
         args += providers
+    if labels:
+        where.append(
+            "EXISTS (SELECT 1 FROM checkouts c JOIN language_observations o ON o.observation_id ="
+            " (SELECT MAX(observation_id) FROM language_observations WHERE checkout_id = c.checkout_id)"
+            " JOIN checkout_languages l ON l.observation_id = o.observation_id"
+            " WHERE c.project_id = p.project_id AND c.state = 'active'"
+            f" AND l.label IN ({', '.join('?' * len(labels))})"
+            + (f" AND l.status IN ({', '.join('?' * len(kinds))})" if kinds else "")
+            + ")"
+        )
+        args += labels + (kinds or [])
     if after:
         where.append("(lower(p.display_name), p.project_id) > (?, ?)")
         args += list(after)
@@ -146,7 +178,8 @@ def search_projects(
         flagged = connection.execute(
             "SELECT 1 FROM review_flags WHERE project_id = ? AND state = 'open' LIMIT 1", (row["project_id"],)
         ).fetchone()
-        items.append({
+        found = projects.present_languages(connection, row["project_id"])
+        item = {
             "project_id": row["project_id"],
             "display_name": row["display_name"],
             "state": row["state"],
@@ -154,7 +187,15 @@ def search_projects(
             "providers": sorted({c["provider"] for c in checkouts}),
             "has_open_candidates": flagged is not None,
             "matched": matched,
-        })
+            "languages": sorted({label for label, _status in found}),
+        }
+        if labels:
+            item["language_matches"] = [
+                {"label": label, "statuses": sorted({s for l, s in found if l == label and (not kinds or s in kinds)})}
+                for label in labels
+                if any(l == label and (not kinds or s in kinds) for l, s in found)
+            ]
+        items.append(item)
     more = len(rows) > limit
     last = page[-1] if page else None
     data = {
@@ -193,6 +234,7 @@ def get_project(
                 "identity": c["remote_identity"],
                 "status": c["remote_status"],
             },
+            "languages": projects.checkout_languages(connection, c["checkout_id"]),
             "first_seen_at": c["first_seen_at"],
             "last_seen_at": c["last_seen_at"],
         }

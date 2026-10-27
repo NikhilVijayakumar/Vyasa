@@ -53,7 +53,8 @@ Migration 0006 adds:
 | | `observed_at` | text (ISO) | Yes | |
 | | `status` | text | Yes | `complete`, `partial`, `failed` |
 | | `stopped_by` | text | No | Set exactly when `partial` |
-| | `types_version` | integer | Yes | The data version used |
+| | `types_version` | integer | Yes | The data version used; 0 for a failed observation |
+| | `duration_ms` | integer | Yes | How long the walk took, so the cost of each scan is visible |
 | | `reason` | text | No | Set exactly when `failed`; one of a fixed set |
 | `checkout_languages` | `observation_id` | integer | Yes | References `language_observations`, cascade on delete |
 | | `label` | text | Yes | |

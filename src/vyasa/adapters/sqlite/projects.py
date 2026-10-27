@@ -175,6 +175,44 @@ def _store_languages(connection: sqlite3.Connection, checkout_id: int, outcome: 
     )
 
 
+_CURRENT = "(SELECT MAX(observation_id) FROM language_observations WHERE checkout_id = c.checkout_id)"
+
+
+def present_languages(connection: sqlite3.Connection, project_id: str) -> list[tuple[str, str]]:
+    """(label, status) pairs from the current observation of each active checkout of a project."""
+    return [
+        (r[0], r[1])
+        for r in connection.execute(
+            "SELECT l.label, l.status FROM checkouts c JOIN checkout_languages l ON l.observation_id = " + _CURRENT +
+            " WHERE c.project_id = ? AND c.state = 'active'",
+            (project_id,),
+        )
+    ]
+
+
+def checkout_languages(connection: sqlite3.Connection, checkout_id: int) -> dict:
+    """The current language observation of one checkout, or not_observed. Counts are never summed across checkouts."""
+    row = connection.execute(
+        "SELECT observation_id, status, stopped_by, observed_at, types_version, reason FROM language_observations"
+        " WHERE checkout_id = ? ORDER BY observation_id DESC LIMIT 1",
+        (checkout_id,),
+    ).fetchone()
+    if row is None:
+        return {"status": "not_observed", "stopped_by": None, "observed_at": None, "types_version": None, "items": []}
+    items = [
+        {"label": r[0], "status": r[1], "files": r[2]}
+        for r in connection.execute(
+            "SELECT label, status, files FROM checkout_languages WHERE observation_id = ? ORDER BY label, status",
+            (row["observation_id"],),
+        )
+    ]
+    result = {"status": row["status"], "stopped_by": row["stopped_by"], "observed_at": row["observed_at"],
+              "types_version": row["types_version"], "items": items}
+    if row["reason"]:
+        result["reason"] = row["reason"]
+    return result
+
+
 def project_profile(connection: sqlite3.Connection, project_id: str) -> dict:
     """The profile shown for a project: an active checkout first, readable before not, then the earliest seen."""
     row = connection.execute(
