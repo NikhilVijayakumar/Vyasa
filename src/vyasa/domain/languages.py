@@ -9,7 +9,7 @@ from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from vyasa.domain.file_composition import Evidence, FileTypes, extension
+from vyasa.domain.file_composition import Evidence, FileComposition, FileTypes, extension
 
 
 @dataclass(frozen=True)
@@ -36,12 +36,21 @@ class LanguageReport:
 
 
 @dataclass(frozen=True)
+class CheckoutScan:
+    """The counts and the languages of one checkout, both from the same walk."""
+
+    composition: FileComposition
+    languages: LanguageReport
+
+
+@dataclass(frozen=True)
 class LanguageOutcome:
-    """What the scan learned about one checkout: a report, or the reason detection failed."""
+    """What the scan learned about one checkout: its report and counts, or the reason detection failed."""
 
     report: LanguageReport | None = None
     failed: str | None = None
     seconds: float = 0.0
+    composition: FileComposition | None = None
 
 
 DETECTION_ERROR = "detection_error"

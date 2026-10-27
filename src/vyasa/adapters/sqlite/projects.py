@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 
 from vyasa.domain.discovery import Candidate
+from vyasa.domain.file_composition import documentation_only
 from vyasa.domain.languages import LanguageOutcome
 from vyasa.domain.profile import ABSENT, PROFILE_PATH, ProfileResult
 from vyasa.domain.index import (
@@ -157,10 +158,12 @@ def _store_languages(connection: sqlite3.Connection, checkout_id: int, outcome: 
     else:
         status = "complete" if report.complete else "partial"
         stopped, reason, version = report.stopped_by, None, report.evidence.types_version
+    counts = outcome.composition
     observation = connection.execute(
-        "INSERT INTO language_observations (checkout_id, run_id, observed_at, status, stopped_by, types_version, reason, duration_ms)"
-        " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (checkout_id, run_id, stamp, status, stopped, version, reason, round(outcome.seconds * 1000)),
+        "INSERT INTO language_observations (checkout_id, run_id, observed_at, status, stopped_by, types_version, reason, duration_ms,"
+        " code_files, documentation_files, other_files) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (checkout_id, run_id, stamp, status, stopped, version, reason, round(outcome.seconds * 1000),
+         *((counts.code, counts.documentation, counts.other) if counts and report else (None, None, None))),
     ).lastrowid
     if report is not None:
         connection.executemany(
@@ -188,6 +191,22 @@ def present_languages(connection: sqlite3.Connection, project_id: str) -> list[t
             (project_id,),
         )
     ]
+
+
+def checkout_composition(connection: sqlite3.Connection, checkout_id: int) -> dict:
+    """The counts of the current observation of one checkout, or not_counted. Never summed across checkouts."""
+    row = connection.execute(
+        "SELECT status, stopped_by, observed_at, code_files, documentation_files, other_files FROM language_observations"
+        " WHERE checkout_id = ? ORDER BY observation_id DESC LIMIT 1",
+        (checkout_id,),
+    ).fetchone()
+    if row is None or row["code_files"] is None:
+        return {"status": "not_counted", "stopped_by": None, "observed_at": None, "code": None, "documentation": None,
+                "other": None, "total": None, "documentation_only": None}
+    code, docs, other = row["code_files"], row["documentation_files"], row["other_files"]
+    return {"status": row["status"], "stopped_by": row["stopped_by"], "observed_at": row["observed_at"], "code": code,
+            "documentation": docs, "other": other, "total": code + docs + other,
+            "documentation_only": documentation_only(code, docs, row["status"] == "complete")}
 
 
 def checkout_languages(connection: sqlite3.Connection, checkout_id: int) -> dict:

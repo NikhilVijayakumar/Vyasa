@@ -11,10 +11,10 @@ from pathlib import Path
 
 from vyasa.application.indexing.store import StoredRun, store_run
 from vyasa.application.scanning.discovery import discover_repositories
+from vyasa.application.scanning.checkout_scan import scan_checkout
 from vyasa.application.scanning.file_composition import default_file_types
-from vyasa.application.scanning.languages import detect_languages
 from vyasa.domain.discovery import COMPLETE, ELIGIBLE, PARTIAL, DiscoveryRun, ScanWarning
-from vyasa.domain.languages import DETECTION_ERROR, LanguageOutcome, LanguageReport
+from vyasa.domain.languages import DETECTION_ERROR, CheckoutScan, LanguageOutcome
 from vyasa.domain.workspace_config import WorkspaceConfig
 
 NOT_DETECTED_ADVICE = "Languages could not be detected for these checkouts; their other data was stored. Rescan to retry."
@@ -31,7 +31,7 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _with_languages(run: DiscoveryRun, detect: Callable[[Path], LanguageReport]) -> DiscoveryRun:
+def _with_languages(run: DiscoveryRun, detect: Callable[[Path], CheckoutScan]) -> DiscoveryRun:
     """Detect languages for each eligible checkout. A failure is kept for that checkout and makes the run partial."""
     found, failed = [], []
     for candidate in run.repositories:
@@ -40,7 +40,8 @@ def _with_languages(run: DiscoveryRun, detect: Callable[[Path], LanguageReport])
             continue
         started = time.monotonic()
         try:
-            outcome = LanguageOutcome(report=detect(candidate.path), seconds=time.monotonic() - started)
+            scan = detect(candidate.path)
+            outcome = LanguageOutcome(report=scan.languages, composition=scan.composition, seconds=time.monotonic() - started)
         except Exception:  # one checkout must not stop the others; the reason is a fixed code, never the message
             outcome = LanguageOutcome(failed=DETECTION_ERROR, seconds=time.monotonic() - started)
             failed.append(candidate.path)
@@ -58,7 +59,7 @@ def scan_workspace(
     *,
     owner: str,
     discover: Callable[[Path], DiscoveryRun] = discover_repositories,
-    detect: Callable[[Path], LanguageReport] | None = None,
+    detect: Callable[[Path], CheckoutScan] | None = None,
     now: Callable[[], datetime] = _utc_now,
 ) -> tuple[RootResult, ...]:
     """Discover and store each configured root in turn. Nothing outside the configured roots is visited.
@@ -68,7 +69,7 @@ def scan_workspace(
     """
     if detect is None:
         types = default_file_types()
-        detect = lambda path: detect_languages(path, types)  # noqa: E731
+        detect = lambda path: scan_checkout(path, types)  # noqa: E731
     results = []
     for root in config.roots:
         run = _with_languages(discover(root), detect)

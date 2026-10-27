@@ -77,6 +77,13 @@ class Evidence:
     ignore: IgnoreEvidence | None = None
 
 
+def documentation_only(code: int, documentation: int, complete: bool) -> bool | None:
+    """True when documentation exists and code does not; unknown (None) for a partial count."""
+    if not complete:
+        return None
+    return documentation > 0 and code == 0
+
+
 @dataclass(frozen=True)
 class FileComposition:
     """Counts for one checkout.
@@ -103,6 +110,4 @@ class FileComposition:
     @property
     def documentation_only(self) -> bool | None:
         """True when documentation exists and code does not; unknown for a partial count."""
-        if not self.complete:
-            return None
-        return self.documentation > 0 and self.code == 0
+        return documentation_only(self.code, self.documentation, self.complete)
