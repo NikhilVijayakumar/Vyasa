@@ -3,13 +3,13 @@ type: Decision
 title: "Language Evidence Has Two Statuses and a Fixed Table"
 description: Languages are reported as files detected by extension or declared by a manifest, kept separate, from a fixed versioned table that never reads content.
 tags: [adr, scanner, languages, evidence]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-27T12:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 

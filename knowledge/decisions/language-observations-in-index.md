@@ -3,13 +3,13 @@ type: Decision
 title: "Language Observations Are Stored by the Scan and Filtered, Never Merged"
 description: Languages are detected in the scan per checkout, stored as rows with the current and previous observation, filtered by label and status, and kept apart from declared technologies.
 tags: [adr, index, languages, query]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-27T15:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 
