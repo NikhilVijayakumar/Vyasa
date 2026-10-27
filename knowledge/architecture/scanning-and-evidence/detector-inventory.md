@@ -1,7 +1,7 @@
 ---
 type: Architecture
 title: "Scanning and Evidence: Metadata Detector Inventory"
-description: Each supported detector: identity, Git, languages, technologies, README, documentation, OpenSpec, agent files, tests, dependencies, OKF, README quality.
+description: Each supported detector: identity, Git, languages, technologies, README, documentation, OpenSpec, agent files, tests, dependencies, OKF, README quality, file composition.
 tags: [scanning, detectors, evidence, provenance]
 status: draft
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T12:00:00Z }
@@ -270,3 +270,32 @@ The system must distinguish:
 A checklist result must not be presented as a subjective or universal quality judgment.
 
 Until a checklist is approved, the recommended default is `not_assessed`.
+
+### 9.13 File Composition Detector
+
+**Purpose:** Report how many files of a checkout are code, documentation, or other, so that a documentation-only or code-heavy project can be told apart without reading any file.
+
+Output, per checkout:
+
+- `code_files`, `documentation_files`, `other_files`, and `total_files`, which always sum.
+- `documentation_only`, derived: documentation files exist and no code files do.
+- A completeness marker: `complete`, or `partial` with the limit that stopped the count.
+
+Rules:
+
+- Classification is by file extension only, from versioned data: a code extension is one the language detector (§9.3) recognizes; a documentation extension comes from a documentation list in the same data. Content is never read.
+- An extension in neither list is `other`. An unknown file type is never counted as code.
+- A file is counted once. Directory symlinks are not followed, and a symlinked file is counted as itself, not as its target.
+- Vendored, generated, and version-control directories are excluded by the configured exclusion rules; the exclusion list is part of the evidence.
+- The count is "files detected", in the sense of §9.3. It does not say a language is used or documentation is complete (§9.6).
+- The count walk is bounded by depth and time. Reaching a bound makes the observation `partial`: the counts are lower bounds and `documentation_only` is `unknown`. A partial count never supports a conclusion that something is absent.
+- The language detector's per-language histogram and these counts come from one walk, so they agree.
+- The counts describe one checkout. The same project in two workspace roots has two observations; they are never summed.
+
+Evidence: the checkout, the extension data version, the exclusion rules, the completeness marker, and the observation time.
+
+Failure and limit cases:
+
+- Unreadable directory: counted as skipped; the observation is `partial`.
+- Checkout with no files: all counts are zero, complete, `documentation_only` is false.
+- Case-differing extensions (`.MD`, `.md`) are the same extension.

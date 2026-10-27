@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Creation**: Added the File Composition Detector (§9.13) to the [Metadata Detector Inventory](/architecture/scanning-and-evidence/detector-inventory.md).
 * **Creation**: Added the [Writing Knowledge](/practices/writing-knowledge.md) practice and the draft decision [Knowledge Profile Enforces Sections and Supersession](/decisions/knowledge-profile-section-rules.md).
 
 ## 2026-10-26

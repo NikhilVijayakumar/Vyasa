@@ -53,6 +53,7 @@ Each scenario describes observable behaviour rather than prescribing internal im
 | FR-018 | Remote repository discovery | P3 | [remote-discovery](remote-discovery/requirement.md) |
 | FR-019 | Remote metadata inspection | P3 | [remote-discovery](remote-discovery/requirement.md) |
 | FR-020 | Duplicate and obsolete candidates | P1–P3 | [project-identity](project-identity/requirement.md) |
+| FR-021 | File composition | P1 | [file-composition](file-composition/requirement.md) |
 
 # 4. Where the requirements live
 
@@ -65,6 +66,7 @@ apply to every area, the deferred decisions, and the traceability rules.
 | [workspace-discovery](workspace-discovery/requirement.md) | FR-001, FR-002, FR-015 | P1 |
 | [project-identity](project-identity/requirement.md) | FR-003, FR-020 | P1 |
 | [metadata-and-evidence](metadata-and-evidence/requirement.md) | FR-004, FR-005, FR-006 | P1 |
+| [file-composition](file-composition/requirement.md) | FR-021 | P1 |
 | [local-index](local-index/requirement.md) | FR-007, FR-008 | P1 |
 | [project-query](project-query/requirement.md) | FR-009, FR-010, FR-011, FR-012 | P1 |
 | [mcp-server](mcp-server/requirement.md) | FR-013 | P1 |
