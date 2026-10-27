@@ -21,6 +21,26 @@ IDENTITY_UNRESOLVED = "identity_unresolved"
 FLAG_OPEN = "open"
 FLAG_CLEARED = "cleared"
 
+REVIEW_OPEN = "open"
+DISMISSED = "dismissed"
+CONFIRMED = "confirmed"
+REVIEW_STATUSES = (REVIEW_OPEN, DISMISSED, CONFIRMED)
+MAX_NOTE = 500
+
+# Each flag kind: rule id, confidence tier, and the criteria in plain words.
+RULES: dict[str, tuple[str, str, str]] = {
+    DUPLICATE_CHECKOUT: (
+        "same_remote_identity",
+        "high",
+        "More than one checkout of this project is active, and they share a remote identity.",
+    ),
+    IDENTITY_UNRESOLVED: (
+        "path_remote_conflict",
+        "low",
+        "A checkout's path belongs to this project, but its remote identity belongs to another.",
+    ),
+}
+
 CURRENT = "current"
 STALE = "stale"
 UNKNOWN = "unknown"
@@ -32,6 +52,8 @@ SCHEMA_TOO_NEW = "INDEX_SCHEMA_TOO_NEW"
 MIGRATION_FAILED = "INDEX_MIGRATION_FAILED"
 UNAVAILABLE = "INDEX_UNAVAILABLE"
 IN_PROGRESS = "OPERATION_IN_PROGRESS"
+CANDIDATE_NOT_FOUND = "CANDIDATE_NOT_FOUND"
+INVALID_DECISION = "INVALID_DECISION"
 
 
 class IndexStoreError(Exception):

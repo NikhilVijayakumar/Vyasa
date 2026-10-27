@@ -33,6 +33,7 @@ from vyasa.domain.index import (
     freshness as domain_freshness,
 )
 
+LATEST = len(list(MIGRATIONS.glob("[0-9]*_*.sql")))
 T0 = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
 ROOT = Path("/ws")
 
@@ -73,7 +74,7 @@ def test_first_open_creates_directory_file_and_schema(tmp_path):
     path = tmp_path / "new" / "index.sqlite3"
     connection = open_index(path)
     assert path.is_file()
-    assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+    assert connection.execute("PRAGMA user_version").fetchone()[0] == LATEST
     connection.close()
 
 
@@ -133,15 +134,14 @@ def test_failed_migration_rolls_back(tmp_path):
     open_index(path).close()
     folder = tmp_path / "bad"
     folder.mkdir()
-    (folder / "0001_initial.sql").write_text((MIGRATIONS / "0001_initial.sql").read_text())
-    (folder / "0002_identity.sql").write_text((MIGRATIONS / "0002_identity.sql").read_text())
-    (folder / "0003_review_flags.sql").write_text((MIGRATIONS / "0003_review_flags.sql").read_text())
-    (folder / "0004_bad.sql").write_text("CREATE TABLE half (x INTEGER); SELECT nonsense FROM nowhere;")
+    for file in MIGRATIONS.glob("[0-9]*_*.sql"):
+        (folder / file.name).write_text(file.read_text())
+    (folder / f"{LATEST + 1:04d}_bad.sql").write_text("CREATE TABLE half (x INTEGER); SELECT nonsense FROM nowhere;")
     with pytest.raises(IndexStoreError) as error:
         open_index(path, migrations=folder)
     assert error.value.code == MIGRATION_FAILED
     check = sqlite3.connect(path)
-    assert check.execute("PRAGMA user_version").fetchone()[0] == 3
+    assert check.execute("PRAGMA user_version").fetchone()[0] == LATEST
     assert check.execute("SELECT name FROM sqlite_master WHERE name = 'half'").fetchone() is None
     check.close()
 
