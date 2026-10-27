@@ -24,7 +24,7 @@ Identifiers must survive directory moves, remote renames, and transfers, and mus
 
 # Decision
 
-Create the identifier once, from the first strongest evidence: a verified provider id, else a normalized remote, else a root-commit hash, else a provisional path-based identity flagged for review. Store it and never recompute it. Later evidence (a renamed remote, a provider id) is stored as an alias that resolves to the same identifier. Lookup order on rediscovery: alias, known checkout path, root commit. Every change to a mapping is recorded as an identity event.
+Create the identifier once, from the first strongest evidence: a verified provider id, else a normalized remote, else a root-commit hash, else a provisional path-based identity flagged for review. Store it and never recompute it. Later evidence (a renamed remote, a provider id) is stored as an alias that resolves to the same identifier. Lookup order on rediscovery: alias, known checkout path, root commit. Every change to a mapping is recorded as an identity event. A project may hold several checkouts, and its state follows them: active while any checkout is, else inaccessible while any is, else missing. When the alias and the checkout path point at different projects, nothing is merged or moved; an `identity_conflict` event is recorded for review. A repository with no usable remote stays provisional and is matched by path until a root-commit identity is added, so moving it creates a new project.
 
 # Alternatives considered
 
