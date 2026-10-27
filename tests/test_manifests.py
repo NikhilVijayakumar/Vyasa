@@ -340,3 +340,39 @@ def test_only_parsed_manifests_contribute():
 
 def test_cap_constant():
     assert MAX_DEPENDENCIES == 200
+
+
+# --- security review findings ---
+
+from vyasa.domain.manifests import MAX_NAME, MAX_PARSED  # noqa: E402
+
+
+def test_credentials_in_urls_are_never_stored_as_constraints():
+    text = json.dumps({"dependencies": {"private": "git+https://user:s3cr3t@example.com/org/repo.git", "ok": "^1"}})
+    parsed = parse_manifest("package.json", text)
+    assert {d.name: d.constraint for d in parsed.dependencies} == {"private": "direct reference", "ok": "^1"}
+    assert "s3cr3t" not in repr(parsed)
+
+
+def test_url_constraint_in_cargo_and_poetry_is_a_direct_reference():
+    cargo = parse_manifest("Cargo.toml", '[dependencies]\nx = "https://u:p@h/x"\n')
+    poetry = parse_manifest("pyproject.toml", '[tool.poetry.dependencies]\nx = "https://u:p@h/x"\n')
+    assert [d.constraint for d in cargo.dependencies] == [d.constraint for d in poetry.dependencies] == ["direct reference"]
+
+
+def test_overlong_constraint_is_dropped_and_overlong_name_is_skipped():
+    text = json.dumps({"dependencies": {"a": "1" * 5000, "b" * (MAX_NAME + 1): "1", "fine": "1"}})
+    parsed = parse_manifest("package.json", text)
+    assert {d.name: d.constraint for d in parsed.dependencies} == {"a": None, "fine": "1"} and parsed.skipped == 1
+
+
+def test_parsed_dependencies_are_capped_with_the_rest_counted_as_skipped():
+    text = "\n".join(f"pkg{i}" for i in range(MAX_PARSED + 50))
+    parsed = parse_manifest("requirements.txt", text)
+    assert len(parsed.dependencies) == MAX_PARSED and parsed.skipped >= 50
+
+
+def test_json_dependency_flood_is_capped_too():
+    text = json.dumps({"dependencies": {f"p{i}": "1" for i in range(MAX_PARSED + 10)}})
+    parsed = parse_manifest("package.json", text)
+    assert len(parsed.dependencies) == MAX_PARSED and parsed.skipped == 10

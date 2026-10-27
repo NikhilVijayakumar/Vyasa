@@ -85,3 +85,16 @@ def test_name_with_a_separator_is_refused(tmp_path):
     write(tmp_path / "sub", "package.json", "{}")
     read = read_manifest(tmp_path, "sub/package.json", 1024)
     assert (read.status, read.reason, read.text) == ("unreadable", "not_file", None)
+
+
+def test_file_swapped_for_another_between_check_and_open_is_refused(tmp_path, monkeypatch):
+    write(tmp_path, "package.json", "{}")
+    real = os.fstat
+
+    class Other:
+        def __init__(self, st):
+            self.st_mode, self.st_ino, self.st_dev, self.st_size = st.st_mode, st.st_ino + 1, st.st_dev, st.st_size
+
+    monkeypatch.setattr(os, "fstat", lambda fd: Other(real(fd)))
+    read = read_manifest(tmp_path, "package.json", 1024)
+    assert (read.status, read.text) == ("unreadable", None)

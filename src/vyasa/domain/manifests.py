@@ -28,6 +28,9 @@ from vyasa.domain.frameworks import (
 )
 
 MAX_LINE = 1000
+MAX_NAME = 214  # the longest package name any supported ecosystem allows
+MAX_CONSTRAINT = 200
+MAX_PARSED = 10_000  # direct dependencies kept from one manifest; the rest are counted as skipped
 _REQUIREMENT = re.compile(r"^\s*([A-Za-z0-9](?:[A-Za-z0-9._-]{0,212}[A-Za-z0-9])?)\s*(?:\[[^\]]{0,200}\])?\s*(.*)$")
 _COMMENT = re.compile(r"\s#.*$")
 _GO_REQUIRE = re.compile(r"^(\S+)\s+(v\S+)\s*(//.*)?$")
@@ -135,6 +138,9 @@ def _requirements(text: str, name: str) -> ParsedManifest:
         line = _COMMENT.sub("", raw).strip()
         if not line or line.startswith("#"):
             continue
+        if len(found) >= MAX_PARSED:
+            skipped += 1
+            continue
         dependency = None
         if not line.startswith("-") and "://" not in line.split(None, 1)[0] and not line.startswith(("git+", "hg+", "svn+", "bzr+")):
             dependency = _requirement(line, scope)
@@ -207,6 +213,9 @@ def _go_mod(text: str, _name: str) -> ParsedManifest:
         match = _GO_REQUIRE.match(line)
         if not match:
             continue
+        if len(found) >= MAX_PARSED:
+            skipped += 1
+            continue
         if match.group(3) and "indirect" in match.group(3):
             skipped += 1
         else:
@@ -225,4 +234,21 @@ def parse_manifest(name: str, text: str) -> ParsedManifest:
     parser = _PARSERS.get(folded) or (_requirements if ecosystem_of(name) == PYTHON else None)
     if parser is None:
         raise ManifestParseError("structure")
-    return parser(text, name)
+    return _bounded(parser(text, name))
+
+
+def _bounded(parsed: ParsedManifest) -> ParsedManifest:
+    """Enforce the size limits on what a parser returned, and never keep a URL: it can carry credentials."""
+    kept: list[Dependency] = []
+    skipped = parsed.skipped
+    for dependency in parsed.dependencies:
+        if not dependency.name or len(dependency.name) > MAX_NAME or len(kept) >= MAX_PARSED:
+            skipped += 1
+            continue
+        constraint = dependency.constraint
+        if constraint is not None and "://" in constraint:
+            constraint = "direct reference"
+        elif constraint is not None and len(constraint) > MAX_CONSTRAINT:
+            constraint = None
+        kept.append(Dependency(dependency.name, constraint, dependency.scope))
+    return ParsedManifest(tuple(kept), skipped, parsed.workspace)

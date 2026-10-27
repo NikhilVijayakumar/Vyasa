@@ -343,3 +343,45 @@ def test_details_carry_markers_per_checkout(marker_index):
     (checkout,) = call(marker_index, "get_project", {"project_id": pid}).structured_content["data"]["checkouts"]
     states = {i["marker"]: i["state"] for i in checkout["markers"]["items"]}
     assert states["tests"] == "detected" and states["readme"] == "not_detected"
+
+
+# -- frameworks --------------------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def framework_index(tmp_path):
+    from dataclasses import replace
+
+    from vyasa.application.scanning.frameworks import default_registry, technologies_of
+    from vyasa.domain.file_composition import Evidence, WalkLimits
+    from vyasa.domain.frameworks import Dependency, FrameworkReport, ManifestResult
+    from vyasa.domain.languages import LanguageOutcome, LanguageReport
+
+    registry = default_registry()
+    manifests = (ManifestResult("pyproject.toml", "python", "parsed", None, (Dependency("fastapi", ">=0.1", "runtime"),), 1, 0, False),)
+    report = FrameworkReport(manifests, (), technologies_of(manifests, registry), registry.version, None)
+    languages = LanguageReport((), (), None, Evidence(2, (), WalkLimits()))
+    path = tmp_path / "index.sqlite3"
+    w = open_index(path)
+    store(w, make_run([replace(repo("api"), languages=LanguageOutcome(languages, frameworks=report)), repo("plain")]))
+    w.close()
+    return path
+
+
+def test_search_filters_by_technology_through_the_tool(framework_index):
+    body = call(framework_index, "search_projects", {"technology": ["FastAPI"]}).structured_content
+    assert [p["display_name"] for p in body["data"]["projects"]] == ["api"]
+
+
+def test_unknown_technology_is_a_structured_error(framework_index):
+    result = call(framework_index, "search_projects", {"technology": "fastapii"})
+    assert result.is_error and result.structured_content["error"]["code"] == "INVALID_INPUT"
+    assert "fastapi" in result.structured_content["error"]["message"]
+
+
+def test_details_carry_frameworks_per_checkout(framework_index):
+    pid = call(framework_index, "search_projects", {"query": "api"}).structured_content["data"]["projects"][0]["project_id"]
+    (checkout,) = call(framework_index, "get_project", {"project_id": pid}).structured_content["data"]["checkouts"]
+    frameworks = checkout["frameworks"]
+    assert [t["key"] for t in frameworks["technologies"]] == ["fastapi"] and frameworks["technologies"][0]["name"] == "FastAPI"
+    assert {e["ecosystem"]: e["state"] for e in frameworks["ecosystems"]}["python"] == "detected"

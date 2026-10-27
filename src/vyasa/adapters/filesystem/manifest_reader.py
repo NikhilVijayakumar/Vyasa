@@ -55,6 +55,8 @@ def read_manifest(root: Path | str, name: str, limit: int = MANIFEST_LIMIT) -> M
         opened = os.fstat(descriptor)
         if not stat.S_ISREG(opened.st_mode):
             return _refuse(UNREADABLE, "not_file")
+        if not os.path.samestat(before, opened):
+            return _refuse(UNREADABLE, "io")
         with os.fdopen(descriptor, "rb", closefd=False) as handle:
             data = handle.read(limit + 1)
     except OSError:
