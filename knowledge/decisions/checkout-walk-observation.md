@@ -3,13 +3,13 @@ type: Decision
 title: "One Walk Per Checkout Feeds Counts and Languages on One Observation"
 description: The scan walks each checkout once and stores file-type counts and language results on the same observation; the documentation-only indicator is derived when read.
 tags: [adr, index, scanner, file-composition]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-27T18:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 

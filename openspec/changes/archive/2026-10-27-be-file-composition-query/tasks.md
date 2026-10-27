@@ -1,7 +1,7 @@
 # Implementation Tasks: be-file-composition-query
 
 - **OpenSpec Change ID:** `be-file-composition-query`
-- **Status:** Implemented, pending review and merge
+- **Status:** Implemented and archived
 - **Related artifacts:** `proposal.md`, `specs/`, `design.md`, `api-contract.md`, `adr.md`
 
 ## Task Planning Rules
@@ -65,13 +65,13 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 ## 8. Documentation and Handover
 
 - [x] 8.1 Behavior matches the decision concept. One note: the MCP tool types `documentation_only` as a boolean, so the framework rejects a non-boolean such as "maybe" before the query layer; the query layer itself rejects non-booleans with `INVALID_INPUT` (tested). The framework also accepts "yes" as true.
-- [ ] 8.2 Mark the decision concept stable when the owner accepts it.
+- [x] 8.2 Mark the decision concept stable when the owner accepts it.
 
 ## 9. Review, Merge, and Archive
 
-- [ ] 9.1 Pull request with the change ID.
-- [ ] 9.2 `git fetch`, merge into `develop` after review and verification (never force-push).
-- [ ] 9.3 Archive the change.
+- [x] 9.1 Pull request with the change ID: not opened; merged locally to `develop` under owner instruction.
+- [x] 9.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 9.3 Archive the change.
 
 ## Verification Record
 
@@ -79,4 +79,4 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 
 ## Completion Summary
 
-Not yet complete.
+Implemented, merged into `develop`, and archived. The decision concept is accepted.
