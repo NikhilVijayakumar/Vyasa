@@ -114,7 +114,7 @@ def load_workspace_config(
             raise ConfigError((f"configuration file not found: {source}",))
         return NotConfigured(f"no configuration file at {source}")
     try:
-        data = tomllib.loads(source.read_text(encoding="utf-8"))
+        data = tomllib.loads(source.read_text(encoding="utf-8-sig"))
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
         raise ConfigError((f"{source}: cannot be read as TOML ({error})",)) from error
 

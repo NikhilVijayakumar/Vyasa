@@ -417,3 +417,53 @@ def test_pointer_reads_at_most_one_kilobyte(tmp_path, monkeypatch):
     monkeypatch.setattr(builtins, "open", watching)
     run(tmp_path)
     assert sizes == [1024]
+
+
+# -- found by the grill --------------------------------------------------------------------------------------
+
+
+def test_real_problems_are_listed_before_policy_skips_when_the_list_is_bounded(tmp_path):
+    deep = tmp_path / "a" / "b" / "c" / "d"
+    for i in range(5):
+        (deep / f"x{i}").mkdir(parents=True)
+    (tmp_path / "bad" / ".git").mkdir(parents=True)
+    result = run(tmp_path, max_depth=3, max_issues=2)
+    assert result.counts[SKIPPED_BY_POLICY] == 1 and result.counts[MALFORMED] == 1
+    assert [(c.outcome, c.reason) for c in result.issues][0] == (MALFORMED, "missing_head")
+
+
+def test_policy_skips_cannot_push_a_real_problem_out_of_a_full_list(tmp_path):
+    for i in range(6):
+        (tmp_path / f"a{i}" / "b" / "c").mkdir(parents=True)
+    (tmp_path / "zz-bad" / ".git").mkdir(parents=True)
+    result = run(tmp_path, max_depth=2, max_issues=2)
+    assert result.counts[SKIPPED_BY_POLICY] == 6
+    assert (MALFORMED, "missing_head") in [(c.outcome, c.reason) for c in result.issues]
+    assert result.issues_omitted == 5
+
+
+def test_a_modules_directory_alone_does_not_make_a_submodule(tmp_path):
+    pointer(tmp_path, "r", "gitdir: /home/me/modules/repo.git\n")
+    assert run(tmp_path).repositories[0].kind == KIND_REPOSITORY
+
+
+def test_a_worktrees_directory_alone_does_not_make_a_worktree(tmp_path):
+    pointer(tmp_path, "r", "gitdir: /home/me/worktrees/repo.git\n")
+    assert run(tmp_path).repositories[0].kind == KIND_REPOSITORY
+
+
+def test_worktree_of_a_bare_repository_and_nested_submodule_pointers(tmp_path):
+    pointer(tmp_path, "w", "gitdir: /srv/bare.git/worktrees/feature\n")
+    pointer(tmp_path, "s", "gitdir: ../.git/modules/outer/modules/inner\n")
+    kinds = {c.path.name: c.kind for c in run(tmp_path).repositories}
+    assert kinds == {"w": KIND_LINKED_WORKTREE, "s": KIND_SUBMODULE}
+
+
+def test_a_root_that_is_itself_a_symlink_is_searched(tmp_path):
+    real = tmp_path / "real"
+    repo(real, "proj")
+    link = tmp_path / "link"
+    symlink_dir(link, real)
+    result = run(link)
+    assert found(result) == ["proj"]
+    assert result.status == COMPLETE

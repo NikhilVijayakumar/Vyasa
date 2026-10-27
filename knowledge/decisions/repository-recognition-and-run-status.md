@@ -27,12 +27,12 @@ Discovery walks directories that contain repository-controlled content. It must 
 A directory is a Git repository candidate when it contains a `.git` entry.
 
 - A `.git` directory with a `HEAD` file is a repository. Without `HEAD` it is malformed.
-- A `.git` file must start with a `gitdir:` line, read from at most the first kilobyte. If the target path contains a `worktrees` segment the candidate is a linked worktree; if it contains a `modules` segment, a submodule; otherwise a repository whose Git directory lives elsewhere. A file without that line is malformed, and one that cannot be read is inaccessible.
+- A `.git` file must start with a `gitdir:` line, read from at most the first kilobyte. If the target ends in `<git directory>/worktrees/<name>` the candidate is a linked worktree; if the target contains `.git/modules` it is a submodule; otherwise it is a repository whose Git directory lives elsewhere. A directory merely named `modules` or `worktrees` elsewhere in the path proves nothing. A file without that line is malformed, and one that cannot be read is inaccessible.
 - A `.git` entry that is a symbolic link or junction is skipped by policy.
 
 Each candidate has exactly one outcome from the closed set: eligible, excluded, inaccessible, malformed, or skipped by policy. Ordinary directories are not candidates and are not listed. Excluded directories are counted, not listed. Nothing is run and no repository file other than a `.git` pointer file is opened.
 
-A run is complete when every directory in scope was assessed, partial when any candidate is inaccessible, malformed, or skipped by policy (including a directory not entered because of the depth limit or because it is a link), and failed when the root itself is missing, not a directory, or unreadable. Issues are listed up to a fixed bound; counts always cover all of them.
+A run is complete when every directory in scope was assessed, partial when any candidate is inaccessible, malformed, or skipped by policy (including a directory not entered because of the depth limit or because it is a link), and failed when the root itself is missing, not a directory, or unreadable. Issues are listed up to a fixed bound, inaccessible and malformed candidates before policy skips, so a full list cannot hide a real problem; counts always cover all of them.
 
 A repository found inside another is a separate candidate. Submodules and linked worktrees are reported with their kind and are neither merged into nor counted as separate projects by discovery; that is decided by identity resolution.
 

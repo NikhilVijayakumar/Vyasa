@@ -29,6 +29,8 @@ Result types:
 - `RootCheck`: `root` (`Path`), `status` (`accessible`, `missing`, `not_a_directory`, or `unreadable`).
 - `ConfigError(ValueError)`: `problems` (non-empty tuple of strings); its message lists them.
 
+The file is read as UTF-8; a leading byte-order mark is ignored. Environment variables and `~user` forms are not expanded; only a leading `~` is.
+
 Configuration file:
 
 ```toml

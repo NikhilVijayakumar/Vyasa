@@ -91,6 +91,34 @@ The system SHALL load every path in `workspace.roots`, expanding a leading `~`, 
 - **THEN** both are returned
 - **AND** a warning names the nesting
 
+### Requirement: Common file encodings are accepted
+
+The system SHALL accept a configuration file saved as UTF-8 with or without a byte-order mark, with Unix or Windows line endings, and SHALL accept paths written as single-quoted literal strings.
+
+#### Scenario: Byte-order mark
+
+- **GIVEN** a configuration file that begins with a UTF-8 byte-order mark
+- **WHEN** the configuration is loaded
+- **THEN** the roots are returned
+
+#### Scenario: Windows line endings
+
+- **GIVEN** a configuration file with carriage-return line endings
+- **WHEN** the configuration is loaded
+- **THEN** the roots are returned
+
+#### Scenario: Literal string paths
+
+- **GIVEN** a root written as a single-quoted string containing backslashes
+- **WHEN** the configuration is loaded
+- **THEN** the root is taken exactly as written
+
+#### Scenario: Variables are not expanded
+
+- **GIVEN** a root written as `$HOME/work`
+- **WHEN** the configuration is loaded
+- **THEN** loading fails because the path is not absolute
+
 ### Requirement: Not configured
 
 The system SHALL return a not-configured result with a reason, and SHALL NOT supply a default root, when no file exists at the default location or the file lists no roots.

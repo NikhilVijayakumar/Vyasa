@@ -26,11 +26,13 @@ In: `vyasa.application.scanning.discovery.discover_repositories` and the types i
 
 `Candidate`: `path` (`Path`), `outcome`, `kind` (`repository`, `submodule`, `linked_worktree`, or `None`), `reason` (string or `None`).
 
+Kinds are decided from the `.git` pointer target: `linked_worktree` when it ends in `<git directory>/worktrees/<name>` (the parent of `worktrees` ends in `.git`), `submodule` when it contains `.git/modules`, otherwise `repository`.
+
 Outcomes: `eligible`, `excluded`, `inaccessible`, `malformed`, `skipped_by_policy`.
 
 Reason codes: `root_not_found`, `root_not_a_directory`, `root_unreadable`, `unreadable_directory`, `unreadable_git_file`, `missing_head`, `invalid_git_file`, `git_link`, `symlink`, `max_depth`.
 
-`DiscoveryRun`: `run_id`, `root`, `started_at`, `finished_at` (timezone-aware UTC), `status` (`complete`, `partial`, `failed`), `tool_version`, `options`, `counts` (all five outcomes, integers), `repositories` (eligible candidates sorted by path), `issues` (at most `max_issues` non-eligible candidates in walk order), `issues_omitted` (integer).
+`DiscoveryRun`: `run_id`, `root`, `started_at`, `finished_at` (timezone-aware UTC), `status` (`complete`, `partial`, `failed`), `tool_version`, `options`, `counts` (all five outcomes, integers), `repositories` (eligible candidates sorted by path), `issues` (at most `max_issues` non-eligible candidates: inaccessible and malformed first, then policy skips, each group in walk order), `issues_omitted` (integer).
 
 ## 4. Error Model
 

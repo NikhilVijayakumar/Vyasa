@@ -246,3 +246,29 @@ def test_checking_opens_no_file(tmp_path, monkeypatch):
 
     monkeypatch.setattr(builtins, "open", refuse)
     assert check_roots(config(root))[0].status == ACCESSIBLE
+
+
+# -- found by the grill --------------------------------------------------------------------------------------
+
+
+def test_utf8_byte_order_mark_is_accepted(tmp_path):
+    file = tmp_path / "bom.toml"
+    file.write_bytes(b"\xef\xbb\xbf" + toml_roots(tmp_path).encode("utf-8"))
+    result = load_workspace_config(file, environ={}, home=tmp_path)
+    assert result.roots == (tmp_path,)
+
+
+def test_windows_line_endings_are_accepted(tmp_path):
+    file = tmp_path / "crlf.toml"
+    file.write_bytes(toml_roots(tmp_path).replace("\n", "\r\n").encode("utf-8"))
+    assert load_workspace_config(file, environ={}, home=tmp_path).roots == (tmp_path,)
+
+
+def test_single_quoted_literal_paths_load_without_escaping(tmp_path):
+    result = load(tmp_path, f"[workspace]\nroots = ['{tmp_path}']\n")
+    assert result.roots == (tmp_path,)
+
+
+def test_environment_variables_in_paths_are_not_expanded(tmp_path):
+    with pytest.raises(ConfigError, match="absolute"):
+        load(tmp_path, '[workspace]\nroots = ["$HOME/work"]\n')

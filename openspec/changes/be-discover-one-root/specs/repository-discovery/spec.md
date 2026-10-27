@@ -24,7 +24,7 @@ One root per call. No persistence, no identity, no metadata.
 
 ### Requirement: Recognize Git repositories
 
-The system SHALL treat a directory that contains a `.git` directory with a `HEAD` file, or a `.git` file whose first line starts with `gitdir:`, as a repository candidate, and SHALL classify a `.git` file whose target path has a `worktrees` segment as a linked worktree, one with a `modules` segment as a submodule, and any other as a repository.
+The system SHALL treat a directory that contains a `.git` directory with a `HEAD` file, or a `.git` file whose first line starts with `gitdir:`, as a repository candidate, and SHALL classify a `.git` file as a linked worktree when the target ends in `<git directory>/worktrees/<name>`, as a submodule when the target contains `.git/modules`, and otherwise as a repository.
 
 #### Scenario: Repository with a Git directory
 
@@ -55,6 +55,24 @@ The system SHALL treat a directory that contains a `.git` directory with a `HEAD
 - **GIVEN** a `.git` file that points to a path with neither segment
 - **WHEN** discovery runs
 - **THEN** it is reported eligible with kind repository
+
+#### Scenario: Look-alike paths are repositories
+
+- **GIVEN** a `.git` file pointing at `/home/me/modules/repo.git`, and another at `/home/me/worktrees/repo.git`
+- **WHEN** discovery runs
+- **THEN** both are reported eligible with kind repository
+
+#### Scenario: Bare-repository worktree and nested submodule
+
+- **GIVEN** a `.git` file pointing at `/srv/bare.git/worktrees/feature`, and another at `../.git/modules/outer/modules/inner`
+- **WHEN** discovery runs
+- **THEN** the first is a linked worktree and the second a submodule
+
+#### Scenario: Root is a symlink
+
+- **GIVEN** the root path is itself a symlink to a directory containing a repository
+- **WHEN** discovery runs
+- **THEN** the repository is found and the status is complete
 
 #### Scenario: Ordinary directories are not candidates
 
@@ -184,7 +202,7 @@ The system SHALL set the run status to failed when the root is missing, not a di
 
 ### Requirement: Run record
 
-The system SHALL return a record with a run identifier, the root, start and end times, the status, the tool version, the options used, a count for each outcome, the eligible repositories in sorted order, and at most a fixed number of issues together with how many were omitted.
+The system SHALL return a record with a run identifier, the root, start and end times, the status, the tool version, the options used, a count for each outcome, the eligible repositories in sorted order, and at most a fixed number of issues, listing inaccessible and malformed candidates before policy skips, together with how many were omitted.
 
 #### Scenario: Record contents
 
@@ -197,6 +215,12 @@ The system SHALL return a record with a run identifier, the root, start and end 
 - **GIVEN** more malformed candidates than the issue limit
 - **WHEN** discovery runs
 - **THEN** only the limit are listed, the omitted number is reported, and the malformed count covers all of them
+
+#### Scenario: Real problems are listed first
+
+- **GIVEN** more policy skips than the issue limit and one malformed candidate
+- **WHEN** discovery runs
+- **THEN** the malformed candidate is among the listed issues
 
 #### Scenario: Repeatable result
 

@@ -55,10 +55,12 @@ def classify_git_entry(directory: str) -> Candidate:
     target = first[len(GITDIR):].strip() if first.startswith(GITDIR) else ""
     if not target:
         return Candidate(path, MALFORMED, reason="invalid_git_file")
-    segments = target.replace("\\", "/").split("/")
-    if "worktrees" in segments:
+    segments = [part for part in target.replace("\\", "/").split("/") if part]
+    # Git writes <repo>/worktrees/<name> and <super>/.git/modules/<name>; a bare directory
+    # called "modules" or "worktrees" elsewhere in the path proves nothing.
+    if len(segments) >= 3 and segments[-2] == "worktrees" and segments[-3].endswith(GIT):
         return Candidate(path, ELIGIBLE, kind=KIND_LINKED_WORKTREE)
-    if "modules" in segments:
+    if any(a == GIT and b == "modules" for a, b in zip(segments, segments[1:])):
         return Candidate(path, ELIGIBLE, kind=KIND_SUBMODULE)
     return Candidate(path, ELIGIBLE, kind=KIND_REPOSITORY)
 

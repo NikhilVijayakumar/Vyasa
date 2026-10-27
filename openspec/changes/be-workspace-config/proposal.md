@@ -113,7 +113,7 @@ A pure domain model for the result types, and one application module that locate
 - [x] Assumptions and unresolved questions are visible.
 - [x] The proposing team is identified and its focus and skills applied.
 - [x] The proposal is consistent with existing specifications and project conventions.
-- [ ] Significant ambiguities have been challenged and resolved (grill-me not yet run on this change).
+- [x] Significant ambiguities have been challenged and resolved (`docs/reviews/config-and-discovery-grill.md`); two decisions await the owner.
 - [x] The change has a stable OpenSpec ID and follows the project's Git discipline.
 
 **Status:** Draft

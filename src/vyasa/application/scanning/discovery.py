@@ -60,7 +60,8 @@ def discover_repositories(
     else:
         findings = find_repositories(root, options)
         repositories = tuple(sorted(findings.repositories, key=_order))
-        issues = findings.issues
+        # Real problems first, so a full list never hides one behind policy skips (sort is stable).
+        issues = tuple(sorted(findings.issues, key=lambda c: c.outcome == SKIPPED_BY_POLICY))
         excluded = findings.excluded
         status = PARTIAL if issues else COMPLETE
 
