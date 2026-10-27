@@ -35,7 +35,7 @@ Accessor logical names: `name`, `summary`, `purpose`, `lifecycle`, `domain`, `de
 | Not a table | status `unreadable`, problem `profile` | Yes |
 | `schema_version` neither 1 nor 2 | status `unsupported` | Yes |
 | A field breaks a rule | problem `(dotted name, reason)`; field dropped; status `invalid` | Yes; reasons are fixed texts and never echo the value |
-| Unknown field | problem `(dotted name, "unknown field")` | Yes; the name is truncated to 100 characters |
+| Unknown field | problem `(dotted name, "unknown field")` | Yes; the unknown key is reduced to letters, digits, `_`, `.`, and `-` and cut to 40 characters |
 
 ## 5. Trust Boundary
 
@@ -48,7 +48,7 @@ Stored fields (`checkout_profiles.fields`, JSON object) use these dotted names f
 | Group | Fields |
 |---|---|
 | `project.` | `id` label; `name` text(100); `codename` text(100); `summary` text(200); `description` text(1000); `project_type` enum(application, library, service, platform, tool, game, documentation, other, unknown); `domain` text(100); `lifecycle_status` enum(planned, active, maintenance, paused, deprecated, archived, unknown); `created_date` date; `last_reviewed_date` date |
-| `project.owner.` | `team` text(100); `role` text(100); `contact_reference` text(100), not an email or URL |
+| `project.owner.` | `team`, `role`, `contact_reference` text(100), none an email address or URL |
 | `project.business.` | `problem_statement` text(1000); `target_users` list(200); `business_objectives`, `success_criteria`, `constraints`, `non_goals` list(300) |
 | `project.scope.` | `in_scope`, `out_of_scope`, `known_limitations` list(300) |
 | `project.capabilities` | rows(30) of `id` label, `name` text(100) required, `description` text(500), `status` enum(planned, in_progress, available, deprecated, unknown), `source` path |
@@ -65,7 +65,7 @@ Stored fields (`checkout_profiles.fields`, JSON object) use these dotted names f
 | `project.documentation.` | `overview`, `vision`, `scope_and_roadmap`, `requirements`, `architecture`, `decisions`, `developer_guide`, `api_reference`, `operations`, `security`, `contributing` path |
 | `project.collaboration.` | `coding_agents` list(64), at most 10 items; `contribution_rules` list(300); `branch_policy_reference`, `review_policy_reference` path |
 | `project.relationships.` | `parent_project_id` label; `related_project_ids`, `replaces_project_ids` list of labels; `replaced_by_project_id` label |
-| `project.profile_maintenance.` | `maintained_by` text(100); `review_frequency` enum(weekly, monthly, quarterly, yearly, on_change, unknown); `last_verified_commit` 7–64 hexadecimal characters; `verification_notes` text(500) |
+| `project.profile_maintenance.` | `maintained_by` text(100), not an email or URL; `review_frequency` enum(weekly, monthly, quarterly, yearly, on_change, unknown); `last_verified_commit` 7–64 hexadecimal characters; `verification_notes` text(500) |
 
 Invariants: every stored value passed its rule; `fields` never contains an unknown name; a row of a list of tables is stored only if every key in it is defined and its required keys are valid.
 
