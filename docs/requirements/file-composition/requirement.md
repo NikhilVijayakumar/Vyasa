@@ -6,7 +6,7 @@
 - **Owns:** FR-021
 - **Grill log:** [grill-log.md](grill-log.md)
 - **Diagrams:** [diagrams.md](diagrams.md)
-- **Features:** [fr-021-file-composition.feature](features/fr-021-file-composition.feature), [grill-additions.feature](features/grill-additions.feature)
+- **Features:** [fr-021-file-composition.feature](features/fr-021-file-composition.feature), [grill-additions.feature](features/grill-additions.feature), [fr-021-composition-query.feature](features/fr-021-composition-query.feature)
 
 ## Knowledge References
 
@@ -49,6 +49,10 @@ Vyasa MUST report, for each scanned checkout, how many files are code, documenta
 - A count that reached a traversal bound MUST be marked partial and MUST NOT support `documentation_only`, which is then unknown.
 - Counts MUST describe one checkout; the same project in two workspace roots has two observations, never summed.
 - Each count MUST carry evidence: the extension data version, the exclusion rules, and the completeness marker.
+- The scan MUST obtain the counts and the language results from one walk of the checkout, and store them on one observation, so the language counts sum to the code count.
+- `documentation_only` MUST be derived when read, never stored.
+- Project details MUST give `composition` per checkout, never a project total; an observation without counts MUST report `not_counted`, not zeros.
+- `search_projects` MUST accept `documentation_only` (boolean): true matches a project when any active checkout is true, false when any active checkout is false, and a checkout with an unknown indicator matches neither.
 
 ## Expected Behaviour
 
@@ -79,10 +83,12 @@ Confirmed by the owner on 2026-10-27.
 |---|---|---|
 | FC-001 | Counting uses its own entry cap of 50,000 (depth and time unchanged), because the 5,000 inventory cap would make most real repositories partial. | Q4 |
 | FC-002 | Counts stay machine-local in phase 1 and are not in the sync export allowlist. | Q8 |
+| FC-003 | One walk feeds counts and languages; counts are columns on the shared observation. | Q13, Q14 |
+| FC-004 | `documentation_only` filter matches any active checkout; unknown matches neither. | Q15 |
 
 ## Delivery
 
 Proposed OpenSpec changes, each a set of vertical slices (`knowledge/practices/vertical-slices.md`):
 
 - `be-file-composition-counts`: shared bounded walk, classification data, counts, completeness marker, evidence.
-- `be-file-composition-query`: counts in project details and the `documentation_only` search filter.
+- `be-file-composition-query`: one walk for counts and languages, counts on the stored observation, counts in project details, and the `documentation_only` search filter.

@@ -115,6 +115,43 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 - **Status:** Recommended
 - **Feeds:** FR-021 S2
 
+### Second grill: persistence and query (be-file-composition-query)
+
+**Q13. How do composition counts share the walk with languages?**
+
+- **Recommendation:** One walk, both results: a single function walks the checkout once and feeds the language tally and the composition tally. Owner chose this option after seeing that a second walk contradicts a shared row.
+- **Why:** The language histogram and the code count then come from one file list and agree by construction; scan cost stays at one walk per checkout.
+- **Status:** Settled
+- **Feeds:** be-file-composition-query
+
+**Q14. Where are the counts stored?**
+
+- **Recommendation:** As columns on the checkout walk observation that already holds languages (code, documentation, other). Nullable, because observations made before this change have no counts. Owner chose this option.
+- **Why:** One observation is one walk: shared status, completeness, failure, and the current-plus-previous retention.
+- **Status:** Settled
+- **Feeds:** be-file-composition-query, migration
+
+**Q15. How does `documentation_only` filter a project with several checkouts?**
+
+- **Recommendation:** `documentation_only` true matches when any active checkout is true; false when any active checkout is false; a checkout with unknown (partial or never counted) matches neither. Details give counts and the indicator per checkout and never a project total. Owner chose this option.
+- **Why:** Consistent with the language filter; an unknown checkout must not read as documentation-only or as code (FR-021).
+- **Status:** Settled
+- **Feeds:** FR-021 query
+
+**Q16. What do counts show for an observation made before counts existed, or for a failed one?**
+
+- **Recommendation:** `composition` reports status `not_counted` with no numbers and `documentation_only` null; never zeros.
+- **Why:** Zero would read as an empty checkout.
+- **Status:** Recommended
+- **Feeds:** FR-021 query
+
+**Q17. Is `documentation_only` stored?**
+
+- **Recommendation:** No. It is derived when read from the stored counts and the observation's completeness, so it cannot disagree with them.
+- **Why:** One source of truth for the indicator.
+- **Status:** Recommended
+- **Feeds:** FR-021 query
+
 ## Decisions for you
 
-None open. Q4 (separate 50,000-entry counting cap) and Q8 (counts machine-local in phase 1) were confirmed by the owner on 2026-10-27.
+None open. Q4 (separate 50,000-entry counting cap) and Q8 (counts machine-local in phase 1) were confirmed by the owner on 2026-10-27. Q13–Q15 were decided by the owner on 2026-10-27; Q16 and Q17 are recommendations awaiting confirmation.

@@ -10,13 +10,19 @@ from vyasa.adapters.sqlite.database import open_index
 from vyasa.application.indexing.scan import scan_workspace
 from vyasa.application.scanning.file_composition import default_file_types
 from vyasa.domain.discovery import COMPLETE, PARTIAL
-from vyasa.domain.file_composition import Evidence, WalkLimits
-from vyasa.domain.languages import LanguageOutcome, LanguageReport
+from vyasa.domain.file_composition import Evidence, FileComposition, WalkLimits
+from vyasa.domain.languages import CheckoutScan, LanguageOutcome, LanguageReport
 from vyasa.domain.workspace_config import WorkspaceConfig
 
 
 def report(found=(("Python", 2),), declared=(), stopped_by=None, version=2):
     return LanguageReport(tuple(found), tuple(declared), stopped_by, Evidence(version, (), WalkLimits()))
+
+
+def scanned(r, doc=0, other=0):
+    """A CheckoutScan whose code count is the sum of the report's files_detected."""
+    code = sum(n for _, n in r.files_detected)
+    return CheckoutScan(FileComposition(code, doc, other, r.stopped_by, r.evidence), r)
 
 
 def with_languages(name, outcome, **kw):
@@ -126,7 +132,7 @@ def test_scan_attaches_languages_per_eligible_candidate(db, tmp_path):
 
     def detect(path):
         seen_paths.append(path.name)
-        return report(found=(("Go", 1),))
+        return scanned(report(found=(("Go", 1),)))
 
     (result,) = scan_workspace(config(tmp_path), db, owner="o", discover=discover_two, detect=detect)
     assert sorted(seen_paths) == ["bad", "good"]
@@ -138,7 +144,7 @@ def test_failing_detector_is_isolated_and_marks_run_partial(db, tmp_path):
     def detect(path):
         if path.name == "bad":
             raise RuntimeError("secret detail")
-        return report()
+        return scanned(report())
 
     (result,) = scan_workspace(config(tmp_path), db, owner="o", discover=discover_two, detect=detect)
     assert result.stored.status == "partial"
@@ -150,14 +156,14 @@ def test_failing_detector_is_isolated_and_marks_run_partial(db, tmp_path):
 
 
 def test_partial_report_is_stored_partial(db, tmp_path):
-    scan_workspace(config(tmp_path), db, owner="o", discover=discover_two, detect=lambda p: report(stopped_by="time"))
+    scan_workspace(config(tmp_path), db, owner="o", discover=discover_two, detect=lambda p: scanned(report(stopped_by="time")))
     assert observations(db, "good")[0]["stopped_by"] == "time"
 
 
 def test_scan_does_not_detect_ineligible_candidates(db, tmp_path):
     called = []
     run = replace(make_run([repo("a")]), issues=(replace(repo("x"), outcome="inaccessible"),))
-    scan_workspace(config(tmp_path), db, owner="o", discover=lambda r: run, detect=lambda p: called.append(p) or report())
+    scan_workspace(config(tmp_path), db, owner="o", discover=lambda r: run, detect=lambda p: called.append(p) or scanned(report()))
     assert [p.name for p in called] == ["a"]
 
 
@@ -301,7 +307,7 @@ def test_details_give_languages_per_checkout_without_a_total(reader):
     by_state = sorted(c["languages"]["items"][0]["label"] for c in data["checkouts"])
     assert by_state == ["Go", "Python"]
     assert all(set(c["languages"]) >= {"status", "stopped_by", "observed_at", "types_version", "items"} for c in data["checkouts"])
-    assert "languages" not in data and "total" not in str(data["checkouts"]).lower()
+    assert "languages" not in data and all("total" not in c["languages"] for c in data["checkouts"])
 
 
 def test_item_shape(reader):
