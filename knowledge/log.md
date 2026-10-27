@@ -1,5 +1,8 @@
 # Knowledge Update Log
 
+## 2026-10-27
+* **Creation**: Added the [Writing Knowledge](/practices/writing-knowledge.md) practice and the draft decision [Knowledge Profile Enforces Sections and Supersession](/decisions/knowledge-profile-section-rules.md).
+
 ## 2026-10-26
 * **Creation**: Added [Views](/architecture/views/) (deployment, scan pipeline, data model, MCP, storage, synchronization, remote discovery, security) with C4, sequence, state, and decision diagrams.
 * **Creation**: Added the [Glossary](/concepts/glossary.md) and five principle concepts: [Deterministic Extraction](/concepts/deterministic-extraction.md), [Freshness and Staleness](/concepts/freshness-and-staleness.md), [Untrusted Content](/concepts/untrusted-content.md), [Explicit Operations](/concepts/explicit-operations.md), [Local-First Operation](/concepts/local-first.md).

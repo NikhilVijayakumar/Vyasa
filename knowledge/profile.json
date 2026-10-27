@@ -30,5 +30,19 @@
     "openspec/specs/"
   ],
   "independence": "Concept links and sources may point only inside this bundle or to absolute external URLs. Knowledge never depends on requirements, specifications, changes, or implementation.",
+  "required_sections": {
+    "Decision": [
+      "Context",
+      "Decision",
+      "Alternatives considered",
+      "Consequences"
+    ]
+  },
+  "forbidden_words": [
+    "\\bthis change\\b",
+    "\\bthis ticket\\b",
+    "\\bthis sprint\\b",
+    "\\bTODO:"
+  ],
   "max_lines": 400
 }

@@ -10,6 +10,10 @@ adds this repository's stricter rules, which this script enforces:
   ``generated`` actor and timestamp;
 - every concept is listed in its folder's ``index.md`` and every folder in
   its parent's index; the root index declares ``okf_version``;
+- optional content-shape rules (each skipped when its profile key is absent):
+  ``required_sections`` per type, ``forbidden_words`` patterns, no Open
+  questions section in a ``stable`` concept, and a ``superseded_by`` pointer to
+  a concept of the same type on every deprecated Decision;
 - ``log.md`` date headings are ``YYYY-MM-DD``;
 - independence: links and ``sources`` may point only inside the bundle or to
   external URLs, and the profile's forbidden paths never appear. Knowledge
@@ -87,6 +91,52 @@ def check_path(bundle: Path, origin: Path, target: str, what: str, errors: list[
         warnings.append(f"{rel}: {what} '{target}' does not exist yet")
 
 
+def headings(body: str) -> dict[str, str]:
+    """Top-level ``# Name`` headings (lower-cased) mapped to their text; fenced code is skipped."""
+    found: dict[str, str] = {}
+    current, fenced = None, False
+    for line in body.split("\n"):
+        if line.startswith("```"):
+            fenced = not fenced
+        elif not fenced and re.match(r"^# \S", line):
+            current = line[2:].strip().lower()
+            found[current] = ""
+        elif current is not None:
+            found[current] += line + "\n"
+    return found
+
+
+def check_shape(rel: Path, kind: str, status: str, description: str, body: str, profile: dict, errors: list[str]) -> None:
+    found = headings(body)
+    for name in profile.get("required_sections", {}).get(kind, []):
+        if name.lower() not in found:
+            errors.append(f"{rel}: missing required section '{name}'")
+        elif not found[name.lower()].strip():
+            errors.append(f"{rel}: required section '{name}' is empty")
+    if status == "stable" and "open questions" in found:
+        errors.append(f"{rel}: stable concept has an Open questions section")
+    for pattern in profile.get("forbidden_words", []):
+        if pattern.search(description) or pattern.search(body):
+            errors.append(f"{rel}: matches forbidden pattern '{pattern.pattern}'")
+
+
+def check_supersession(bundle: Path, path: Path, kind: str, status: str, target: str, errors: list[str]) -> None:
+    rel = path.relative_to(bundle)
+    if not target:
+        if kind == "Decision" and status == "deprecated":
+            errors.append(f"{rel}: deprecated decision has no superseded_by")
+        return
+    resolved = ((bundle / target.lstrip("/")) if target.startswith("/") else (path.parent / target)).resolve()
+    if bundle != resolved and bundle not in resolved.parents:
+        errors.append(f"{rel}: superseded_by '{target}' points outside the knowledge bundle")
+    elif not resolved.is_file():
+        errors.append(f"{rel}: superseded_by '{target}' does not exist")
+    else:
+        parsed = split_frontmatter(resolved.read_text(encoding="utf-8"))
+        if parsed is None or unquote(parsed[0].get("type", "")) != kind:
+            errors.append(f"{rel}: superseded_by '{target}' is not a {kind}")
+
+
 def check_concept(bundle: Path, path: Path, profile: dict, errors: list[str], warnings: list[str], now: datetime) -> None:
     rel = path.relative_to(bundle)
     parsed = split_frontmatter(path.read_text(encoding="utf-8"))
@@ -145,6 +195,9 @@ def check_concept(bundle: Path, path: Path, profile: dict, errors: list[str], wa
     for target in link_targets(body):
         check_path(bundle, path, target, "link", errors, warnings)
 
+    check_shape(rel, kind, status, unquote(fields.get("description", "")), body, profile, errors)
+    check_supersession(bundle, path, kind, status, unquote(fields.get("superseded_by", "")), errors)
+
 
 def check_indexes(bundle: Path, profile: dict, errors: list[str], warnings: list[str]) -> None:
     for directory in [bundle, *sorted(p for p in bundle.rglob("*") if p.is_dir())]:
@@ -188,6 +241,13 @@ def verify(bundle: Path, now: datetime | None = None) -> tuple[list[str], list[s
     if not profile_path.is_file():
         return [f"{profile_path}: missing"], warnings
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    patterns = []
+    for raw in profile.get("forbidden_words", []):
+        try:
+            patterns.append(re.compile(raw, re.IGNORECASE))
+        except re.error:
+            errors.append(f"profile.json: forbidden_words '{raw}' is not a valid regular expression")
+    profile["forbidden_words"] = patterns
 
     for path in sorted(bundle.rglob("*.md")):
         text = path.read_text(encoding="utf-8")
