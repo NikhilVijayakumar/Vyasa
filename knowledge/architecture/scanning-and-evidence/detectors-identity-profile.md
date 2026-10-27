@@ -109,7 +109,7 @@ The canonical profile is a project-maintained source of declared metadata.
 
 The proposed location is:
 
-` .vyasa/project-profile.yaml`
+` .vyasa/project-profile.toml`
 
 The leading space above is explanatory formatting only; the actual path begins with `.vyasa/`.
 
@@ -138,7 +138,7 @@ An optional draft may be generated through a separate operation when explicitly 
 
 Proposed location:
 
-`.vyasa/project-profile.draft.yaml`
+`.vyasa/project-profile.draft.toml`
 
 The draft should:
 

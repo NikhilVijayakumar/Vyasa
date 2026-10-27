@@ -66,7 +66,7 @@ Vyasa must operate only within explicitly configured workspace roots and approve
 
 If draft generation is implemented, it must be a separate, opt-in capability.
 
-- Use the designated draft location, proposed as `.vyasa/project-profile.draft.yaml`.
+- Use the designated draft location, proposed as `.vyasa/project-profile.draft.toml`.
 - Do not overwrite an existing draft without explicit approval.
 - Do not modify the canonical profile.
 - Do not automatically promote a draft to authoritative metadata.

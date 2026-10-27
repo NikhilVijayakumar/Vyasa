@@ -7,7 +7,7 @@ Feature: Project Profile Lifecycle — scenarios from the grill
   Scenario: A draft is excluded locally, not through a tracked file
     Given draft generation is requested for a repository without a profile
     When the draft is written
-    Then the only file created is .vyasa/project-profile.draft.yaml
+    Then the only file created is .vyasa/project-profile.draft.toml
     And a rule is added to .git/info/exclude
     And no tracked file is modified
 

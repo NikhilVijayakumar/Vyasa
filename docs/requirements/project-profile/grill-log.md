@@ -29,7 +29,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q2. What format and path (DFR-004, DO-001, DO-002)?**
 
-- **Recommendation:** One YAML file, `.vyasa/project-profile.yaml`, with `schema_version: 1`. No root-level `VYASA.md` in phase 1, to avoid two authorities for one field. The README remains the documentation.
+- **Recommendation:** One TOML file, `.vyasa/project-profile.toml`, with `schema_version = 1`. No root-level `VYASA.md` in phase 1, to avoid two authorities for one field. The README remains the documentation.
 - **Why:** One authority per field is the ownership rule.
 - **Status:** Decision needed
 - **Feeds:** FR-014 note; DFR-004
@@ -60,7 +60,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q6. How does draft generation work (DO-003)?**
 
-- **Recommendation:** An explicit command `vyasa profile draft <project>`. It prints the exact path, writes only `.vyasa/project-profile.draft.yaml`, adds a rule to `.git/info/exclude` instead of editing the tracked `.gitignore`, refuses to overwrite without `--force`, and lists missing fields as comments.
+- **Recommendation:** An explicit command `vyasa profile draft <project>`. It prints the exact path, writes only `.vyasa/project-profile.draft.toml`, adds a rule to `.git/info/exclude` instead of editing the tracked `.gitignore`, refuses to overwrite without `--force`, and lists missing fields as comments.
 - **Why:** `.git/info/exclude` is local and untracked, so nothing tracked changes. Writing is limited to one named file.
 - **Status:** Decision needed
 - **Feeds:** FR-014 S2, S3

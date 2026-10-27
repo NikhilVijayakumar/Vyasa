@@ -457,6 +457,27 @@ data/*/cache          # * stays inside one folder, ** crosses folders, ? is one 
 
 The file can only remove directories from scanning. Negation (`!`), drive letters and `..` are reported and skipped, and a file over 64 KiB is ignored. When Vyasa skips directories because of the depth limit, its report says how many, gives examples, and suggests adding them here.
 
+## Project profile
+
+A repository can describe itself in `.vyasa/project-profile.toml`, written once by a coding agent or maintainer. `vyasa scan` reads it (text only, at most 64 KiB, never through a link) and `get_project` shows the values as `declared`, with the file as their source. Vyasa never writes it.
+
+```toml
+schema_version = 1
+name = "Billing API"
+purpose = "Issues and reconciles customer invoices."
+lifecycle = "active"        # active, maintenance, experimental, deprecated, archived
+domain = ["payments"]
+tags = ["python", "api"]
+technologies = ["FastAPI", "PostgreSQL"]
+owners = ["team-billing"]
+related_projects = [{ identity = "github.com/acme/ledger", relation = "depends_on" }]
+
+[documentation]
+entry_point = "docs/index.md"
+```
+
+Each field is checked on its own: a bad field is reported and the rest are kept. A missing profile is normal.
+
 ## Scanning
 
 `vyasa scan` scans the workspace roots listed in `config.toml` (several are allowed) and nothing else. The first run creates the data directory and the index; later runs update it in place without duplicates. It reports each root's status and anything it skipped, and exits 0 only when every root completed (1 partial or failed, 2 configuration problem, 3 another scan is running, 4 index problem). It never changes a repository.

@@ -127,7 +127,7 @@ The exact canonical path and schema must be finalized before implementation.
 
 Proposed convention:
 
-- `.vyasa/project-profile.yaml`
+- `.vyasa/project-profile.toml`
 
 Alternative:
 
@@ -149,7 +149,7 @@ A generated draft profile is an optional convenience for repositories that lack 
 
 Proposed location:
 
-- `.vyasa/project-profile.draft.yaml`
+- `.vyasa/project-profile.draft.toml`
 
 The draft should be git-ignored by default.
 
@@ -631,7 +631,7 @@ Expected behaviour:
 
 | ID | Decision | Recommendation |
 |---|---|---|
-| DO-001 | Canonical profile format | Choose one structured canonical format; `.vyasa/project-profile.yaml` is a reasonable candidate. |
+| DO-001 | Canonical profile format | Choose one structured canonical format; `.vyasa/project-profile.toml` is a reasonable candidate. |
 | DO-002 | Human-readable profile | Decide whether a root-level `VYASA.md` is required in addition to the structured profile. Avoid maintaining two independent authorities for the same fields. |
 | DO-003 | Draft generation | Keep it optional, git-ignored, and separate from the canonical profile. |
 | DO-004 | Project ID algorithm | Define normalized remote identity and deterministic local fallback behaviour. |

@@ -24,7 +24,9 @@ Some facts cannot be detected: purpose, lifecycle, relations. Maintainers need o
 
 # Decision
 
-The canonical profile is `.vyasa/project-profile.yaml` with a `schema_version`, validated per field; unsupported versions are reported and unrelated extraction continues. There is no second human-readable authority for the same fields. A draft is generated only by an explicit command to `.vyasa/project-profile.draft.yaml`, shown before writing, never overwritten without confirmation, and excluded through the repository's local exclude file rather than a tracked ignore file. Promotion is a person's edit and commit.
+The profile is written once by a coding agent or maintainer working in the repository; Vyasa only reads it, validating each field on its own and keeping the valid ones.
+
+The canonical profile is `.vyasa/project-profile.toml` with a `schema_version`, validated per field; unsupported versions are reported and unrelated extraction continues. There is no second human-readable authority for the same fields. A draft is generated only by an explicit command to `.vyasa/project-profile.draft.toml`, shown before writing, never overwritten without confirmation, and excluded through the repository's local exclude file rather than a tracked ignore file. Promotion is a person's edit and commit.
 
 # Alternatives considered
 
@@ -34,7 +36,7 @@ The canonical profile is `.vyasa/project-profile.yaml` with a `schema_version`, 
 
 # Consequences
 
-- Maintainers write YAML.
+- Maintainers write TOML, which Python reads without a new dependency.
 - Draft generation is the single, explicit write into a repository.
 - The profile schema is a contract and is versioned.
 
