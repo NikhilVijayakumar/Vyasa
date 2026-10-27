@@ -150,6 +150,20 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 - **Status:** Settled
 - **Feeds:** FR-005
 
+**Q17. Which remote does a project report, and how is its provider known?**
+
+- **Recommendation:** The remote is read from `.git/config` as text. `origin` is chosen, else the only remote, else none with status ambiguous. The URL is reduced to a credential-free `host/org/repo`, and the provider is derived from the host: `github`, `bitbucket`, `gitlab`, any other host as `other` with the host kept, a path or `file:` URL as `local`, and `none` when there is no remote. The original URL is never stored.
+- **Why:** Credentials in URLs must not be persisted; running Git would execute repository-influenced code; owners use self-hosted hosts that no fixed list covers. Owner decision 2026-10-27: unknown hosts stay as `other`.
+- **Status:** Settled
+- **Feeds:** FR-004 Git origin and repository URL; the remote identity decision
+
+**Q18. What about linked worktrees and submodules, whose `.git` is a pointer file?**
+
+- **Recommendation:** Their remote is reported unavailable. Following the pointer would read a path the repository supplies.
+- **Why:** Safe by default; it affects few projects.
+- **Status:** Recommended
+- **Feeds:** FR-004 Git origin and repository URL
+
 ## Decisions for you
 
 - **Q2** — Which manifests and languages come first (DFR-006)?

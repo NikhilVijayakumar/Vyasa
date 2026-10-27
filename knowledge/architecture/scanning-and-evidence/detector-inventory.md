@@ -56,6 +56,7 @@ Rules:
 - Do not treat a remote URL alone as proof that the remote repository is accessible.
 - Keep local checkout paths separate from shareable repository identity.
 - Do not automatically merge forks and upstream repositories.
+- Derive the provider from the remote host alone (see [Git Remote Provider Labels](/decisions/git-remote-provider-labels.md)): GitHub, Bitbucket, and GitLab by their public hosts, any other host as `other` with the host kept. Never keep the original URL.
 
 ### 9.3 Programming Language Detector
 

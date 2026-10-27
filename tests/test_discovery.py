@@ -727,3 +727,98 @@ def test_a_documentation_only_repository_with_git_is_tracked(tmp_path):
     result = run(tmp_path)
     assert kinds(result) == {"idea": "repository"}
     assert result.repositories[0].git == "."
+
+
+# -- Git remote ------------------------------------------------------------------------------------------------
+
+
+def set_remote(project, url, name="origin"):
+    config = project / ".git" / "config"
+    config.write_text(f'[remote "{name}"]\n\turl = {url}\n', encoding="utf-8")
+
+
+def remote_of(result, relative):
+    return next(c for c in result.repositories if c.path.relative_to(result.root).as_posix() == relative)
+
+
+@pytest.mark.parametrize(
+    ("url", "provider", "identity"),
+    [
+        ("https://github.com/Org/Repo.git", "github", "github.com/org/repo"),
+        ("git@bitbucket.org:Team/Repo.git", "bitbucket", "bitbucket.org/team/repo"),
+        ("https://gitlab.com/Group/Repo", "gitlab", "gitlab.com/Group/Repo"),
+        ("https://git.example.com/Team/Repo.git", "other", "git.example.com/Team/Repo"),
+    ],
+)
+def test_a_repository_reports_the_provider_and_identity_of_its_origin(tmp_path, url, provider, identity):
+    set_remote(repo(tmp_path, "proj"), url)
+    candidate = remote_of(run(tmp_path), "proj")
+    assert candidate.remote.provider == provider and candidate.remote.identity == identity
+    assert candidate.remote_status == "origin"
+
+
+def test_credentials_in_the_remote_never_reach_the_record(tmp_path):
+    set_remote(repo(tmp_path, "proj"), "https://alice:s3cret@bitbucket.org/team/repo.git")
+    result = run(tmp_path)
+    assert "s3cret" not in repr(result) and "alice" not in repr(result)
+
+
+def test_a_repository_without_a_remote_reports_none(tmp_path):
+    repo(tmp_path, "proj")
+    candidate = remote_of(run(tmp_path), "proj")
+    assert candidate.remote is None and candidate.remote_status == "none"
+
+
+def test_several_remotes_without_origin_are_ambiguous(tmp_path):
+    root = repo(tmp_path, "proj")
+    (root / ".git" / "config").write_text(
+        '[remote "a"]\n\turl = https://github.com/o/a\n[remote "b"]\n\turl = https://github.com/o/b\n', encoding="utf-8"
+    )
+    candidate = remote_of(run(tmp_path), "proj")
+    assert candidate.remote is None and candidate.remote_status == "ambiguous"
+
+
+def test_a_worktree_or_submodule_pointer_has_an_unavailable_remote(tmp_path):
+    pointer(tmp_path, "wt", "gitdir: /srv/bare.git/worktrees/wt\n")
+    pointer(tmp_path, "sub", "gitdir: ../.git/modules/sub\n")
+    for candidate in run(tmp_path).repositories:
+        assert candidate.remote is None and candidate.remote_status == "unavailable"
+
+
+def test_an_unreal_project_reads_the_remote_from_its_source_folder(tmp_path):
+    touch(tmp_path, "Tantra/Tantra.uproject")
+    set_remote(repo(tmp_path, "Tantra/Source"), "git@github.com:me/tantra.git")
+    candidate = remote_of(run(tmp_path), "Tantra")
+    assert candidate.git == "Source"
+    assert candidate.remote.provider == "github" and candidate.remote_status == "origin"
+
+
+def test_a_manifest_project_without_git_has_no_remote_fields(tmp_path):
+    touch(tmp_path, "app/package.json")
+    candidate = remote_of(run(tmp_path), "app")
+    assert candidate.remote is None and candidate.remote_status is None
+
+
+def test_an_oversized_config_does_not_stop_discovery(tmp_path):
+    root = repo(tmp_path, "big")
+    (root / ".git" / "config").write_text("#" * 70000, encoding="utf-8")
+    repo(tmp_path, "ok")
+    result = run(tmp_path)
+    assert found(result) == ["big", "ok"]
+    assert remote_of(result, "big").remote_status == "unavailable"
+
+
+def test_config_files_are_opened_but_nothing_else_beyond_pointers(tmp_path, monkeypatch):
+    set_remote(repo(tmp_path, "proj"), "https://github.com/o/r")
+    pointer(tmp_path, "sub", "gitdir: ../.git/modules/sub\n")
+    touch(tmp_path, "proj/secret.txt")
+    opened = []
+    real = builtins.open
+
+    def recording(file, *args, **kwargs):
+        opened.append(os.path.basename(os.fspath(file)))
+        return real(file, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", recording)
+    run(tmp_path)
+    assert sorted(opened) == [".git", "config"]
