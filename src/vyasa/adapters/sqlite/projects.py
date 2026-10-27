@@ -10,7 +10,15 @@ from datetime import datetime
 from pathlib import Path
 
 from vyasa.domain.discovery import Candidate
-from vyasa.domain.index import ACTIVE, INACCESSIBLE, MISSING
+from vyasa.domain.index import (
+    ACTIVE,
+    DUPLICATE_CHECKOUT,
+    FLAG_CLEARED,
+    FLAG_OPEN,
+    IDENTITY_UNRESOLVED,
+    INACCESSIBLE,
+    MISSING,
+)
 
 ADDED, ATTACHED, UPDATED, UNCHANGED, RESTORED, CONFLICT = "added", "attached", "updated", "unchanged", "restored", "conflicts"
 REMOTE = "remote"
@@ -33,7 +41,7 @@ def _fields(candidate: Candidate) -> tuple:
     )
 
 
-def _event(connection: sqlite3.Connection, project_id: str, kind: str, detail: dict, run_id: str, stamp: str) -> None:
+def _event(connection: sqlite3.Connection, project_id: str, kind: str, detail: dict, run_id: str | None, stamp: str) -> None:
     connection.execute(
         "INSERT INTO identity_events (project_id, kind, detail, run_id, at) VALUES (?, ?, ?, ?, ?)",
         (project_id, kind, json.dumps(detail, sort_keys=True), run_id, stamp),
@@ -54,6 +62,63 @@ def _add_alias(connection: sqlite3.Connection, project_id: str, identity: str, s
         "INSERT INTO project_aliases (alias_kind, alias_value, project_id, first_seen_at) VALUES (?, ?, ?, ?)",
         (REMOTE, identity, project_id, stamp),
     )
+
+
+def _raise(connection: sqlite3.Connection, project_id: str, kind: str, evidence: dict, run_id: str | None, stamp: str) -> None:
+    """Open the flag, or keep it open. A `flagged` event is written when it was absent or cleared."""
+    row = connection.execute(
+        "SELECT flag_id, state, evidence FROM review_flags WHERE project_id = ? AND kind = ?", (project_id, kind)
+    ).fetchone()
+    text = json.dumps(evidence, sort_keys=True)
+    if row is None:
+        connection.execute(
+            "INSERT INTO review_flags (project_id, kind, state, evidence, raised_at, run_id) VALUES (?, ?, ?, ?, ?, ?)",
+            (project_id, kind, FLAG_OPEN, text, stamp, run_id),
+        )
+    elif row["state"] == FLAG_CLEARED:
+        connection.execute(
+            "UPDATE review_flags SET state = ?, evidence = ?, raised_at = ?, cleared_at = NULL, run_id = ? WHERE flag_id = ?",
+            (FLAG_OPEN, text, stamp, run_id, row["flag_id"]),
+        )
+    else:
+        if json.loads(row["evidence"]) != evidence:
+            connection.execute("UPDATE review_flags SET evidence = ?, run_id = ? WHERE flag_id = ?", (text, run_id, row["flag_id"]))
+        return
+    _event(connection, project_id, "flagged", {"flag": kind}, run_id, stamp)
+
+
+def _clear(connection: sqlite3.Connection, project_id: str, kind: str, run_id: str | None, stamp: str) -> None:
+    cleared = connection.execute(
+        "UPDATE review_flags SET state = ?, cleared_at = ?, run_id = ? WHERE project_id = ? AND kind = ? AND state = ?",
+        (FLAG_CLEARED, stamp, run_id, project_id, kind, FLAG_OPEN),
+    ).rowcount
+    if cleared:
+        _event(connection, project_id, "resolved", {"flag": kind}, run_id, stamp)
+
+
+def _sync_duplicate(connection: sqlite3.Connection, project_id: str, run_id: str | None, stamp: str) -> None:
+    active = connection.execute(
+        "SELECT COUNT(*) FROM checkouts WHERE project_id = ? AND state = ?", (project_id, ACTIVE)
+    ).fetchone()[0]
+    if active > 1:
+        aliases = sorted(r[0] for r in connection.execute("SELECT alias_value FROM project_aliases WHERE project_id = ?", (project_id,)))
+        evidence = {"rule": "same_remote_identity", "aliases": aliases, "active_checkouts": active}
+        _raise(connection, project_id, DUPLICATE_CHECKOUT, evidence, run_id, stamp)
+    else:
+        _clear(connection, project_id, DUPLICATE_CHECKOUT, run_id, stamp)
+
+
+def _settle(connection: sqlite3.Connection, project_id: str, run_id: str, stamp: str) -> None:
+    """The evidence no longer conflicts: an ambiguous project takes the status its aliases support."""
+    row = connection.execute("SELECT identity_status FROM projects WHERE project_id = ?", (project_id,)).fetchone()
+    if row["identity_status"] != "ambiguous":
+        return
+    has_alias = connection.execute("SELECT 1 FROM project_aliases WHERE project_id = ?", (project_id,)).fetchone()
+    connection.execute(
+        "UPDATE projects SET identity_status = ?, identity_source = ?, updated_at = ? WHERE project_id = ?",
+        ("resolved" if has_alias else "provisional", REMOTE if has_alias else "path", stamp, project_id),
+    )
+    _clear(connection, project_id, IDENTITY_UNRESOLVED, run_id, stamp)
 
 
 def refresh_state(connection: sqlite3.Connection, project_id: str, stamp: str) -> None:
@@ -118,6 +183,15 @@ def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run
                     "UPDATE checkouts SET last_seen_at = ?, last_run_id = ? WHERE checkout_id = ?",
                     (stamp, run_id, row["checkout_id"]),
                 )
+                connection.execute(
+                    "UPDATE projects SET identity_status = 'ambiguous', updated_at = CASE WHEN identity_status = 'ambiguous'"
+                    " THEN updated_at ELSE ? END WHERE project_id = ?",
+                    (stamp, project_id),
+                )
+                _raise(
+                    connection, project_id, IDENTITY_UNRESOLVED,
+                    {"alias": identity, "alias_owner": owner, "path_project": project_id}, run_id, stamp,
+                )
                 connection.execute("COMMIT")
                 return CONFLICT
             same = tuple(row[name] for name in (
@@ -133,6 +207,7 @@ def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run
                     (project_id,),
                 )
                 outcome = UPDATED if outcome == UNCHANGED else outcome
+            _settle(connection, project_id, run_id, stamp)
             connection.execute(
                 "UPDATE checkouts SET root = ?, kind = ?, markers = ?, git = ?, remote_provider = ?, remote_host = ?,"
                 " remote_identity = ?, remote_status = ?, state = ?, last_seen_at = ?, last_run_id = ?"
@@ -180,6 +255,25 @@ def _set_state(connection: sqlite3.Connection, where: str, args: tuple, state: s
         raise
 
 
+def sync_duplicates(connection: sqlite3.Connection, run_id: str, now: datetime) -> None:
+    """At the end of a run, once absent checkouts are marked: flag projects with several active checkouts."""
+    stamp = now.isoformat()
+    connection.execute("BEGIN IMMEDIATE")
+    try:
+        ids = [r[0] for r in connection.execute(
+            "SELECT project_id FROM checkouts WHERE last_run_id = ?"
+            " UNION SELECT project_id FROM review_flags WHERE kind = ? AND state = ?",
+            (run_id, DUPLICATE_CHECKOUT, FLAG_OPEN),
+        )]
+        for project_id in sorted(ids):
+            _sync_duplicate(connection, project_id, run_id, stamp)
+        connection.execute("COMMIT")
+    except BaseException:
+        if connection.in_transaction:
+            connection.execute("ROLLBACK")
+        raise
+
+
 def list_projects(connection: sqlite3.Connection, state: str | None = None) -> list[sqlite3.Row]:
     query = (
         "SELECT p.project_id, p.display_name, p.state, p.identity_status, p.identity_source, c.path, c.root, c.kind, c.remote_provider, c.remote_host,"
@@ -201,3 +295,10 @@ def list_events(connection: sqlite3.Connection, project_id: str) -> list[sqlite3
     return connection.execute(
         "SELECT kind, detail, run_id, at FROM identity_events WHERE project_id = ? ORDER BY event_id", (project_id,)
     ).fetchall()
+
+
+def list_flags(connection: sqlite3.Connection, state: str | None = FLAG_OPEN) -> list[sqlite3.Row]:
+    query = "SELECT project_id, kind, state, evidence, raised_at, cleared_at FROM review_flags"
+    if state is None:
+        return connection.execute(query + " ORDER BY project_id, kind").fetchall()
+    return connection.execute(query + " WHERE state = ? ORDER BY project_id, kind", (state,)).fetchall()

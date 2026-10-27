@@ -69,6 +69,7 @@ def store_run(
             gone = projects.mark_absent(connection, run.root, run.run_id, now())
             if gone:
                 counts["missing"] = gone
+        projects.sync_duplicates(connection, run.run_id, now())
         status = STATUS[run.status]
         connection.execute(
             "UPDATE scan_runs SET status = ?, finished_at = ?, counts = ? WHERE run_id = ?",
