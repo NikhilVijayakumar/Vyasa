@@ -10,6 +10,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from vyasa.domain.file_composition import Evidence, FileComposition, FileTypes, extension
+from vyasa.domain.frameworks import FrameworkReport
 from vyasa.domain.markers import MarkerReport
 
 
@@ -43,6 +44,7 @@ class CheckoutScan:
     composition: FileComposition
     languages: LanguageReport
     markers: MarkerReport | None = None
+    frameworks: FrameworkReport | None = None
 
 
 @dataclass(frozen=True)
@@ -54,6 +56,7 @@ class LanguageOutcome:
     seconds: float = 0.0
     composition: FileComposition | None = None
     markers: MarkerReport | None = None
+    frameworks: FrameworkReport | None = None
 
 
 DETECTION_ERROR = "detection_error"

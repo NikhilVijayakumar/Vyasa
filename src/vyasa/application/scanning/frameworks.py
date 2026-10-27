@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
+from collections.abc import Callable, Iterable
 from pathlib import Path
+
+from vyasa.adapters.filesystem.manifest_reader import READ, ManifestRead, read_manifest
 
 from vyasa.domain.frameworks import (
     ECOSYSTEMS,
     KEY,
+    MANIFEST_LIMIT,
+    MAX_DEPENDENCIES,
+    MALFORMED,
     PARSED,
+    UNREADABLE,
+    FrameworkReport,
+    ManifestParseError,
     ManifestResult,
     RegistryError,
     TechnologyEntry,
@@ -17,6 +26,7 @@ from vyasa.domain.frameworks import (
     TechnologyRegistry,
     normalize,
 )
+from vyasa.domain.manifests import ecosystem_of, parse_manifest
 
 
 def _text(value: object, field: str, source: str) -> str:
@@ -89,3 +99,53 @@ def technologies_of(manifests: tuple[ManifestResult, ...], registry: TechnologyR
                 scopes[key].add(dependency.scope)
                 sources[key].add(manifest.path)
     return tuple(TechnologyFound(k, tuple(sorted(scopes[k])), tuple(sorted(sources[k]))) for k in sorted(scopes))
+
+
+def _manifest(root: Path | str, name: str, ecosystem: str, limit: int, reader: Callable[..., ManifestRead]) -> ManifestResult:
+    """Read and parse one root manifest. Whatever goes wrong becomes a status with a fixed reason; no text is kept."""
+    try:
+        read = reader(root, name, limit)
+    except Exception:  # one unreadable file must not stop the others
+        return ManifestResult(name, ecosystem, UNREADABLE, "io", (), 0, 0, False)
+    if read.status != READ or read.text is None:
+        return ManifestResult(name, ecosystem, read.status, read.reason, (), 0, 0, False)
+    try:
+        parsed = parse_manifest(name, read.text)
+    except ManifestParseError as error:
+        return ManifestResult(name, ecosystem, MALFORMED, error.reason, (), 0, 0, False)
+    except Exception:
+        return ManifestResult(name, ecosystem, MALFORMED, "structure", (), 0, 0, False)
+    dependencies = tuple(sorted(parsed.dependencies, key=lambda d: (d.name, d.scope)))
+    return ManifestResult(name, ecosystem, PARSED, None, dependencies, len(dependencies), parsed.skipped, parsed.workspace)
+
+
+def detect_frameworks(
+    root: Path | str,
+    files: Iterable[str],
+    stopped_by: str | None,
+    registry: TechnologyRegistry,
+    limit: int = MANIFEST_LIMIT,
+    reader: Callable[..., ManifestRead] = read_manifest,
+) -> FrameworkReport:
+    """Technologies declared by the supported manifests among the walk's relative file paths.
+
+    Only files directly in the checkout root are read; supported names below it are counted and left alone.
+    """
+    root_names: list[tuple[str, str]] = []
+    nested: Counter[str] = Counter()
+    for path in files:
+        parent, _, name = path.rpartition("/")
+        ecosystem = ecosystem_of(name)
+        if ecosystem is None:
+            continue
+        if parent:
+            nested[ecosystem] += 1
+        else:
+            root_names.append((name, ecosystem))
+    results = tuple(_manifest(root, name, ecosystem, limit, reader) for name, ecosystem in sorted(root_names))
+    technologies = technologies_of(results, registry)  # from every dependency, before the storage cap
+    capped = tuple(
+        ManifestResult(m.path, m.ecosystem, m.status, m.reason, m.dependencies[:MAX_DEPENDENCIES], m.total_dependencies, m.skipped, m.workspace)
+        for m in results
+    )
+    return FrameworkReport(capped, tuple(sorted(nested.items())), technologies, registry.version, stopped_by)
