@@ -1,14 +1,16 @@
-"""The ``vyasa`` command line. Only ``scan`` exists so far."""
+"""The ``vyasa`` command line: ``scan`` updates the index, ``profile-context`` prints what is known about one repository."""
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from collections.abc import Mapping, Sequence
 from typing import TextIO
 
 from vyasa.adapters.sqlite.database import open_index
+from vyasa.application import profile_context
 from vyasa.application.configuration.workspace import load_workspace_config
 from vyasa.application.indexing.scan import RootResult, scan_workspace
 from vyasa.application.indexing.store import index_path
@@ -76,16 +78,36 @@ def scan(config_path: str | None, environ: Mapping[str, str], out: TextIO, err: 
     return OK if all(r.stored.status == "completed" for r in results) else PARTIAL
 
 
+def profile_context_command(path: str, out: TextIO, err: TextIO) -> int:
+    """Print the context bundle of one repository from a live read-only scan. Nothing is written anywhere."""
+    try:
+        bundle = profile_context.live_context(path)
+    except profile_context.NotAProject as error:
+        err.write(f"{error}\n")
+        return USAGE
+    except Exception:  # noqa: BLE001 - never show repository text
+        err.write("The profile context could not be produced because of an internal error.\n")
+        return INDEX
+    out.write(json.dumps(bundle, indent=2, sort_keys=True) + "\n")
+    return OK
+
+
 def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = None, out: TextIO | None = None, err: TextIO | None = None) -> int:
     out, err = out or sys.stdout, err or sys.stderr
     parser = argparse.ArgumentParser(prog="vyasa", description="Local-first workspace intelligence.")
     commands = parser.add_subparsers(dest="command", required=True)
     scan_parser = commands.add_parser("scan", help="scan the configured workspace roots and update the index")
     scan_parser.add_argument("--config", help="path to a configuration file (default: config.toml in the data directory)")
+    context_parser = commands.add_parser(
+        "profile-context", help="print what Vyasa observes about one repository, for a coding agent writing its profile"
+    )
+    context_parser.add_argument("path", nargs="?", default=".", help="the repository root (default: the current directory)")
     try:
         args = parser.parse_args(argv)
     except SystemExit as exit_:
         return USAGE if exit_.code else OK
+    if args.command == "profile-context":
+        return profile_context_command(args.path, out, err)
     return scan(args.config, os.environ if environ is None else environ, out, err)
 
 

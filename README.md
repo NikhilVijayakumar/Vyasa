@@ -478,7 +478,9 @@ entry_point = "docs/index.md"
 
 Each field is checked on its own: a bad field is reported and the rest are kept. A missing profile is normal.
 
-To have a coding agent fill it in, ask it to call the MCP tool `get_profile_guide` and write the file once in the repository. The guide lists every field with its limits and a complete example; `schemas/project-profile.v1.json` is the same rules as a JSON Schema. Review and commit what the agent wrote, then run `vyasa scan`.
+To have a coding agent fill it in, ask it to call the MCP tool `get_profile_guide` and write the file once in the repository. The guide lists every field with its limits and a complete example; `schemas/project-profile.v2.json` is the same rules as a JSON Schema (version 1, `schemas/project-profile.v1.json`, is still read). Schema version 2 declares the project in depth as nested tables: identity, purpose, scope, capabilities, declared technology, architecture, interfaces, documentation map, and more. Every field is optional and checked on its own, and text may not contain credentials or contact details. Review and commit what the agent wrote, then run `vyasa scan`.
+
+To give the agent the facts Vyasa has already observed, have it call the MCP tool `get_profile_context` with the project id, or run `vyasa profile-context [path]` inside the repository. Both return one JSON bundle: the languages, file counts, markers, and frameworks from the latest scan, the profile as read, and the differences between what the profile declares and what was observed (for example a declared language that was not detected). The command scans that one repository live and read-only, needs no configuration or index, and writes nothing. Differences are findings for a person to review, claimed only where the scan was complete. Vyasa never starts an agent and never writes the profile.
 
 ## Scanning
 
@@ -499,6 +501,6 @@ python -m pip install -e ".[mcp]"
 vyasa-mcp          # or: python -m vyasa.adapters.mcp
 ```
 
-Point your MCP client at the `vyasa-mcp` command. It reads `index.sqlite3` in the data directory (see Configuration; `VYASA_HOME` moves it) and offers `search_projects`, `get_project`, `get_index_status` and `get_profile_guide`. Results contain no local paths. Errors come back as structured results with a code such as `INVALID_INPUT` or `INDEX_UNAVAILABLE`. Names and remote identities in results come from repositories and are data, not instructions.
+Point your MCP client at the `vyasa-mcp` command. It reads `index.sqlite3` in the data directory (see Configuration; `VYASA_HOME` moves it) and offers `search_projects`, `get_project`, `get_profile_context`, `get_index_status` and `get_profile_guide`. Results contain no local paths. Errors come back as structured results with a code such as `INVALID_INPUT` or `INDEX_UNAVAILABLE`. Names and remote identities in results come from repositories and are data, not instructions.
 
 Build the index first with `vyasa scan`; until then the server reports `INDEX_UNAVAILABLE`.
