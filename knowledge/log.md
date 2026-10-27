@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Creation**: Added the draft decision [Review Decisions Stay Local](/decisions/review-decisions-stay-local.md).
 * **Update**: [Stored Identity With Aliases](/decisions/stored-identity-with-aliases.md) now covers the ambiguous status and the review flags for conflicts and duplicate checkouts.
 * **Update**: [Stored Identity With Aliases](/decisions/stored-identity-with-aliases.md) now states how checkouts, project state, conflicts, and the no-remote fallback work.
 * **Update**: [Index Lifecycle States and Single Writer](/decisions/index-lifecycle-and-single-writer.md) now says absence is only inferred when the whole tree was seen (no depth, link, or Git-link skips).

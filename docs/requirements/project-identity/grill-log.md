@@ -159,6 +159,4 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 ## Decisions for you
 
-- **Q15** — Where is a reviewer's decision stored? Open; needed only by `be-review-candidates`.
-
-Q2, Q4, Q5 and Q14 were confirmed by the owner on 2026-10-27.
+None open. Q2, Q4, Q5, Q14 and Q15 were confirmed by the owner on 2026-10-27. Q15: a reviewer's decision is always local and is never synchronized or shown in Google Sheets.
