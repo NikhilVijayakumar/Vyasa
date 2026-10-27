@@ -3,13 +3,13 @@ type: Decision
 title: "Knowledge Profile Enforces Sections and Supersession"
 description: The bundle profile requires named sections per type, bans open questions in stable concepts, and makes a deprecated decision name its replacement.
 tags: [adr, knowledge, okf, validation]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-27T09:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. The rules are enforced by the bundle verifier.
 
 # Context
 
