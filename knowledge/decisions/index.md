@@ -20,3 +20,4 @@ Architecture decision records. All are drafts until reviewed and accepted; each 
 * [MCP Omits Local Paths by Default](mcp-local-paths-omitted-by-default.md) - Tool results contain no absolute local paths unless the user enables them.
 * [Refresh and Integration Tools Are Disabled by Default](explicit-tools-disabled-by-default.md) - The refresh tool and any later synchronization or discovery tools are not offered to agents unless configured.
 * [Retention Defaults](retention-defaults.md) - Observations keep the current and previous value; run history and logs are bounded by count and age.
+* [Knowledge Profile Enforces Sections and Supersession](knowledge-profile-section-rules.md) - The bundle profile requires named sections per type, bans open questions in stable concepts, and makes a deprecated decision name its replacement.
