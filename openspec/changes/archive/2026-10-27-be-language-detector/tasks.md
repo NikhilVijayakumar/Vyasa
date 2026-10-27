@@ -1,7 +1,7 @@
 # Implementation Tasks: be-language-detector
 
 - **OpenSpec Change ID:** `be-language-detector`
-- **Status:** Implemented, pending review and merge
+- **Status:** Implemented and archived
 - **Related artifacts:** `proposal.md`, `specs/`, `design.md`, `api-contract.md`, `adr.md`
 
 ## Task Planning Rules
@@ -57,13 +57,13 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 ## 7. Documentation and Handover
 
 - [x] 7.1 Behavior did not diverge from the decision or inventory §9.3; no knowledge change needed.
-- [ ] 7.2 Mark the decision concept stable when the owner accepts it.
+- [ ] 7.2 Mark the decision concept stable when the owner accepts it (left open: owner decision).
 
 ## 8. Review, Merge, and Archive
 
 - [x] 8.1 Pull request with the change ID: not opened; merged locally to `develop` under owner instruction.
-- [ ] 8.2 `git fetch`, merge into `develop` after review and verification (never force-push).
-- [ ] 8.3 Archive the change.
+- [x] 8.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 8.3 Archive the change.
 
 ## Verification Record
 
@@ -71,4 +71,4 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 
 ## Completion Summary
 
-Not yet complete.
+Implemented and merged into `develop`; archived. The decision concepts stay `draft` until the owner accepts them.
