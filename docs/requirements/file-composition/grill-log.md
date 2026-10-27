@@ -8,8 +8,8 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 |---|---|---|
 | Intent | 1 | 0 |
 | Scope | 2 | 0 |
-| Behaviour | 2 | 1 |
-| Data | 2 | 1 |
+| Behaviour | 2 | 0 |
+| Data | 2 | 0 |
 | Integration | 1 | 0 |
 | Architecture | 1 | 0 |
 | Acceptance | 1 | 0 |
@@ -45,8 +45,8 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 **Q4. How many files may the count walk visit?**
 
 - **Recommendation:** Its own cap of 50,000 entries, with the accepted depth and 60-second limits unchanged. Beyond it the count is partial.
-- **Why:** The accepted 5,000-entry inventory cap exists to bound reading and parsing. A count reads nothing, and at 5,000 most real repositories would be partial, which would make the feature mostly `unknown`. The number is a starting point to validate against representative workspaces.
-- **Status:** Decision needed
+- **Why:** The accepted 5,000-entry inventory cap exists to bound reading and parsing. A count reads nothing, and at 5,000 most real repositories would be partial, which would make the feature mostly `unknown`. The number is a starting point to validate against representative workspaces. Confirmed by the owner 2026-10-27.
+- **Status:** Settled
 - **Feeds:** FR-021 S6, FC-001
 
 **Q9. What is a documentation file?**
@@ -68,8 +68,8 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 **Q8. Are the counts synchronized to the shared registry?**
 
 - **Recommendation:** No, not in phase 1. They are checkout-specific and change often; they stay machine-local and out of the export allowlist.
-- **Why:** The registry should hold stable portfolio facts. Counts differ per device and would create sync noise. Revisit when a team need appears.
-- **Status:** Decision needed
+- **Why:** The registry should hold stable portfolio facts. Counts differ per device and would create sync noise. Revisit when a team need appears. Confirmed by the owner 2026-10-27.
+- **Status:** Settled
 - **Feeds:** FR-021, FC-002
 
 ## Integration
@@ -117,5 +117,4 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 ## Decisions for you
 
-- **Q4** — Separate 50,000-entry cap for counting, or reuse the 5,000 inventory cap?
-- **Q8** — Keep counts machine-local in phase 1, or export them to the shared registry?
+None open. Q4 (separate 50,000-entry counting cap) and Q8 (counts machine-local in phase 1) were confirmed by the owner on 2026-10-27.

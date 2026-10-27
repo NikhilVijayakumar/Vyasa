@@ -1,7 +1,7 @@
 # Requirement: File Composition
 
 - **Package:** `docs/requirements/file-composition/`
-- **Status:** Grilled — recommended answers await your confirmation
+- **Status:** Reviewed — owner confirmed Q4 and Q8 on 2026-10-27
 - **Roadmap phase:** P1
 - **Owns:** FR-021
 - **Grill log:** [grill-log.md](grill-log.md)
@@ -73,7 +73,7 @@ Observable behaviour is specified as Gherkin scenarios in `features/`. Scenarios
 
 ## Open Decisions
 
-Accepted as open until you confirm the recommended direction in the grill log.
+Confirmed by the owner on 2026-10-27.
 
 | Decision | Recommended direction | Grill |
 |---|---|---|

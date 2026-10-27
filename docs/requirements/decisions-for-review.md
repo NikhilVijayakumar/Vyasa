@@ -12,13 +12,6 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 | Q4 | Who owns lifecycle status (DO-007)? | Two fields. `lifecycle_declared` is project-owned, from the profile. `portfolio_status` is portfolio-owned: active, review, archive-candidate, archived. A declared obsolete lifecycle can raise a review candidate but never changes the portfolio status. |
 | Q13 | Who counts as a portfolio maintainer? | Vyasa cannot tell. Any value present in a portfolio column is treated as authoritative, so protecting the sheet is a sharing and access matter. The documentation says so. |
 
-## file-composition
-
-| Q | Question | Recommended answer |
-|---|---|---|
-| Q4 | How many files may the count walk visit? | Its own cap of 50,000 entries, with the accepted depth and 60-second limits unchanged. Beyond it the count is partial. |
-| Q8 | Are the counts synchronized to the shared registry? | No, not in phase 1. They are checkout-specific and change often; they stay machine-local and out of the export allowlist. |
-
 ## local-index
 
 | Q | Question | Recommended answer |
