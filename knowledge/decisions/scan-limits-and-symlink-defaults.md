@@ -24,7 +24,7 @@ Unbounded traversal and parsing let one large or hostile directory consume time 
 
 # Decision
 
-Defaults, all configurable: traversal depth 6; 1 MiB per file (256 KiB for profiles); 5,000 inventory entries per project; 60 seconds per project. Hitting a limit gives a skipped-by-policy outcome naming the limit, never a claim that something is absent. Directory symlinks are not followed; when enabled, each target is resolved and rejected if it leaves the configured roots, and cycles are broken. The numbers are starting points to validate against representative workspaces.
+Defaults, all configurable: traversal depth 8; 1 MiB per file (256 KiB for profiles); 5,000 inventory entries per project; 60 seconds per project. Hitting a limit gives a skipped-by-policy outcome naming the limit, never a claim that something is absent. Directory symlinks are not followed; when enabled, each target is resolved and rejected if it leaves the configured roots, and cycles are broken. The numbers are starting points to validate against representative workspaces.
 
 # Alternatives considered
 

@@ -71,7 +71,7 @@ A pure domain model for the result types, and one application module that locate
 | REQ-003 | Not configured | No file or no roots reports why; nothing scanned | Must |
 | REQ-004 | Invalid configuration | All problems reported; nothing applied | Must |
 | REQ-005 | Root accessibility | Each root checked on its own | Must |
-| REQ-006 | Nested roots | Kept and reported | Should |
+| REQ-006 | Nested roots | Inner root dropped with a warning | Should |
 
 ## 7. Risks and Open Questions
 
@@ -86,7 +86,7 @@ A pure domain model for the result types, and one application module that locate
 - `VYASA_HOME` and `VYASA_CONFIG` are the only environment variables read.
 
 ### Open Questions
-- [ ] Whether nested roots should instead be rejected; kept and reported for now (grill Q4).
+- [x] Nested roots: the inner root is dropped with a warning (owner decision 2026-10-27).
 
 ## 8. Acceptance Summary
 
@@ -113,7 +113,7 @@ A pure domain model for the result types, and one application module that locate
 - [x] Assumptions and unresolved questions are visible.
 - [x] The proposing team is identified and its focus and skills applied.
 - [x] The proposal is consistent with existing specifications and project conventions.
-- [ ] Significant ambiguities have been challenged and resolved (grill-me not yet run on this change).
+- [x] Significant ambiguities have been challenged and resolved (`docs/reviews/config-and-discovery-grill.md`); two decisions await the owner.
 - [x] The change has a stable OpenSpec ID and follows the project's Git discipline.
 
 **Status:** Draft

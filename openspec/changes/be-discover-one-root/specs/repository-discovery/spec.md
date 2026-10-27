@@ -24,7 +24,7 @@ One root per call. No persistence, no identity, no metadata.
 
 ### Requirement: Recognize Git repositories
 
-The system SHALL treat a directory that contains a `.git` directory with a `HEAD` file, or a `.git` file whose first line starts with `gitdir:`, as a repository candidate, and SHALL classify a `.git` file whose target path has a `worktrees` segment as a linked worktree, one with a `modules` segment as a submodule, and any other as a repository.
+The system SHALL treat a directory that contains a `.git` directory with a `HEAD` file, or a `.git` file whose first line starts with `gitdir:`, as a repository candidate, and SHALL classify a `.git` file as a linked worktree when the target ends in `<git directory>/worktrees/<name>`, as a submodule when the target contains `.git/modules`, and otherwise as a repository.
 
 #### Scenario: Repository with a Git directory
 
@@ -55,6 +55,24 @@ The system SHALL treat a directory that contains a `.git` directory with a `HEAD
 - **GIVEN** a `.git` file that points to a path with neither segment
 - **WHEN** discovery runs
 - **THEN** it is reported eligible with kind repository
+
+#### Scenario: Look-alike paths are repositories
+
+- **GIVEN** a `.git` file pointing at `/home/me/modules/repo.git`, and another at `/home/me/worktrees/repo.git`
+- **WHEN** discovery runs
+- **THEN** both are reported eligible with kind repository
+
+#### Scenario: Bare-repository worktree and nested submodule
+
+- **GIVEN** a `.git` file pointing at `/srv/bare.git/worktrees/feature`, and another at `../.git/modules/outer/modules/inner`
+- **WHEN** discovery runs
+- **THEN** the first is a linked worktree and the second a submodule
+
+#### Scenario: Root is a symlink
+
+- **GIVEN** the root path is itself a symlink to a directory containing a repository
+- **WHEN** discovery runs
+- **THEN** the repository is found and the status is complete
 
 #### Scenario: Ordinary directories are not candidates
 
@@ -104,14 +122,14 @@ The system SHALL give each candidate exactly one outcome from eligible, excluded
 
 ### Requirement: Traversal boundaries
 
-The system SHALL descend at most the configured depth below the root (default 6), SHALL NOT enter directories whose names match the exclusions (compared case-insensitively), SHALL count them as excluded, and SHALL NOT follow directory symlinks or junctions.
+The system SHALL descend at most the configured depth below the root (default 8), SHALL NOT enter directories whose names match the exclusions (compared case-insensitively), SHALL count them as excluded, and SHALL NOT follow directory symlinks or junctions. A directory not entered because of the depth limit or because it is a link SHALL be reported in a warning, not as a failure.
 
 #### Scenario: Depth limit
 
 - **GIVEN** a repository deeper than the depth limit
 - **WHEN** discovery runs
 - **THEN** it is not found
-- **AND** the directory that was not entered is reported skipped by policy with reason `max_depth`
+- **AND** a `max_depth` warning counts the directory that was not entered
 
 #### Scenario: Repository at the depth limit
 
@@ -138,17 +156,18 @@ The system SHALL descend at most the configured depth below the root (default 6)
 - **GIVEN** a directory symlink or junction pointing at a repository outside the root
 - **WHEN** discovery runs
 - **THEN** that repository is not found
-- **AND** the link is reported skipped by policy with reason `symlink`
+- **AND** a `symlink` warning counts the link
 
 #### Scenario: Linked Git entry
 
 - **GIVEN** a `.git` entry that is a symbolic link
 - **WHEN** discovery runs
-- **THEN** the candidate is skipped by policy with reason `git_link`
+- **THEN** the candidate is not a repository
+- **AND** a `git_link` warning counts it
 
 ### Requirement: Run status
 
-The system SHALL set the run status to failed when the root is missing, not a directory, or unreadable; to partial when any candidate is inaccessible, malformed, or skipped by policy; and otherwise to complete.
+The system SHALL set the run status to failed when the root is missing, not a directory, or unreadable; to partial when any candidate is inaccessible or malformed; and otherwise to complete. A directory skipped by policy SHALL NOT change the status.
 
 #### Scenario: Complete run
 
@@ -162,6 +181,13 @@ The system SHALL set the run status to failed when the root is missing, not a di
 - **WHEN** discovery runs
 - **THEN** the status is partial
 - **AND** the repository is still reported
+
+#### Scenario: Skips do not make a run partial
+
+- **GIVEN** a root where some directories were skipped by the depth limit and nothing failed
+- **WHEN** discovery runs
+- **THEN** the status is complete
+- **AND** a warning reports the skips
 
 #### Scenario: Failed run
 
@@ -184,7 +210,7 @@ The system SHALL set the run status to failed when the root is missing, not a di
 
 ### Requirement: Run record
 
-The system SHALL return a record with a run identifier, the root, start and end times, the status, the tool version, the options used, a count for each outcome, the eligible repositories in sorted order, and at most a fixed number of issues together with how many were omitted.
+The system SHALL return a record with a run identifier, the root, start and end times, the status, the tool version, the options used, a count for each outcome, the eligible repositories in sorted order, at most a fixed number of failures (inaccessible and malformed candidates) together with how many were omitted, and one warning for each reason directories were skipped by policy, giving the number skipped, up to five examples, and advice on what to do.
 
 #### Scenario: Record contents
 
@@ -192,17 +218,30 @@ The system SHALL return a record with a run identifier, the root, start and end 
 - **WHEN** the record is read
 - **THEN** it carries the identifier, root, both times, status, tool version, options, and all five counts
 
-#### Scenario: Issues are bounded but counted
+#### Scenario: Failures are bounded but counted
 
 - **GIVEN** more malformed candidates than the issue limit
 - **WHEN** discovery runs
 - **THEN** only the limit are listed, the omitted number is reported, and the malformed count covers all of them
 
+#### Scenario: Skips are summarized
+
+- **GIVEN** eight directories skipped by the depth limit
+- **WHEN** discovery runs
+- **THEN** there is one `max_depth` warning with count 8 and five examples
+- **AND** its advice names the repository's `.vyasaignore` and the depth limit
+
+#### Scenario: A failure is never hidden by skips
+
+- **GIVEN** many skipped directories and one malformed candidate
+- **WHEN** discovery runs
+- **THEN** the malformed candidate is listed as an issue and the status is partial
+
 #### Scenario: Repeatable result
 
 - **GIVEN** an unchanged tree
 - **WHEN** discovery runs twice
-- **THEN** both runs report the same repositories, issues, and counts
+- **THEN** both runs report the same repositories, issues, warnings, and counts
 
 #### Scenario: Independent of listing order
 

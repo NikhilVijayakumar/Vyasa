@@ -84,12 +84,40 @@ The system SHALL load every path in `workspace.roots`, expanding a leading `~`, 
 - **WHEN** the configuration is loaded with a known home directory
 - **THEN** the root is that home directory joined with `work`
 
-#### Scenario: Nested roots kept and reported
+#### Scenario: Nested root dropped and reported
 
-- **GIVEN** one listed root lies inside another
+- **GIVEN** one listed root lies inside another, in either order
 - **WHEN** the configuration is loaded
-- **THEN** both are returned
-- **AND** a warning names the nesting
+- **THEN** only the outer root is returned
+- **AND** a warning names the dropped root
+
+### Requirement: Common file encodings are accepted
+
+The system SHALL accept a configuration file saved as UTF-8 with or without a byte-order mark, with Unix or Windows line endings, and SHALL accept paths written as single-quoted literal strings.
+
+#### Scenario: Byte-order mark
+
+- **GIVEN** a configuration file that begins with a UTF-8 byte-order mark
+- **WHEN** the configuration is loaded
+- **THEN** the roots are returned
+
+#### Scenario: Windows line endings
+
+- **GIVEN** a configuration file with carriage-return line endings
+- **WHEN** the configuration is loaded
+- **THEN** the roots are returned
+
+#### Scenario: Literal string paths
+
+- **GIVEN** a root written as a single-quoted string containing backslashes
+- **WHEN** the configuration is loaded
+- **THEN** the root is taken exactly as written
+
+#### Scenario: Variables are not expanded
+
+- **GIVEN** a root written as `$HOME/work`
+- **WHEN** the configuration is loaded
+- **THEN** loading fails because the path is not absolute
 
 ### Requirement: Not configured
 

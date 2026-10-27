@@ -23,7 +23,7 @@ Workspace roots are the one setting without which nothing may be scanned, and a 
 
 The configuration is one TOML file, read with the standard library. It is found in this order: an explicit path given by the caller, the `VYASA_CONFIG` environment variable, then `config.toml` in the data directory. The data directory is `VYASA_HOME` when set; otherwise `%LOCALAPPDATA%\Vyasa` on Windows, `~/Library/Application Support/Vyasa` on macOS, and `$XDG_DATA_HOME/vyasa` or `~/.local/share/vyasa` elsewhere.
 
-Workspace roots are a list of absolute paths under a `workspace` table. A leading `~` is expanded; a relative path is invalid. Duplicate roots are merged, and a root inside another is kept and reported. Unknown keys are invalid.
+Workspace roots are a list of absolute paths under a `workspace` table. A leading `~` is expanded; a relative path is invalid. Duplicate roots are merged, and a root inside another is dropped with a warning, so no repository is scanned twice. Unknown keys are invalid.
 
 Four outcomes are distinct:
 

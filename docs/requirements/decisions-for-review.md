@@ -92,7 +92,7 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 | Q6 | Which remote URLs may be shared (SP-012)? | Normalized URLs on github.com and bitbucket.org by default; any other host stays local unless a project is explicitly approved. |
 | Q8 | Where do credentials live (SP-002)? | The OS credential store through the optional `keyring` extra. Environment variables are allowed as a controlled fallback and never logged. A 0600 file outside any repository is allowed only by explicit choice. Never in config, the database, or a repository. |
 | Q11 | When is the threat model reviewed (SP-013)? | Before enabling each new trust boundary, phase 2 and phase 3, using `mcp-server-review` and `code-review-security`, and recorded as a Decision concept. |
-| Q13 | What are the default scan limits (SP-003)? | Depth 6, 1 MiB per file (256 KiB for profiles), 5,000 inventory entries per project, 60 s per project, all configurable. A limit reached means skipped, never absent. |
+| Q13 | What are the default scan limits (SP-003)? | Depth 8, 1 MiB per file (256 KiB for profiles), 5,000 inventory entries per project, 60 s per project, all configurable. A limit reached means skipped, never absent. |
 
 ## shared-registry
 
@@ -109,5 +109,5 @@ Each row is a trade-off the grill could not settle from existing documents. The 
 |---|---|---|
 | Q3 | Does a directory without Git count as a project (DFR-003)? | Yes, only with a recognized marker at its root: a canonical profile, or a supported manifest such as `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`. A bare directory is never a project. |
 | Q11 | How long is scan history kept (SP-005)? | The last 50 runs or 90 days, whichever is larger, both configurable; per-item detail for the last 10 runs. |
-| Q14 | Where do limits live and what happens when one is hit (SP-003)? | Configuration holds `max_depth` (6), `max_file_bytes` (1 MiB; 256 KiB for profiles), `max_inventory_entries` (5,000), and `project_timeout` (60 s). Hitting a limit gives `skipped_by_policy` naming the limit, never a claim that the thing is absent. |
+| Q14 | Where do limits live and what happens when one is hit (SP-003)? | Configuration holds `max_depth` (8), `max_file_bytes` (1 MiB; 256 KiB for profiles), `max_inventory_entries` (5,000), and `project_timeout` (60 s). Hitting a limit gives `skipped_by_policy` naming the limit, never a claim that the thing is absent. |
 

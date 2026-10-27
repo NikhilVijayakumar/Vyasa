@@ -124,15 +124,21 @@ def test_duplicate_roots_are_merged(tmp_path):
 
 def test_home_is_expanded(tmp_path):
     home = tmp_path / "home"
-    result = load(tmp_path, toml_roots("~/work", "~"), home=home)
-    assert result.roots == (Path(os.path.normpath(home / "work")), Path(os.path.normpath(home)))
+    result = load(tmp_path, toml_roots("~/work", "~/other"), home=home)
+    assert result.roots == (Path(os.path.normpath(home / "work")), Path(os.path.normpath(home / "other")))
+    assert load(tmp_path, toml_roots("~"), home=home).roots == (Path(os.path.normpath(home)),)
 
 
-def test_nested_roots_are_kept_and_reported(tmp_path):
+def test_nested_root_is_dropped_and_reported(tmp_path):
     outer, inner = tmp_path / "outer", tmp_path / "outer" / "inner"
     result = load(tmp_path, toml_roots(outer, inner))
-    assert result.roots == (outer, inner)
-    assert len(result.warnings) == 1 and "inside" in result.warnings[0]
+    assert result.roots == (outer,)
+    assert len(result.warnings) == 1 and "dropped" in result.warnings[0]
+
+
+def test_the_outer_root_wins_whatever_the_order(tmp_path):
+    outer, inner = tmp_path / "outer", tmp_path / "outer" / "inner"
+    assert load(tmp_path, toml_roots(inner, outer)).roots == (outer,)
 
 
 def test_sibling_roots_with_a_common_prefix_are_not_nested(tmp_path):
@@ -246,3 +252,29 @@ def test_checking_opens_no_file(tmp_path, monkeypatch):
 
     monkeypatch.setattr(builtins, "open", refuse)
     assert check_roots(config(root))[0].status == ACCESSIBLE
+
+
+# -- found by the grill --------------------------------------------------------------------------------------
+
+
+def test_utf8_byte_order_mark_is_accepted(tmp_path):
+    file = tmp_path / "bom.toml"
+    file.write_bytes(b"\xef\xbb\xbf" + toml_roots(tmp_path).encode("utf-8"))
+    result = load_workspace_config(file, environ={}, home=tmp_path)
+    assert result.roots == (tmp_path,)
+
+
+def test_windows_line_endings_are_accepted(tmp_path):
+    file = tmp_path / "crlf.toml"
+    file.write_bytes(toml_roots(tmp_path).replace("\n", "\r\n").encode("utf-8"))
+    assert load_workspace_config(file, environ={}, home=tmp_path).roots == (tmp_path,)
+
+
+def test_single_quoted_literal_paths_load_without_escaping(tmp_path):
+    result = load(tmp_path, f"[workspace]\nroots = ['{tmp_path}']\n")
+    assert result.roots == (tmp_path,)
+
+
+def test_environment_variables_in_paths_are_not_expanded(tmp_path):
+    with pytest.raises(ConfigError, match="absolute"):
+        load(tmp_path, '[workspace]\nroots = ["$HOME/work"]\n')

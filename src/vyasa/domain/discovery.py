@@ -34,7 +34,7 @@ DISCOVERY_EXCLUSIONS: frozenset[str] = frozenset(
 class DiscoveryOptions:
     """Bounds for one discovery. See the repository recognition decision."""
 
-    max_depth: int = 6
+    max_depth: int = 8
     exclusions: frozenset[str] = DISCOVERY_EXCLUSIONS
     max_issues: int = 100
 
@@ -47,6 +47,27 @@ class Candidate:
     outcome: str
     kind: str | None = None
     reason: str | None = None
+
+
+MAX_WARNING_EXAMPLES = 5
+
+SKIP_ADVICE: dict[str, str] = {
+    "max_depth": "Directories below the depth limit were not searched. If they hold nothing to scan, "
+    "list them in the repository's .vyasaignore; otherwise raise max_depth.",
+    "symlink": "Directory links are not followed. If the target should be scanned, "
+    "add its real location as a workspace root.",
+    "git_link": "A .git entry that is a link is not followed. Replace it with a real .git directory or file.",
+}
+
+
+@dataclass(frozen=True)
+class ScanWarning:
+    """Directories skipped by policy for one reason, with a few examples and what to do about it."""
+
+    reason: str
+    count: int
+    examples: tuple[Path, ...]
+    advice: str
 
 
 @dataclass(frozen=True)
@@ -64,3 +85,4 @@ class DiscoveryRun:
     repositories: tuple[Candidate, ...]
     issues: tuple[Candidate, ...]
     issues_omitted: int = field(default=0)
+    warnings: tuple[ScanWarning, ...] = ()

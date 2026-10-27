@@ -50,7 +50,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q5. What is traversed, how deep, and what is excluded by default?**
 
-- **Recommendation:** Depth 6 below each root. Default exclusions: `.git` internals, `node_modules`, `.venv`, `venv`, `__pycache__`, `build`, `dist`, `target`, `.tox`, caches, `.idea`, `.vscode`. Patterns match a directory name or a root-relative glob. Inside a project root the scanner descends only to find nested Git roots.
+- **Recommendation:** Depth 8 below each root (owner decision 2026-10-27: his repositories sit at most 3 levels below a root). Default exclusions: `.git` internals, `node_modules`, `.venv`, `venv`, `__pycache__`, `build`, `dist`, `target`, `.tox`, caches, `.idea`, `.vscode`. Patterns match a directory name or a root-relative glob. Inside a project root the scanner descends only to find nested Git roots.
 - **Why:** Bounds the work, keeps dependency trees out of the index, and makes matching rules testable.
 - **Status:** Recommended
 - **Feeds:** FR-001 S2; SE-001
@@ -125,7 +125,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q14. Where do limits live and what happens when one is hit (SP-003)?**
 
-- **Recommendation:** Configuration holds `max_depth` (6), `max_file_bytes` (1 MiB; 256 KiB for profiles), `max_inventory_entries` (5,000), and `project_timeout` (60 s). Hitting a limit gives `skipped_by_policy` naming the limit, never a claim that the thing is absent.
+- **Recommendation:** Configuration holds `max_depth` (8), `max_file_bytes` (1 MiB; 256 KiB for profiles), `max_inventory_entries` (5,000), and `project_timeout` (60 s). Hitting a limit gives `skipped_by_policy` naming the limit, never a claim that the thing is absent.
 - **Why:** Conservative defaults validated by benchmarks later; the rule that a limit is not absence is already in the architecture.
 - **Status:** Decision needed
 - **Feeds:** NFR-007; SEC-015

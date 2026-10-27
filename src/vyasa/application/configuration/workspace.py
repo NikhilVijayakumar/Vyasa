@@ -85,13 +85,18 @@ def _roots(raw: object, home: Path, source: Path, problems: list[str]) -> list[P
     return roots
 
 
-def _nesting(roots: list[Path]) -> tuple[str, ...]:
-    warnings = []
-    for i, outer in enumerate(roots):
-        for j, inner in enumerate(roots):
-            if i != j and Path(os.path.normcase(inner)).is_relative_to(Path(os.path.normcase(outer))):
-                warnings.append(f"workspace root {inner} is inside workspace root {outer}")
-    return tuple(warnings)
+def _drop_nested(roots: list[Path]) -> tuple[list[Path], tuple[str, ...]]:
+    """Keep the outer root of any nested pair so no repository is scanned twice."""
+    keys = [Path(os.path.normcase(root)) for root in roots]
+    kept: list[Path] = []
+    warnings: list[str] = []
+    for i, root in enumerate(roots):
+        outer = next((roots[j] for j in range(len(roots)) if j != i and keys[i].is_relative_to(keys[j])), None)
+        if outer is None:
+            kept.append(root)
+        else:
+            warnings.append(f"workspace root {root} is inside workspace root {outer} and was dropped")
+    return kept, tuple(warnings)
 
 
 def load_workspace_config(
@@ -114,7 +119,7 @@ def load_workspace_config(
             raise ConfigError((f"configuration file not found: {source}",))
         return NotConfigured(f"no configuration file at {source}")
     try:
-        data = tomllib.loads(source.read_text(encoding="utf-8"))
+        data = tomllib.loads(source.read_text(encoding="utf-8-sig"))
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
         raise ConfigError((f"{source}: cannot be read as TOML ({error})",)) from error
 
@@ -129,7 +134,8 @@ def load_workspace_config(
         raise ConfigError(tuple(problems))
     if not roots:
         return NotConfigured(f"{source}: workspace.roots lists no roots")
-    return WorkspaceConfig(roots=tuple(roots), source=source, warnings=_nesting(roots))
+    kept, warnings = _drop_nested(roots)
+    return WorkspaceConfig(roots=tuple(kept), source=source, warnings=warnings)
 
 
 def check_root(root: Path) -> str:

@@ -29,6 +29,8 @@ Result types:
 - `RootCheck`: `root` (`Path`), `status` (`accessible`, `missing`, `not_a_directory`, or `unreadable`).
 - `ConfigError(ValueError)`: `problems` (non-empty tuple of strings); its message lists them.
 
+The file is read as UTF-8; a leading byte-order mark is ignored. Environment variables and `~user` forms are not expanded; only a leading `~` is.
+
 Configuration file:
 
 ```toml
@@ -74,7 +76,7 @@ New. Later settings add known keys; an older reader rejects them, which is inten
 | Requirement | Operation | Field or rule | Acceptance scenario |
 |---|---|---|---|
 | Locate the configuration file | `data_directory`, `load_workspace_config` | resolution order | Explicit path wins; Environment variable next; Default location; Platform data directories; Home override; Explicit file missing |
-| Load several workspace roots | `load_workspace_config` | `roots` | Multiple roots; Duplicates merged; Home expansion; Nested roots kept and reported |
+| Load several workspace roots | `load_workspace_config` | `roots` | Multiple roots; Duplicates merged; Home expansion; Nested root dropped and reported |
 | Not configured | `load_workspace_config` | `NotConfigured` | No file at the default location; Empty roots |
 | Invalid configuration is rejected as a whole | `load_workspace_config` | `ConfigError` | Syntax error; Unknown key; Wrong type; Relative root; All problems together |
 | Each root is checked on its own | `check_roots` | `RootCheck` | One missing root; File instead of directory; Unreadable root |

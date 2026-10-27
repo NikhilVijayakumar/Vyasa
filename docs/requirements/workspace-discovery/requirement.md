@@ -79,7 +79,7 @@ Accepted as open until you confirm the recommended direction in the grill log.
 |---|---|---|
 | DFR-003 | Non-Git directories qualify only with a recognized marker (profile or supported manifest), never bare. | Q3 |
 | NFD-006 / SP-004 | Do not follow directory symlinks by default; opt-in resolves targets and rejects any outside the roots. | Q6 |
-| SP-003 | Defaults: depth 6, 1 MiB per file, 5,000 inventory entries per project, 60 s per project. | Q14 |
+| SP-003 | Defaults: depth 8 (owner, 2026-10-27), 1 MiB per file, 5,000 inventory entries per project, 60 s per project. | Q14 |
 | SP-005 | Keep the last 50 runs or 90 days, whichever is larger. | Q11 |
 
 ## Delivery

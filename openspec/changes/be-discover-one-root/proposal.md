@@ -18,14 +18,14 @@ Without discovery there are no projects to describe. A naive scan can run reposi
 
 ### Evidence
 - FR-002 and FR-015 scenarios in `docs/requirements/workspace-discovery/features/`.
-- Grill answers Q4 (nested repositories), Q5 (depth 6, default exclusions), Q6 (links not followed), Q9 (closed outcome set), Q10 (run record), Q12 (no network), Q13 (no repository-controlled execution).
+- Grill answers Q4 (nested repositories), Q5 (depth, default exclusions), Q6 (links not followed), Q9 (closed outcome set), Q10 (run record), Q12 (no network), Q13 (no repository-controlled execution).
 
 ## 2. Desired Outcome
 
 ### Goals
 - [ ] The repositories under a root are returned in a stable order.
 - [ ] Every non-repository result is explained by an outcome and a reason code.
-- [ ] A run says `complete`, `partial`, or `failed`, and why.
+- [ ] A run says `complete`, `partial`, or `failed`, and warns about what was skipped and what to do.
 - [ ] Nothing is executed and no repository file other than a `.git` pointer is opened.
 
 ### Team Focus
@@ -40,7 +40,7 @@ Changes are judged on MCP tool and interface contracts, data model, and trust bo
 ### In Scope
 - Recognition of repositories, submodules, and linked worktrees from `.git`.
 - Outcomes: eligible, excluded, inaccessible, malformed, skipped by policy.
-- Depth limit 6, default exclusions, links and junctions not followed.
+- Depth limit 8 (owner decision 2026-10-27), default exclusions, links and junctions not followed.
 - The in-memory run record.
 - Reuse of the root check from `be-workspace-config` and a shared directory-pruning helper.
 
@@ -73,7 +73,7 @@ Pure domain types, a filesystem adapter that walks and recognizes, and an applic
 | REQ-002 | Outcomes | One closed outcome per candidate | Must |
 | REQ-003 | Boundaries | Depth, exclusions, links not followed | Must |
 | REQ-004 | Nested repositories | Separate candidates, not merged | Must |
-| REQ-005 | Run status | Complete, partial, or failed | Must |
+| REQ-005 | Run status | Failed, partial on failures only, else complete; skips are warnings | Must |
 | REQ-006 | Run record | Id, root, times, counts, bounded issues | Must |
 | REQ-007 | Safety | Nothing run; only `.git` pointers opened | Must |
 
@@ -82,12 +82,12 @@ Pure domain types, a filesystem adapter that walks and recognizes, and an applic
 ### Risks
 | Risk | Impact | Mitigation or Investigation |
 |---|---|---|
-| Links make most runs partial | Noisy status | Counts and reason codes say why; revisit with `be-discovery-boundaries` |
+| Skipped directories inside repositories are numerous (3,132 at depth 6 on a real workspace) | Noise | They are summarized in warnings with advice and never change the status; a repository's `.vyasaignore` removes them |
 | No entry or time bound on the walk | A huge root is slow | Depth bounds it now; limits arrive with `be-discovery-boundaries` |
 | `.git` file classification by path segment is heuristic | A rare layout is mislabelled | The kind is advisory; identity resolution decides |
 
 ### Assumptions
-- The depth of 6 below the root is the accepted default (grill Q5).
+- The depth of 8 below the root is the owner's default: his repositories sit at most 3 levels below a root, so 8 leaves margin.
 
 ### Open Questions
 - [ ] Package Q8 recommends dropping a root nested inside another with a warning; `be-workspace-config` keeps and reports it. Resolved when several roots run together.
@@ -117,7 +117,7 @@ Pure domain types, a filesystem adapter that walks and recognizes, and an applic
 - [x] Assumptions and unresolved questions are visible.
 - [x] The proposing team is identified and its focus and skills applied.
 - [x] The proposal is consistent with existing specifications and project conventions.
-- [ ] Significant ambiguities have been challenged and resolved (grill-me not yet run on this change).
+- [x] Significant ambiguities have been challenged and resolved (`docs/reviews/config-and-discovery-grill.md`); two decisions await the owner.
 - [x] The change has a stable OpenSpec ID and follows the project's Git discipline.
 
 **Status:** Draft
