@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Update**: [One Walk Per Checkout Feeds Counts and Languages on One Observation](/decisions/checkout-walk-observation.md) accepted (status stable) after implementation and verification.
 * **Creation**: Added the draft decision [One Walk Per Checkout Feeds Counts and Languages on One Observation](/decisions/checkout-walk-observation.md).
 * **Update**: [Language Evidence Has Two Statuses and a Fixed Table](/decisions/language-evidence-statuses.md) and [Language Observations Are Stored by the Scan and Filtered, Never Merged](/decisions/language-observations-in-index.md) accepted (status stable) after implementation and verification.
 * **Creation**: Added the draft decision [Language Observations Are Stored by the Scan and Filtered, Never Merged](/decisions/language-observations-in-index.md).
