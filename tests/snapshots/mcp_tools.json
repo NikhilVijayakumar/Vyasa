@@ -21,6 +21,29 @@
       "open_world_hint": false,
       "read_only_hint": true
     },
+    "description": "Give a coding agent what Vyasa observed about one project, to write or update its profile from evidence: the checkouts with their languages, file counts, markers, and frameworks from the latest scan; the profile as read; for each checkout the differences between the declared profile and those observations (findings for a person to review, claimed only where the scan was complete); and a short workflow. Use `project_id` from search_projects. Vyasa never launches an agent and never writes the profile: the agent writes `.vyasa/project-profile.toml` itself, after calling get_profile_guide.",
+    "input_schema": {
+      "properties": {
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "title": "get_profile_contextArguments",
+      "type": "object"
+    },
+    "name": "get_profile_context"
+  },
+  {
+    "annotations": {
+      "destructive_hint": false,
+      "idempotent_hint": true,
+      "open_world_hint": false,
+      "read_only_hint": true
+    },
     "description": "Explain how to write a project's Vyasa profile in schema version 2 (version 1 is still read): the file path and format, every field with its limits and allowed values, a complete example, and rules for the writer. Call this before writing `.vyasa/project-profile.toml` in a repository, then write the file yourself; Vyasa only reads it, on its next scan.",
     "input_schema": {
       "properties": {},

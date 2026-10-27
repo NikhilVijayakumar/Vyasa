@@ -50,6 +50,16 @@ def _apply(connection: sqlite3.Connection, number: int, file: Path) -> None:
         raise IndexStoreError(MIGRATION_FAILED, f"migration {file.name} failed: {error}") from error
 
 
+def open_memory_index(migrations: Path = MIGRATIONS) -> sqlite3.Connection:
+    """A migrated index that lives only in memory and vanishes when closed: nothing is created on disk."""
+    connection = sqlite3.connect(":memory:", isolation_level=None)
+    connection.execute("PRAGMA foreign_keys = ON")
+    for number, file in _migrations(migrations):
+        _apply(connection, number, file)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
 def open_index(path: Path | str, *, read_only: bool = False, migrations: Path = MIGRATIONS) -> sqlite3.Connection:
     """Open (and for a writer, create and migrate) the index at ``path``."""
     path = Path(path)

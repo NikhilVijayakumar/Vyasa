@@ -33,8 +33,15 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _with_languages(run: DiscoveryRun, detect: Callable[[Path], CheckoutScan]) -> DiscoveryRun:
-    """Detect languages for each eligible checkout. A failure is kept for that checkout and makes the run partial."""
+def default_detect() -> Callable[[Path], CheckoutScan]:
+    """The scanner every scan uses: counts, languages, markers, and frameworks from one walk."""
+    types, rules, registry = default_file_types(), default_marker_rules(), default_registry()
+    return lambda path: scan_checkout(path, types, rules=rules, frameworks=registry)
+
+
+def enrich_run(run: DiscoveryRun, detect: Callable[[Path], CheckoutScan] | None = None) -> DiscoveryRun:
+    """Attach what the scan learns to each eligible checkout. A failure is kept for that checkout and makes the run partial."""
+    detect = detect or default_detect()
     found, failed = [], []
     for candidate in run.repositories:
         if candidate.outcome != ELIGIBLE:
@@ -70,11 +77,9 @@ def scan_workspace(
     A root that cannot be read is stored as a failed run and the others still run. A held writer lock
     raises ``OPERATION_IN_PROGRESS``.
     """
-    if detect is None:
-        types, rules, registry = default_file_types(), default_marker_rules(), default_registry()
-        detect = lambda path: scan_checkout(path, types, rules=rules, frameworks=registry)  # noqa: E731
+    detect = detect or default_detect()
     results = []
     for root in config.roots:
-        run = _with_languages(discover(root), detect)
+        run = enrich_run(discover(root), detect)
         results.append(RootResult(root, run, store_run(connection, run, owner=owner, now=now)))
     return tuple(results)
