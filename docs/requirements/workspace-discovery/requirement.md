@@ -27,7 +27,7 @@ A developer points Vyasa at one or more workspace roots. Vyasa finds the eligibl
 
 - **Included:**
   - Configuration of roots, exclusions, depth, symlink policy, and limits.
-  - Candidate discovery: projects by Git, by manifest, and by README with docs; project boundaries and opt-in nested repositories; per-candidate outcomes.
+  - Candidate discovery: projects by Git and by manifest; project boundaries and opt-in nested repositories; per-candidate outcomes.
   - Scan reporting: partial results, run history, and redacted diagnostics.
 - **Excluded:**
   - Metadata extraction (metadata-and-evidence).

@@ -38,7 +38,7 @@ Changes are judged on MCP tool and interface contracts, data model, and trust bo
 ## 3. Scope
 
 ### In Scope
-- Recognition of projects: by `.git` (repositories, submodules, linked worktrees), by manifest (`pyproject.toml`, `package.json`, `Cargo.toml`, `.uproject`, ...) with Git optional and looked for in child folders, and by README plus docs for projects not yet started.
+- Recognition of projects: by `.git` (repositories, submodules, linked worktrees), by manifest (`pyproject.toml`, `package.json`, `Cargo.toml`, `.uproject`, ...) with Git optional and looked for in child folders. A documentation-only folder counts only if it has Git.
 - A project is a boundary and is not entered unless nested repositories are enabled.
 - Outcomes: eligible, excluded, inaccessible, malformed, skipped by policy.
 - Depth limit 8 (owner decision 2026-10-27), default exclusions, links and junctions not followed.

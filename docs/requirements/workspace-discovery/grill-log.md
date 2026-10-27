@@ -36,8 +36,8 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q3. Does a directory without Git count as a project (DFR-003)?**
 
-- **Recommendation:** Yes. A directory is a project with a `.git` entry; or with a manifest (`pyproject.toml`, `requirements.txt`, `setup.py`, `package.json`, `Cargo.toml`, `go.mod`, or a `.uproject`), with Git optional and looked for in child folders (Unreal keeps it in `Source`); or with a README and a docs folder, as a project that has not started, unless it holds another project. Source files or a README alone are not enough.
-- **Why:** Prevents noise (scratch folders, downloads) while covering Unreal projects, projects without version control, and ideas that are only documents. Owner decision 2026-10-27.
+- **Recommendation:** Yes. A directory is a project with a `.git` entry; or with a manifest (`pyproject.toml`, `requirements.txt`, `setup.py`, `package.json`, `Cargo.toml`, `go.mod`, or a `.uproject`), with Git optional and looked for in child folders (Unreal keeps it in `Source`). Source files, a README, or documentation alone are not enough: a documentation-only repository is tracked when it has Git and ignored otherwise.
+- **Why:** Prevents noise (scratch folders, downloads) while covering Unreal projects and projects without version control, without tracking folders of notes. Owner decision 2026-10-27.
 - **Status:** Settled
 - **Feeds:** FR-002 S2, S4; DFR-003
 

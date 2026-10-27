@@ -697,53 +697,11 @@ def test_plain_folders_are_searched_down_to_the_project(tmp_path):
     assert kinds(run(tmp_path)) == {"a/b/c/d/proj": "project"}
 
 
-def test_a_readme_with_a_docs_folder_is_a_project_that_has_not_started(tmp_path):
-    touch(tmp_path, "idea/README.md", "idea/docs/vision.md")
-    result = run(tmp_path)
-    assert kinds(result) == {"idea": "documentation"}
-    assert result.repositories[0].git is None
-
-
-@pytest.mark.parametrize("docs", ["docs", "doc", "Documentation"])
-def test_documentation_folder_names(tmp_path, docs):
-    touch(tmp_path, f"idea/readme.rst", f"idea/{docs}/a.md")
-    assert kinds(run(tmp_path)) == {"idea": "documentation"}
-
-
-def test_a_readme_without_a_docs_folder_is_not_enough(tmp_path):
-    touch(tmp_path, "idea/README.md", "idea/notes/a.md")
-    assert run(tmp_path).repositories == ()
-
-
-def test_a_not_started_project_may_keep_git_in_a_child_folder(tmp_path):
-    touch(tmp_path, "idea/README.md", "idea/docs/a.md")
-    repo(tmp_path, "idea/Source")
-    result = run(tmp_path)
-    assert kinds(result) == {"idea": "documentation"}
-    assert result.repositories[0].git == "Source"
-
-
-def test_a_not_started_project_with_git_is_a_normal_repository(tmp_path):
-    root = repo(tmp_path, "idea")
-    touch(root, "README.md", "docs/a.md")
-    assert kinds(run(tmp_path)) == {"idea": "repository"}
-
-
-def test_a_container_with_a_readme_and_docs_is_not_itself_a_project(tmp_path):
-    touch(tmp_path, "workspace/README.md", "workspace/docs/a.md", "workspace/app/package.json")
-    assert kinds(run(tmp_path)) == {"workspace/app": "project"}
-
-
-def test_a_container_and_a_not_started_sibling_are_both_resolved(tmp_path):
-    touch(tmp_path, "ws/README.md", "ws/docs/a.md", "ws/app/package.json", "ws/idea/README.md", "ws/idea/docs/b.md")
-    assert kinds(run(tmp_path)) == {"ws/app": "project", "ws/idea": "documentation"}
-
-
 def test_the_default_run_opens_only_git_pointer_files(tmp_path, monkeypatch):
     plain = repo(tmp_path, "plain")
     ignore(plain, "data\n")
     pointer(tmp_path, "sub", "gitdir: ../.git/modules/sub\n")
-    touch(tmp_path, "app/package.json", "idea/README.md", "idea/docs/a.md")
+    touch(tmp_path, "app/package.json")
     opened = []
     real = builtins.open
 
@@ -752,5 +710,20 @@ def test_the_default_run_opens_only_git_pointer_files(tmp_path, monkeypatch):
         return real(file, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "open", recording)
-    assert len(run(tmp_path).repositories) == 4
+    assert len(run(tmp_path).repositories) == 3
     assert opened == [".git"]
+
+
+def test_a_documentation_only_folder_without_git_is_ignored(tmp_path):
+    touch(tmp_path, "idea/README.md", "idea/docs/vision.md", "notes/README.md", "notes/a.md")
+    result = run(tmp_path)
+    assert result.repositories == () and result.issues == () and result.warnings == ()
+    assert result.status == COMPLETE
+
+
+def test_a_documentation_only_repository_with_git_is_tracked(tmp_path):
+    root = repo(tmp_path, "idea")
+    touch(root, "README.md", "docs/vision.md")
+    result = run(tmp_path)
+    assert kinds(result) == {"idea": "repository"}
+    assert result.repositories[0].git == "."

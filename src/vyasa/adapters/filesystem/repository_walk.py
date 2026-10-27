@@ -1,9 +1,9 @@
 """Find projects under one root without running anything.
 
 A project is a directory with a ``.git`` entry, or with a recognized manifest (``pyproject.toml``,
-``package.json``, ``Cargo.toml``, a ``.uproject``, ...), or with a README and a docs folder and
-no other project inside it. Git is optional; for a manifest project it is looked for in the
-directory's immediate children too (Unreal keeps it in ``Source``).
+``package.json``, ``Cargo.toml``, a ``.uproject``, ...). Git is optional for a manifest project; it
+is looked for in the directory's immediate children too (Unreal keeps it in ``Source``). A folder
+that is only a README and documentation is a project only if it has Git.
 
 Files opened: ``.git`` pointer files (first kilobyte) and, when nested repositories are enabled,
 a repository's ``.vyasaignore`` (at most 64 KiB). Behaviour is the same on every platform.
@@ -18,10 +18,8 @@ from pathlib import Path
 from vyasa.adapters.filesystem.ignore_file import read_ignore_file
 from vyasa.adapters.filesystem.pruning import prune
 from vyasa.domain.discovery import (
-    DOCUMENTATION_DIRS,
     ELIGIBLE,
     INACCESSIBLE,
-    KIND_DOCUMENTATION,
     KIND_LINKED_WORKTREE,
     KIND_PROJECT,
     KIND_REPOSITORY,
@@ -84,12 +82,6 @@ def _markers(filenames: list[str], options: DiscoveryOptions) -> tuple[str, ...]
     )
 
 
-def _is_documentation_project(dirnames: list[str], filenames: list[str]) -> bool:
-    return any(f.casefold().startswith("readme") for f in filenames) and any(
-        d.casefold() in DOCUMENTATION_DIRS for d in dirnames
-    )
-
-
 def _child_git(dirpath: str, dirnames: list[str], excluded: set[str]) -> str | None:
     """The immediate child directory holding a valid ``.git``, if any (Unreal: ``Source``)."""
     for name in sorted(dirnames):
@@ -106,12 +98,11 @@ def find_repositories(root: Path | str, options: DiscoveryOptions) -> Findings:
 
     A recognized project is a boundary and is not entered, unless ``options.descend_into_repositories``
     is set; then projects inside it are found too, and each repository's ignore rules apply to
-    everything below it. A README-and-docs directory is kept only if no project lies below it.
+    everything below it.
     """
     top = os.fspath(root)
     excluded = {name.casefold() for name in options.exclusions}
     projects: list[Candidate] = []
-    documentation: list[Candidate] = []
     issues: list[Candidate] = []
     ignore_problems: list[tuple[Path, str]] = []
     excluded_count = 0
@@ -133,10 +124,6 @@ def find_repositories(root: Path | str, options: DiscoveryOptions) -> Findings:
                 Path(dirpath), ELIGIBLE, kind=KIND_PROJECT, markers=markers, git=_child_git(dirpath, dirnames, excluded)
             )
             projects.append(found)
-        elif _is_documentation_project(dirnames, filenames):
-            documentation.append(
-                Candidate(Path(dirpath), ELIGIBLE, kind=KIND_DOCUMENTATION, git=_child_git(dirpath, dirnames, excluded))
-            )
 
         if found is not None:
             if not options.descend_into_repositories:
@@ -167,12 +154,4 @@ def find_repositories(root: Path | str, options: DiscoveryOptions) -> Findings:
             active[os.path.join(dirpath, name)] = inherited
         dirnames[:] = kept
 
-    # A README-and-docs folder that contains projects is a container, not a project. Its own Git
-    # folder (Unreal's Source) is where its Git lives, not a project inside it.
-    for candidate in documentation:
-        home = candidate.path / candidate.git if candidate.git else None
-        inside = [p for p in projects if p.path != home and candidate.path in p.path.parents]
-        if not inside:
-            projects = [p for p in projects if p.path != home]
-            projects.append(candidate)
     return Findings(tuple(projects), tuple(issues), excluded_count, tuple(ignore_problems))

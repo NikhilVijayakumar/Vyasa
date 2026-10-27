@@ -120,45 +120,21 @@ The system SHALL treat a directory without a `.git` entry that contains `pyproje
 - **WHEN** discovery runs
 - **THEN** it is eligible with kind repository, Git location `.`, and both manifests recorded
 
-### Requirement: Recognize projects that have not started
+### Requirement: Documentation-only folders count only with Git
 
-The system SHALL treat a directory that has a README (a file whose name starts with `readme`) and a directory named `docs`, `doc`, or `documentation`, and that has neither a `.git` entry nor a manifest, as an eligible project of kind documentation, SHALL look for Git in its child directories as for a manifest project, and SHALL NOT report it when another project lies below it.
+The system SHALL NOT treat a directory as a project merely because it holds a README, documentation, or source files, and SHALL track a documentation-only directory only when it has Git, by the rules that apply to any repository.
 
-#### Scenario: README and docs
+#### Scenario: Documentation without Git
 
-- **GIVEN** a folder with `README.md` and a `docs` folder
+- **GIVEN** a folder with a README and a `docs` folder, no manifest, and no Git
 - **WHEN** discovery runs
-- **THEN** it is eligible with kind documentation
+- **THEN** it is not a project and is not reported
 
-#### Scenario: Documentation folder names
+#### Scenario: Documentation-only repository with Git
 
-- **GIVEN** folders with a README and a folder named `docs`, `doc`, or `Documentation`
+- **GIVEN** a folder with only a README and a `docs` folder that has a valid `.git`
 - **WHEN** discovery runs
-- **THEN** each is a project of kind documentation
-
-#### Scenario: README without docs
-
-- **GIVEN** a folder with a README and a folder named `notes`
-- **WHEN** discovery runs
-- **THEN** it is not a project
-
-#### Scenario: Not started project with Git
-
-- **GIVEN** a folder with a README and docs that has a valid `.git`
-- **WHEN** discovery runs
-- **THEN** it is an ordinary repository, not kind documentation
-
-#### Scenario: Container is not a project
-
-- **GIVEN** a folder with a README and docs that holds a project in a subfolder
-- **WHEN** discovery runs
-- **THEN** only the inner project is reported
-
-#### Scenario: Git in a child folder
-
-- **GIVEN** a README-and-docs folder whose `Source` child has a valid `.git`
-- **WHEN** discovery runs
-- **THEN** it is one project of kind documentation with Git location `Source`
+- **THEN** it is an eligible repository
 
 ### Requirement: A project is a boundary
 

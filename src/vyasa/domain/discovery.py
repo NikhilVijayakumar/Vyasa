@@ -18,7 +18,6 @@ KIND_REPOSITORY = "repository"
 KIND_SUBMODULE = "submodule"
 KIND_LINKED_WORKTREE = "linked_worktree"
 KIND_PROJECT = "project"  # recognized by a manifest, with Git elsewhere or not at all
-KIND_DOCUMENTATION = "documentation"  # a README and a docs folder, nothing else yet
 
 COMPLETE = "complete"
 PARTIAL = "partial"
@@ -37,9 +36,6 @@ DISCOVERY_MARKERS: frozenset[str] = frozenset(
     {"pyproject.toml", "requirements.txt", "setup.py", "package.json", "cargo.toml", "go.mod"}
 )
 DISCOVERY_MARKER_SUFFIXES: tuple[str, ...] = (".uproject",)
-
-# A README together with one of these directories marks a project that has not started yet.
-DOCUMENTATION_DIRS: frozenset[str] = frozenset({"docs", "doc", "documentation"})
 
 
 @dataclass(frozen=True)
