@@ -7,14 +7,22 @@ here starts an agent or writes a profile.
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import datetime, timezone
 from functools import cache
+from pathlib import Path
 
+from vyasa.adapters.sqlite.database import open_memory_index
 from vyasa.application import query
+from vyasa.application.indexing.scan import enrich_run
+from vyasa.application.indexing.store import store_run
 from vyasa.application.scanning.file_composition import default_file_types
+from vyasa.application.scanning.discovery import discover_repositories
 from vyasa.application.scanning.frameworks import default_registry
+from vyasa.domain.discovery import ELIGIBLE
 from vyasa.domain.index import INVALID_INPUT, IndexStoreError
 from vyasa.domain.profile import declared
 
@@ -151,4 +159,36 @@ def profile_context(connection: sqlite3.Connection, project_id: str, *, now: Cal
         checkout["differences"] = differences(checkout, values)
     data["source"] = {"kind": "index", "generated_at": now().isoformat()}
     data["workflow"] = list(WORKFLOW)
+    return bundle
+
+
+class NotAProject(Exception):
+    """The path is not a directory holding a recognized project. The message is fixed text, safe to show."""
+
+
+def _same(a: Path, b: Path) -> bool:
+    return os.path.normcase(str(a.resolve())) == os.path.normcase(str(b.resolve()))
+
+
+def live_context(path: Path | str, *, now: Callable[[], datetime] = _utc_now) -> dict:
+    """The context bundle of one repository from a live read-only scan, held in a temporary in-memory index.
+
+    Nothing is written to the repository, to the real index, or anywhere on disk.
+    """
+    root = Path(path)
+    if not root.is_dir():
+        raise NotAProject("The path is not a directory.")
+    run = discover_repositories(root.resolve())
+    mine = tuple(c for c in run.repositories if c.outcome == ELIGIBLE and _same(c.path, root))
+    if not mine:
+        raise NotAProject("No project was recognized at this path. It needs a Git repository or a supported manifest at its root.")
+    connection = open_memory_index()
+    try:
+        store_run(connection, enrich_run(replace(run, repositories=mine)), owner="profile-context", now=now)
+        project_id = connection.execute("SELECT project_id FROM projects").fetchone()[0]
+        bundle = profile_context(connection, project_id, now=now)
+    finally:
+        connection.close()
+    bundle["data"]["project_id"] = None
+    bundle["data"]["source"]["kind"] = "live_scan"
     return bundle
