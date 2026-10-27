@@ -14,6 +14,7 @@ from pathlib import Path
 
 from vyasa.adapters.filesystem.pruning import prune
 from vyasa.domain.file_composition import WalkLimits
+from vyasa.domain.ignore import IgnoreRules
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,7 @@ def walk_checkout(
     limits: WalkLimits,
     exclusions: Iterable[str],
     clock: Callable[[], float] = time.monotonic,
+    ignore: IgnoreRules | None = None,
 ) -> WalkResult:
     """List file names under ``root`` within ``limits``.
 
@@ -55,6 +57,8 @@ def walk_checkout(
             break
 
         kept = prune(dirpath, dirnames, excluded).kept
+        if ignore is not None:
+            kept = [name for name in kept if not ignore.matches(Path(dirpath, name).relative_to(top).as_posix())]
 
         depth = len(Path(dirpath).relative_to(top).parts)
         if kept and depth >= limits.max_depth:

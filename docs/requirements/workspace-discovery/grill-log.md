@@ -8,7 +8,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 |---|---|---|
 | Intent | 2 | 0 |
 | Scope | 3 | 1 |
-| Behaviour | 4 | 0 |
+| Behaviour | 7 | 0 |
 | Data | 2 | 1 |
 | Integration | 2 | 0 |
 | Architecture | 2 | 1 |
@@ -36,16 +36,16 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 **Q3. Does a directory without Git count as a project (DFR-003)?**
 
-- **Recommendation:** Yes, only with a recognized marker at its root: a canonical profile, or a supported manifest such as `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`. A bare directory is never a project.
-- **Why:** Prevents noise (scratch folders, downloads) while still covering real projects that are not under version control.
-- **Status:** Decision needed
+- **Recommendation:** Yes. A directory is a project with a `.git` entry; or with a manifest (`pyproject.toml`, `requirements.txt`, `setup.py`, `package.json`, `Cargo.toml`, `go.mod`, or a `.uproject`), with Git optional and looked for in child folders (Unreal keeps it in `Source`). Source files, a README, or documentation alone are not enough: a documentation-only repository is tracked when it has Git and ignored otherwise.
+- **Why:** Prevents noise (scratch folders, downloads) while covering Unreal projects and projects without version control, without tracking folders of notes. Owner decision 2026-10-27.
+- **Status:** Settled
 - **Feeds:** FR-002 S2, S4; DFR-003
 
 **Q4. How are nested repositories, submodules, and worktrees treated?**
 
-- **Recommendation:** Each Git root is its own candidate. A submodule is recorded as a component association of its parent, not a separate project. A linked worktree is another checkout of the same repository, not a new project. Metadata is never merged by directory nesting.
-- **Why:** Matches the identity rule that nesting is not merge evidence and avoids duplicate projects from worktrees.
-- **Status:** Recommended
+- **Recommendation:** A project is a boundary: Vyasa recognizes it and does not walk inside it, so nested projects and submodules are not found by default. A user who has them can enable nested repositories; then each is its own candidate and nothing is merged by directory nesting. A linked worktree is a sibling directory and is found normally.
+- **Why:** Owner decision 2026-10-27: his projects in general contain no other project, and walking inside them produced hundreds of skips on a real workspace.
+- **Status:** Settled
 - **Feeds:** FR-002 S3
 
 **Q5. What is traversed, how deep, and what is excluded by default?**
@@ -86,6 +86,27 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 - **Status:** Settled
 - **Feeds:** FR-015 S1
 
+
+**Q15. How does a repository tell Vyasa what to skip inside it (FR-022)?**
+
+- **Recommendation:** A plain `.vyasaignore` file at the repository root listing directories: a bare name at any depth, or a path from the root, with `*`, `**`, and `?`. It can only remove directories from scanning.
+- **Why:** Vyasa cannot know which directories hold reference data or fixtures; the repository's owner does. On a real workspace 868 directories below the depth limit were such folders.
+- **Status:** Settled
+- **Feeds:** FR-022 S1–S6
+
+**Q16. What stops the file from being used against Vyasa?**
+
+- **Recommendation:** It is untrusted repository content. Negation, drive letters, and `..` are invalid and reported; the file is at most 64 KiB and 1,000 patterns; it affects only directories below its own repository; a mistake makes Vyasa scan more, never less than the repository asked.
+- **Why:** The worst a hostile file can do is hide its own repository's directories.
+- **Status:** Recommended
+- **Feeds:** FR-022 S7–S9
+
+**Q17. How do the files of nested repositories combine?**
+
+- **Recommendation:** A nested repository has its own file, and the files of every enclosing repository still apply to it.
+- **Why:** An outer repository's decision to ignore a directory must not be undone by an inner one.
+- **Status:** Recommended
+- **Feeds:** FR-022 S10, S11
 
 ## Data
 
@@ -173,6 +194,5 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 
 ## Decisions for you
 
-- **Q3** — Does a directory without Git count as a project (DFR-003)?
 - **Q11** — How long is scan history kept (SP-005)?
 - **Q14** — Where do limits live and what happens when one is hit (SP-003)?

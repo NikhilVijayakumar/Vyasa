@@ -9,7 +9,7 @@ as Gherkin, a grill log, and diagrams. The baseline documents (`functional-requi
 
 | Package | Owns | Phase |
 |---|---|---|
-| [workspace-discovery](workspace-discovery/requirement.md) | FR-001, FR-002, FR-015 | P1 |
+| [workspace-discovery](workspace-discovery/requirement.md) | FR-001, FR-002, FR-015, FR-022 | P1 |
 | [project-identity](project-identity/requirement.md) | FR-003, FR-020, NFR-004 | P1 |
 | [metadata-and-evidence](metadata-and-evidence/requirement.md) | FR-004–006, NFR-001, 002, 005 | P1 |
 | [file-composition](file-composition/requirement.md) | FR-021 | P1 |

@@ -38,7 +38,8 @@ Changes are judged on MCP tool and interface contracts, data model, and trust bo
 ## 3. Scope
 
 ### In Scope
-- Recognition of repositories, submodules, and linked worktrees from `.git`.
+- Recognition of projects: by `.git` (repositories, submodules, linked worktrees), by manifest (`pyproject.toml`, `package.json`, `Cargo.toml`, `.uproject`, ...) with Git optional and looked for in child folders. A documentation-only folder counts only if it has Git.
+- A project is a boundary and is not entered unless nested repositories are enabled.
 - Outcomes: eligible, excluded, inaccessible, malformed, skipped by policy.
 - Depth limit 8 (owner decision 2026-10-27), default exclusions, links and junctions not followed.
 - The in-memory run record.
@@ -46,7 +47,6 @@ Changes are judged on MCP tool and interface contracts, data model, and trust bo
 
 ### Out of Scope
 - Several roots at once, overlap between roots, and deduplication by real path.
-- Non-Git projects and markers (DFR-003, undecided).
 - Configurable exclusions, limits, and symlink following (`be-discovery-boundaries`).
 - Persisting runs, run history, and retention (`local-index`).
 - Identity, metadata, remotes, and any use of Git commands.
@@ -69,10 +69,10 @@ Pure domain types, a filesystem adapter that walks and recognizes, and an applic
 
 | ID | Requirement | Expected Outcome | Priority |
 |---|---|---|---|
-| REQ-001 | Recognize repositories | Directory and file `.git` forms, kinds | Must |
+| REQ-001 | Recognize projects | `.git`, manifests, README and docs; kinds, markers, Git location | Must |
 | REQ-002 | Outcomes | One closed outcome per candidate | Must |
 | REQ-003 | Boundaries | Depth, exclusions, links not followed | Must |
-| REQ-004 | Nested repositories | Separate candidates, not merged | Must |
+| REQ-004 | Project boundary | Not entered by default; nested projects separate when enabled | Must |
 | REQ-005 | Run status | Failed, partial on failures only, else complete; skips are warnings | Must |
 | REQ-006 | Run record | Id, root, times, counts, bounded issues | Must |
 | REQ-007 | Safety | Nothing run; only `.git` pointers opened | Must |

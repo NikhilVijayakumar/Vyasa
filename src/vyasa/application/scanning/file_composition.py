@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from collections import Counter
 from collections.abc import Callable, Iterable
 from pathlib import Path
 
 from vyasa.adapters.filesystem.checkout_walk import walk_checkout
+from vyasa.adapters.filesystem.ignore_file import read_ignore_file
 from vyasa.domain.file_composition import (
     CODE,
     DEFAULT_EXCLUSIONS,
@@ -18,6 +20,7 @@ from vyasa.domain.file_composition import (
     FileComposition,
     FileTypeDataError,
     FileTypes,
+    IgnoreEvidence,
     WalkLimits,
 )
 
@@ -70,12 +73,18 @@ def compose(
     if not Path(root).is_dir():
         raise ValueError(f"not a directory: {root}")
     exclusions = frozenset(exclusions)
-    walked = walk_checkout(root, limits, exclusions, clock)
+    ignore, _problems = read_ignore_file(os.fspath(root))
+    walked = walk_checkout(root, limits, exclusions, clock, ignore)
     counts = Counter(types.classify(name) for name in walked.names)
     return FileComposition(
         code=counts[CODE],
         documentation=counts[DOCUMENTATION],
         other=counts[OTHER],
         stopped_by=walked.stopped_by,
-        evidence=Evidence(types_version=types.version, exclusions=tuple(sorted(exclusions)), limits=limits),
+        evidence=Evidence(
+            types_version=types.version,
+            exclusions=tuple(sorted(exclusions)),
+            limits=limits,
+            ignore=None if ignore is None else IgnoreEvidence(len(ignore.patterns), ignore.digest),
+        ),
     )

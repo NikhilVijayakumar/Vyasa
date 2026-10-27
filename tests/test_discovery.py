@@ -112,7 +112,7 @@ def test_ordinary_directories_are_not_candidates(tmp_path):
 def test_nested_repositories_are_separate_candidates(tmp_path):
     repo(tmp_path, "outer")
     repo(tmp_path, "outer/vendor/inner")
-    result = run(tmp_path)
+    result = run(tmp_path, descend_into_repositories=True)
     assert found(result) == ["outer", "outer/vendor/inner"]
 
 
@@ -483,3 +483,247 @@ def test_a_root_that_is_itself_a_symlink_is_searched(tmp_path):
     result = run(link)
     assert found(result) == ["proj"]
     assert result.status == COMPLETE
+
+
+# -- repository-provided ignore file -----------------------------------------------------------------------
+
+
+def ignore(directory, text):
+    (directory / ".vyasaignore").write_text(text, encoding="utf-8")
+
+
+def warning(result, reason):
+    return next((w for w in result.warnings if w.reason == reason), None)
+
+
+def test_an_ignored_directory_is_not_entered_counted_as_excluded_and_not_warned(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/inner")
+    repo(root, "src/real")
+    ignore(root, "data\n")
+    result = run(tmp_path, descend_into_repositories=True)
+    assert found(result) == ["proj", "proj/src/real"]
+    assert result.counts[EXCLUDED] == 1
+    assert result.warnings == () and result.status == COMPLETE
+
+
+def test_a_bare_name_is_ignored_at_every_depth(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "a/fixtures/x")
+    repo(root, "a/b/fixtures/y")
+    ignore(root, "fixtures\n")
+    result = run(tmp_path, descend_into_repositories=True)
+    assert found(result) == ["proj"]
+    assert result.counts[EXCLUDED] == 2
+
+
+def test_a_path_pattern_is_anchored_at_the_repository_root(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/novel/output/hidden")
+    repo(root, "other/data/novel/output/shown")
+    ignore(root, "data/novel/output\n")
+    assert found(run(tmp_path, descend_into_repositories=True)) == ["proj", "proj/other/data/novel/output/shown"]
+
+
+def test_glob_patterns_apply(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/x/cache/gone")
+    repo(root, "data/x/y/cache/kept")
+    ignore(root, "data/*/cache\n")
+    assert found(run(tmp_path, descend_into_repositories=True)) == ["proj", "proj/data/x/y/cache/kept"]
+
+
+def test_an_ignore_file_does_not_reach_a_sibling_repository(tmp_path):
+    first = repo(tmp_path, "first")
+    second = repo(tmp_path, "second")
+    repo(first, "data/inner")
+    repo(second, "data/inner")
+    ignore(first, "data\n")
+    assert found(run(tmp_path, descend_into_repositories=True)) == ["first", "second", "second/data/inner"]
+
+
+def test_a_nested_repository_keeps_the_enclosing_rules_and_adds_its_own(tmp_path):
+    outer = repo(tmp_path, "outer")
+    inner = repo(outer, "pkg/inner")
+    for where in (outer, inner):
+        for name in ("vendor-data", "cache", "keep"):
+            repo(where, f"{name}/probe")
+    ignore(outer, "vendor-data\n")
+    ignore(inner, "cache\n")
+    result = run(tmp_path, descend_into_repositories=True)
+    kept = found(result)
+    assert "outer/pkg/inner/keep/probe" in kept
+    assert "outer/pkg/inner/vendor-data/probe" not in kept
+    assert "outer/pkg/inner/cache/probe" not in kept
+    assert "outer/cache/probe" in kept
+    assert "outer/vendor-data/probe" not in kept
+
+
+def test_an_ignored_directory_below_the_depth_limit_is_excluded_not_warned(tmp_path):
+    root = repo(tmp_path, "proj")
+    (root / "x" / "deep").mkdir(parents=True)
+    ignore(root, "deep\n")
+    result = run(tmp_path, max_depth=2, descend_into_repositories=True)
+    assert result.counts[EXCLUDED] == 1
+    assert warning(result, "max_depth") is None
+
+
+def test_a_bad_line_is_reported_and_the_valid_line_still_applies(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/inner")
+    ignore(root, "!keep\ndata\n")
+    result = run(tmp_path, descend_into_repositories=True)
+    assert found(result) == ["proj"]
+    assert result.status == COMPLETE
+    notice = warning(result, "ignore_file")
+    assert notice is not None
+    assert notice.count == 1 and notice.examples == (root,)
+    assert notice.details == ("proj/.vyasaignore: line 1: negation is not supported",)
+    assert ".vyasaignore" in notice.advice
+
+
+def test_an_oversized_ignore_file_is_reported_and_none_of_it_applies(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/inner")
+    (root / ".vyasaignore").write_text("data\n" + "x\n" * 40000, encoding="utf-8")
+    result = run(tmp_path, descend_into_repositories=True)
+    assert "proj/data/inner" in found(result)
+    notice = warning(result, "ignore_file")
+    assert notice is not None and "larger than 64 KiB" in notice.details[0]
+
+
+def test_the_ignore_file_of_a_non_repository_is_not_read(tmp_path):
+    (tmp_path / "plain" / "data" / "inner").mkdir(parents=True)
+    repo(tmp_path, "plain/data/inner")
+    ignore(tmp_path / "plain", "data\n")
+    assert found(run(tmp_path)) == ["plain/data/inner"]
+
+
+def test_an_ignore_file_at_the_root_of_a_repository_that_is_the_workspace_root_applies(tmp_path):
+    repo(tmp_path)
+    repo(tmp_path, "data/inner")
+    ignore(tmp_path, "data\n")
+    assert found(run(tmp_path)) == ["."]
+
+
+def test_only_pointer_and_ignore_files_are_opened(tmp_path, monkeypatch):
+    plain = repo(tmp_path, "plain")
+    pointer(tmp_path, "sub", "gitdir: ../.git/modules/sub\n")
+    ignore(plain, "data\n")
+    (plain / "secret.txt").write_text("x", encoding="utf-8")
+    opened = []
+    real = builtins.open
+
+    def recording(file, *args, **kwargs):
+        opened.append(os.path.basename(os.fspath(file)))
+        return real(file, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", recording)
+    run(tmp_path, descend_into_repositories=True)
+    assert sorted(opened) == [".git", ".vyasaignore"]
+
+
+# -- projects by manifest, README and docs; boundaries -----------------------------------------------------------
+
+
+def touch(root, *relative):
+    for item in relative:
+        path = root / item
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("x", encoding="utf-8")
+
+
+def kinds(result):
+    return {c.path.relative_to(result.root).as_posix(): c.kind for c in result.repositories}
+
+
+@pytest.mark.parametrize(
+    "manifest",
+    ["pyproject.toml", "requirements.txt", "setup.py", "package.json", "Cargo.toml", "go.mod", "Tantra.uproject", "X.UPROJECT"],
+)
+def test_a_manifest_makes_a_project_even_without_git(tmp_path, manifest):
+    touch(tmp_path, f"proj/{manifest}")
+    result = run(tmp_path)
+    assert kinds(result) == {"proj": "project"}
+    assert result.repositories[0].git is None
+    assert result.repositories[0].markers == (manifest,)
+
+
+def test_source_files_and_a_readme_alone_are_not_a_project(tmp_path):
+    touch(tmp_path, "scripts/tool.py", "scripts/notes.md", "web/app.ts", "web/README.md", "lib.rs")
+    assert run(tmp_path).repositories == ()
+
+
+def test_a_git_repository_also_records_the_manifests_it_holds(tmp_path):
+    root = repo(tmp_path, "proj")
+    touch(root, "package.json", "pyproject.toml")
+    candidate = run(tmp_path).repositories[0]
+    assert candidate.kind == KIND_REPOSITORY and candidate.git == "."
+    assert candidate.markers == ("package.json", "pyproject.toml")
+
+
+def test_an_unreal_project_keeps_git_in_its_source_folder(tmp_path):
+    touch(tmp_path, "tutorials/tps/Tantra/Tantra.uproject")
+    repo(tmp_path, "tutorials/tps/Tantra/Source")
+    result = run(tmp_path)
+    assert kinds(result) == {"tutorials/tps/Tantra": "project"}
+    assert result.repositories[0].git == "Source"
+    assert result.status == COMPLETE and result.warnings == ()
+
+
+def test_a_broken_git_in_a_child_folder_is_not_reported_as_git(tmp_path):
+    touch(tmp_path, "proj/package.json")
+    (tmp_path / "proj" / "Source" / ".git").mkdir(parents=True)
+    candidate = run(tmp_path).repositories[0]
+    assert candidate.git is None
+
+
+def test_a_project_is_a_boundary_and_is_not_entered(tmp_path):
+    touch(tmp_path, "outer/package.json", "outer/sub/pyproject.toml")
+    repo(tmp_path, "outer/vendor/inner")
+    result = run(tmp_path)
+    assert kinds(result) == {"outer": "project"}
+    assert result.warnings == () and result.counts[SKIPPED_BY_POLICY] == 0
+
+
+def test_nested_projects_are_found_when_asked(tmp_path):
+    touch(tmp_path, "outer/package.json", "outer/sub/pyproject.toml")
+    result = run(tmp_path, descend_into_repositories=True)
+    assert sorted(kinds(result)) == ["outer", "outer/sub"]
+
+
+def test_plain_folders_are_searched_down_to_the_project(tmp_path):
+    touch(tmp_path, "a/b/c/d/proj/package.json")
+    assert kinds(run(tmp_path)) == {"a/b/c/d/proj": "project"}
+
+
+def test_the_default_run_opens_only_git_pointer_files(tmp_path, monkeypatch):
+    plain = repo(tmp_path, "plain")
+    ignore(plain, "data\n")
+    pointer(tmp_path, "sub", "gitdir: ../.git/modules/sub\n")
+    touch(tmp_path, "app/package.json")
+    opened = []
+    real = builtins.open
+
+    def recording(file, *args, **kwargs):
+        opened.append(os.path.basename(os.fspath(file)))
+        return real(file, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", recording)
+    assert len(run(tmp_path).repositories) == 3
+    assert opened == [".git"]
+
+
+def test_a_documentation_only_folder_without_git_is_ignored(tmp_path):
+    touch(tmp_path, "idea/README.md", "idea/docs/vision.md", "notes/README.md", "notes/a.md")
+    result = run(tmp_path)
+    assert result.repositories == () and result.issues == () and result.warnings == ()
+    assert result.status == COMPLETE
+
+
+def test_a_documentation_only_repository_with_git_is_tracked(tmp_path):
+    root = repo(tmp_path, "idea")
+    touch(root, "README.md", "docs/vision.md")
+    result = run(tmp_path)
+    assert kinds(result) == {"idea": "repository"}
+    assert result.repositories[0].git == "."

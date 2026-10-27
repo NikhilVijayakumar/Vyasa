@@ -6,6 +6,8 @@
 
 > Order of work, by owner instruction 2026-10-27: implement first, then write repository tests that anyone can re-run.
 
+> Amended 2026-10-27 on owner instruction after the first merge: projects are also recognized by manifest (`pyproject.toml`, `package.json`, `Cargo.toml`, `.uproject`, ...); a documentation-only folder counts only if it has Git; Git is optional and looked for in child folders; a project is a boundary not entered unless nested repositories are enabled; skips are warnings; default depth 8. Implemented in `repository_walk.py` with added tests (210 total).
+
 ## 1. Preparation and Baseline
 
 - [x] 1.1 Review the proposal, spec, contract, design, and ADR.

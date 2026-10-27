@@ -80,13 +80,82 @@ The system SHALL treat a directory that contains a `.git` directory with a `HEAD
 - **WHEN** discovery runs
 - **THEN** none of them appears in the repositories or the issues
 
-### Requirement: Nested repositories stay separate
+### Requirement: Recognize projects by manifest
 
-The system SHALL report a repository found inside another repository as its own candidate and SHALL NOT merge them.
+The system SHALL treat a directory without a `.git` entry that contains `pyproject.toml`, `requirements.txt`, `setup.py`, `package.json`, `Cargo.toml`, `go.mod`, or a file ending in `.uproject` (compared without regard to case) as an eligible project of kind project, SHALL record the manifests found, and SHALL look for a valid `.git` in its immediate child directories, recording the child's name or none.
 
-#### Scenario: Repository inside a repository
+#### Scenario: Manifest without Git
 
-- **GIVEN** a repository containing another repository below it
+- **GIVEN** a directory with `package.json` and no Git
+- **WHEN** discovery runs
+- **THEN** it is eligible with kind project, the manifest recorded, and no Git location
+
+#### Scenario: Each manifest is recognized
+
+- **GIVEN** directories holding `pyproject.toml`, `requirements.txt`, `setup.py`, `Cargo.toml`, `go.mod`, `Tantra.uproject`, and `X.UPROJECT`
+- **WHEN** discovery runs
+- **THEN** each is an eligible project
+
+#### Scenario: Git in a child folder
+
+- **GIVEN** an Unreal project with a `.uproject` at its root and a valid `.git` inside its `Source` folder
+- **WHEN** discovery runs
+- **THEN** it is one project, with Git location `Source`
+
+#### Scenario: Broken Git in a child folder
+
+- **GIVEN** a manifest project whose child folder has a `.git` directory without `HEAD`
+- **WHEN** discovery runs
+- **THEN** the project has no Git location
+
+#### Scenario: Source files and a README alone
+
+- **GIVEN** folders holding only `.py` or `.ts` files, or a README without a docs folder
+- **WHEN** discovery runs
+- **THEN** none is a project
+
+#### Scenario: Git repository records its manifests
+
+- **GIVEN** a Git repository holding `package.json` and `pyproject.toml`
+- **WHEN** discovery runs
+- **THEN** it is eligible with kind repository, Git location `.`, and both manifests recorded
+
+### Requirement: Documentation-only folders count only with Git
+
+The system SHALL NOT treat a directory as a project merely because it holds a README, documentation, or source files, and SHALL track a documentation-only directory only when it has Git, by the rules that apply to any repository.
+
+#### Scenario: Documentation without Git
+
+- **GIVEN** a folder with a README and a `docs` folder, no manifest, and no Git
+- **WHEN** discovery runs
+- **THEN** it is not a project and is not reported
+
+#### Scenario: Documentation-only repository with Git
+
+- **GIVEN** a folder with only a README and a `docs` folder that has a valid `.git`
+- **WHEN** discovery runs
+- **THEN** it is an eligible repository
+
+### Requirement: A project is a boundary
+
+The system SHALL NOT enter a directory it recognized as a project, other than to look for Git in its immediate children, unless nested repositories are enabled; SHALL search folders that are not projects down to the depth limit; and, when nested repositories are enabled, SHALL report projects inside projects as separate candidates without merging them.
+
+#### Scenario: Projects are not entered
+
+- **GIVEN** a project holding a nested manifest and a nested repository
+- **WHEN** discovery runs
+- **THEN** only the outer project is reported
+- **AND** nothing inside it is skipped or warned about
+
+#### Scenario: Plain folders are searched down to the project
+
+- **GIVEN** a project four folders below a root that are not projects
+- **WHEN** discovery runs
+- **THEN** it is found
+
+#### Scenario: Nested projects when enabled
+
+- **GIVEN** nested repositories are enabled and a project holds another project
 - **WHEN** discovery runs
 - **THEN** both are reported, each with its own path
 
@@ -255,7 +324,7 @@ The system SHALL NOT run any program and SHALL NOT open any file other than a `.
 
 #### Scenario: Only pointer files are opened
 
-- **GIVEN** a tree with repositories, a submodule, and other files
+- **GIVEN** a tree with repositories, manifest projects, a submodule, and other files
 - **WHEN** discovery runs
 - **THEN** the only files opened are `.git` pointer files
 

@@ -57,12 +57,21 @@ class WalkLimits:
 
 
 @dataclass(frozen=True)
+class IgnoreEvidence:
+    """That a repository ignore file was used: how many patterns, and a digest of them (not the text)."""
+
+    patterns: int
+    digest: str
+
+
+@dataclass(frozen=True)
 class Evidence:
     """How a count was made."""
 
     types_version: int
     exclusions: tuple[str, ...]
     limits: WalkLimits
+    ignore: IgnoreEvidence | None = None
 
 
 @dataclass(frozen=True)
