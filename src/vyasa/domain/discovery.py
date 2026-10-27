@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+from vyasa.domain.git_remote import GitRemote
+
 ELIGIBLE = "eligible"
 EXCLUDED = "excluded"
 INACCESSIBLE = "inaccessible"
@@ -65,6 +67,8 @@ class Candidate:
     reason: str | None = None
     markers: tuple[str, ...] = ()
     git: str | None = None
+    remote: GitRemote | None = None
+    remote_status: str | None = None
 
 
 MAX_WARNING_EXAMPLES = 5

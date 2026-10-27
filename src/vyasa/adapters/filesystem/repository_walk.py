@@ -15,6 +15,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+from vyasa.adapters.filesystem.git_config import read_remote
 from vyasa.adapters.filesystem.ignore_file import read_ignore_file
 from vyasa.adapters.filesystem.pruning import prune
 from vyasa.domain.discovery import (
@@ -29,6 +30,7 @@ from vyasa.domain.discovery import (
     Candidate,
     DiscoveryOptions,
 )
+from vyasa.domain.git_remote import STATUS_UNAVAILABLE
 from vyasa.domain.ignore import IgnoreRules
 
 GIT = ".git"
@@ -52,7 +54,10 @@ def classify_git_entry(directory: str, markers: tuple[str, ...] = ()) -> Candida
         return Candidate(path, SKIPPED_BY_POLICY, reason="git_link")
     if os.path.isdir(git):
         if os.path.isfile(os.path.join(git, "HEAD")):
-            return Candidate(path, ELIGIBLE, kind=KIND_REPOSITORY, markers=markers, git=".")
+            remote, status = read_remote(directory)
+            return Candidate(
+                path, ELIGIBLE, kind=KIND_REPOSITORY, markers=markers, git=".", remote=remote, remote_status=status
+            )
         return Candidate(path, MALFORMED, reason="missing_head")
     try:
         with open(git, "rb") as pointer:
@@ -72,7 +77,7 @@ def classify_git_entry(directory: str, markers: tuple[str, ...] = ()) -> Candida
         kind = KIND_LINKED_WORKTREE
     elif any(a == GIT and b == "modules" for a, b in zip(segments, segments[1:])):
         kind = KIND_SUBMODULE
-    return Candidate(path, ELIGIBLE, kind=kind, markers=markers, git=".")
+    return Candidate(path, ELIGIBLE, kind=kind, markers=markers, git=".", remote_status=STATUS_UNAVAILABLE)
 
 
 def _markers(filenames: list[str], options: DiscoveryOptions) -> tuple[str, ...]:
@@ -120,8 +125,11 @@ def find_repositories(root: Path | str, options: DiscoveryOptions) -> Findings:
             found = classify_git_entry(dirpath, markers)
             (projects if found.outcome == ELIGIBLE else issues).append(found)
         elif markers:
+            git_child = _child_git(dirpath, dirnames, excluded)
+            remote, status = read_remote(os.path.join(dirpath, git_child)) if git_child else (None, None)
             found = Candidate(
-                Path(dirpath), ELIGIBLE, kind=KIND_PROJECT, markers=markers, git=_child_git(dirpath, dirnames, excluded)
+                Path(dirpath), ELIGIBLE, kind=KIND_PROJECT, markers=markers, git=git_child,
+                remote=remote, remote_status=status,
             )
             projects.append(found)
 

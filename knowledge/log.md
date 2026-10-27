@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Creation**: Added the draft decision [Git Remote Provider Labels](/decisions/git-remote-provider-labels.md); the Git Detector (§9.2) now states how the provider is derived.
 * **Creation**: Added the draft decision [Repository-Provided Ignore File](/decisions/repository-ignore-file.md).
 * **Creation**: Added the draft decision [Repository Recognition and Discovery Run Status](/decisions/repository-recognition-and-run-status.md).
 * **Creation**: Added the draft decision [Configuration File Format and Location](/decisions/configuration-file-format-and-location.md).

@@ -6,7 +6,7 @@
 - **Owns:** FR-004, FR-005, FR-006, NFR-001, NFR-002, NFR-005
 - **Grill log:** [grill-log.md](grill-log.md)
 - **Diagrams:** [diagrams.md](diagrams.md)
-- **Features:** [fr-004-deterministic-metadata-extraction.feature](features/fr-004-deterministic-metadata-extraction.feature), [fr-005-documentation-and-standards-detection.feature](features/fr-005-documentation-and-standards-detection.feature), [fr-006-evidence-and-unknown-values.feature](features/fr-006-evidence-and-unknown-values.feature), [grill-additions.feature](features/grill-additions.feature)
+- **Features:** [fr-004-deterministic-metadata-extraction.feature](features/fr-004-deterministic-metadata-extraction.feature), [fr-005-documentation-and-standards-detection.feature](features/fr-005-documentation-and-standards-detection.feature), [fr-006-evidence-and-unknown-values.feature](features/fr-006-evidence-and-unknown-values.feature), [fr-004-git-remote.feature](features/fr-004-git-remote.feature), [grill-additions.feature](features/grill-additions.feature)
 
 ## Knowledge References
 
@@ -17,6 +17,8 @@ Checked with the `knowledge-first` skill before writing.
 - `knowledge/technologies/okf.md` — OKF recognition rule and conformance
 - `knowledge/architecture/c4-system-views.md` — detector registry within the server components
 - `knowledge/concepts/field-ownership.md` — declared versus observed values
+- `knowledge/decisions/git-remote-provider-labels.md` — how the Git remote and its provider are read and labelled
+- `knowledge/decisions/remote-identity-normalization.md` — the credential-free identity
 
 ## Intent
 
