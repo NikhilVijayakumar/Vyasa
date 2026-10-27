@@ -12,6 +12,7 @@ from pathlib import Path
 from vyasa.domain.discovery import Candidate
 from vyasa.domain.file_composition import documentation_only
 from vyasa.domain.languages import LanguageOutcome
+from vyasa.domain.markers import MARKERS
 from vyasa.domain.profile import ABSENT, PROFILE_PATH, ProfileResult
 from vyasa.domain.index import (
     ACTIVE,
@@ -161,10 +162,17 @@ def _store_languages(connection: sqlite3.Connection, checkout_id: int, outcome: 
     counts = outcome.composition
     observation = connection.execute(
         "INSERT INTO language_observations (checkout_id, run_id, observed_at, status, stopped_by, types_version, reason, duration_ms,"
-        " code_files, documentation_files, other_files) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        " code_files, documentation_files, other_files, markers_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (checkout_id, run_id, stamp, status, stopped, version, reason, round(outcome.seconds * 1000),
-         *((counts.code, counts.documentation, counts.other) if counts and report else (None, None, None))),
+         *((counts.code, counts.documentation, counts.other) if counts and report else (None, None, None)),
+         outcome.markers.rules_version if outcome.markers and report else None),
     ).lastrowid
+    if report is not None and outcome.markers is not None:
+        connection.executemany(
+            "INSERT INTO checkout_markers (observation_id, marker, total, rules, paths) VALUES (?, ?, ?, ?, ?)",
+            [(observation, f.marker, f.total, json.dumps(list(f.rules)),
+              json.dumps([{"path": p, **({"scope": s} if s else {})} for p, s in f.paths])) for f in outcome.markers.found],
+        )
     if report is not None:
         connection.executemany(
             "INSERT INTO checkout_languages (observation_id, label, status, files) VALUES (?, ?, ?, ?)",
@@ -207,6 +215,33 @@ def checkout_composition(connection: sqlite3.Connection, checkout_id: int) -> di
     return {"status": row["status"], "stopped_by": row["stopped_by"], "observed_at": row["observed_at"], "code": code,
             "documentation": docs, "other": other, "total": code + docs + other,
             "documentation_only": documentation_only(code, docs, row["status"] == "complete")}
+
+
+def checkout_markers(connection: sqlite3.Connection, checkout_id: int) -> dict:
+    """The markers of the current observation of one checkout. Absence is only claimed after a complete assessment."""
+    row = connection.execute(
+        "SELECT observation_id, status, stopped_by, observed_at, markers_version FROM language_observations"
+        " WHERE checkout_id = ? ORDER BY observation_id DESC LIMIT 1",
+        (checkout_id,),
+    ).fetchone()
+    if row is None or row["markers_version"] is None:
+        return {"status": "not_assessed", "rules_version": None, "stopped_by": None, "observed_at": None, "items": []}
+    detected = {
+        r["marker"]: r
+        for r in connection.execute("SELECT marker, total, rules, paths FROM checkout_markers WHERE observation_id = ?", (row["observation_id"],))
+    }
+    missing = "not_detected" if row["status"] == "complete" else "unknown"
+    items = []
+    for marker in MARKERS:
+        hit = detected.get(marker)
+        if hit is None:
+            items.append({"marker": marker, "state": missing})
+            continue
+        paths = json.loads(hit["paths"])
+        items.append({"marker": marker, "state": "detected", "total": hit["total"], "rules": json.loads(hit["rules"]),
+                      "paths": paths, "more": hit["total"] - len(paths)})
+    return {"status": row["status"], "rules_version": row["markers_version"], "stopped_by": row["stopped_by"],
+            "observed_at": row["observed_at"], "items": items}
 
 
 def checkout_languages(connection: sqlite3.Connection, checkout_id: int) -> dict:

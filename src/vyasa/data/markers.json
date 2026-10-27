@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "readme": {
+    "names": ["README", "README.md", "README.rst", "README.txt", "README.adoc"]
+  },
+  "docs": {
+    "directories": ["docs", "doc", "documentation"]
+  },
+  "agent_instructions": {
+    "files": ["AGENTS.md", "CLAUDE.md", "GEMINI.md"]
+  },
+  "openspec": {
+    "directory": "openspec",
+    "config": ["config.yaml", "config.yml"],
+    "specs": "specs",
+    "changes": "changes"
+  },
+  "tests": {
+    "directories": ["tests", "test", "__tests__", "spec"],
+    "file_patterns": [
+      "test_*.py", "*_test.py", "*_test.go",
+      "*.test.js", "*.test.ts", "*.test.jsx", "*.test.tsx",
+      "*.spec.js", "*.spec.ts", "*Test.java"
+    ]
+  }
+}

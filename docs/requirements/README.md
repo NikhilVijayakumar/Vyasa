@@ -14,6 +14,7 @@ as Gherkin, a grill log, and diagrams. The baseline documents (`functional-requi
 | [metadata-and-evidence](metadata-and-evidence/requirement.md) | FR-004–006, NFR-001, 002, 005 | P1 |
 | [file-composition](file-composition/requirement.md) | FR-021 | P1 |
 | [language-detection](language-detection/requirement.md) | FR-023 | P1 |
+| [project-markers](project-markers/requirement.md) | FR-024 | P1 |
 | [local-index](local-index/requirement.md) | FR-007, FR-008, NFR-003 | P1 |
 | [project-query](project-query/requirement.md) | FR-009–012 | P1 |
 | [mcp-server](mcp-server/requirement.md) | FR-013, NFR-021, 038, 039 | P1 |

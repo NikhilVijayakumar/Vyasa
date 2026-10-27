@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from vyasa.adapters.sqlite import projects, review
 from vyasa.application.indexing.store import freshness
 from vyasa.application.scanning.file_composition import default_file_types
+from vyasa.domain.markers import MARKERS
 from vyasa.domain.index import (
     INVALID_CURSOR,
     INVALID_INPUT,
@@ -31,6 +32,7 @@ MAX_QUERY = 200
 IDENTITY_STATUSES = ("resolved", "provisional", "ambiguous")
 PROVIDERS = ("github", "bitbucket", "gitlab", "other", "local", "none")
 LANGUAGE_STATUSES = ("files_detected", "declared")
+MARKER_STATES = ("detected", "not_detected")
 
 
 def _utc_now() -> datetime:
@@ -106,6 +108,8 @@ def search_projects(
     language: object = None,
     language_status: object = None,
     documentation_only: object = None,
+    marker: object = None,
+    marker_state: object = None,
     limit: int = DEFAULT_LIMIT,
     cursor: str | None = None,
     now: Callable[[], datetime] = _utc_now,
@@ -121,6 +125,13 @@ def search_projects(
     statuses = _choices("identity_status", identity_status, IDENTITY_STATUSES)
     if documentation_only is not None and not isinstance(documentation_only, bool):
         raise IndexStoreError(INVALID_INPUT, "documentation_only must be true or false")
+    wanted = _choices("marker", marker, MARKERS)
+    if marker is not None and not wanted:
+        raise IndexStoreError(INVALID_INPUT, f"marker must name at least one of: {', '.join(MARKERS)}")
+    if marker_state is not None and marker is None:
+        raise IndexStoreError(INVALID_INPUT, "marker_state needs marker")
+    if marker_state is not None and (not isinstance(marker_state, str) or marker_state not in MARKER_STATES):
+        raise IndexStoreError(INVALID_INPUT, f"marker_state: unknown value {marker_state!r}; allowed: {', '.join(MARKER_STATES)}")
     labels = _languages(language)
     kinds = _choices("language_status", language_status, LANGUAGE_STATUSES)
     after = _decode(cursor) if cursor else None
@@ -166,6 +177,23 @@ def search_projects(
             + ("(o.code_files = 0 AND o.documentation_files > 0))" if documentation_only
                else "NOT (o.code_files = 0 AND o.documentation_files > 0))")
         )
+    if wanted:
+        current = (
+            "EXISTS (SELECT 1 FROM checkouts c JOIN language_observations o ON o.observation_id ="
+            " (SELECT MAX(observation_id) FROM language_observations WHERE checkout_id = c.checkout_id)"
+            " WHERE c.project_id = p.project_id AND c.state = 'active'"
+        )
+        if marker_state == "not_detected":
+            # absence is only known from a complete observation that was assessed for markers
+            where.append("(" + " OR ".join(
+                current + " AND o.status = 'complete' AND o.markers_version IS NOT NULL AND NOT EXISTS"
+                " (SELECT 1 FROM checkout_markers m WHERE m.observation_id = o.observation_id AND m.marker = ?))"
+                for _ in wanted) + ")")
+            args += wanted
+        else:
+            where.append(current + " AND EXISTS (SELECT 1 FROM checkout_markers m WHERE m.observation_id = o.observation_id"
+                         f" AND m.marker IN ({', '.join('?' * len(wanted))})))")
+            args += wanted
     if after:
         where.append("(lower(p.display_name), p.project_id) > (?, ?)")
         args += list(after)
@@ -248,6 +276,7 @@ def get_project(
             },
             "languages": projects.checkout_languages(connection, c["checkout_id"]),
             "composition": projects.checkout_composition(connection, c["checkout_id"]),
+            "markers": projects.checkout_markers(connection, c["checkout_id"]),
             "first_seen_at": c["first_seen_at"],
             "last_seen_at": c["last_seen_at"],
         }

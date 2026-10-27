@@ -21,6 +21,8 @@ from vyasa.domain.ignore import IgnoreRules
 class WalkResult:
     names: tuple[str, ...]
     stopped_by: str | None
+    files: tuple[str, ...] = ()  # the same files as ``names``, as relative POSIX paths
+    directories: tuple[str, ...] = ()  # relative POSIX paths of directories found
 
 
 def walk_checkout(
@@ -40,6 +42,8 @@ def walk_checkout(
     excluded = {name.casefold() for name in exclusions}
     started = clock()
     names: list[str] = []
+    files: list[str] = []
+    directories: list[str] = []
     entries = 0
     cause: str | None = None
 
@@ -60,7 +64,10 @@ def walk_checkout(
         if ignore is not None:
             kept = [name for name in kept if not ignore.matches(Path(dirpath, name).relative_to(top).as_posix())]
 
-        depth = len(Path(dirpath).relative_to(top).parts)
+        relative = Path(dirpath).relative_to(top)
+        prefix = "" if not relative.parts else relative.as_posix() + "/"
+        listed = kept
+        depth = len(relative.parts)
         if kept and depth >= limits.max_depth:
             first("depth")
             kept = []
@@ -73,9 +80,11 @@ def walk_checkout(
                 over = True
                 break
             names.append(name)
+            files.append(prefix + name)
         entries += len(kept)
         if over or entries > limits.max_entries:
             first("entries")
             break
+        directories.extend(prefix + name for name in listed)
 
-    return WalkResult(names=tuple(names), stopped_by=cause)
+    return WalkResult(names=tuple(names), stopped_by=cause, files=tuple(files), directories=tuple(directories))
