@@ -132,19 +132,19 @@ def load_workspace_config(
     return WorkspaceConfig(roots=tuple(roots), source=source, warnings=_nesting(roots))
 
 
+def check_root(root: Path) -> str:
+    """The state of one root: accessible, missing, not a directory, or unreadable."""
+    if not root.exists():
+        return MISSING
+    if not root.is_dir():
+        return NOT_A_DIRECTORY
+    try:
+        with os.scandir(root):
+            return ACCESSIBLE
+    except OSError:
+        return UNREADABLE
+
+
 def check_roots(config: WorkspaceConfig) -> tuple[RootCheck, ...]:
     """Report each root on its own as accessible, missing, not a directory, or unreadable."""
-    checks = []
-    for root in config.roots:
-        if not root.exists():
-            status = MISSING
-        elif not root.is_dir():
-            status = NOT_A_DIRECTORY
-        else:
-            try:
-                with os.scandir(root):
-                    status = ACCESSIBLE
-            except OSError:
-                status = UNREADABLE
-        checks.append(RootCheck(root=root, status=status))
-    return tuple(checks)
+    return tuple(RootCheck(root=root, status=check_root(root)) for root in config.roots)

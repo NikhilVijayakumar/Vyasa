@@ -12,6 +12,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+from vyasa.adapters.filesystem.pruning import prune
 from vyasa.domain.file_composition import WalkLimits
 
 
@@ -53,12 +54,7 @@ def walk_checkout(
             first("time")
             break
 
-        kept = []
-        for name in sorted(dirnames):
-            full = os.path.join(dirpath, name)
-            if name.casefold() in excluded or os.path.islink(full) or os.path.isjunction(full):
-                continue
-            kept.append(name)
+        kept = prune(dirpath, dirnames, excluded).kept
 
         depth = len(Path(dirpath).relative_to(top).parts)
         if kept and depth >= limits.max_depth:

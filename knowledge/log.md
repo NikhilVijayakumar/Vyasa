@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Creation**: Added the draft decision [Repository Recognition and Discovery Run Status](/decisions/repository-recognition-and-run-status.md).
 * **Creation**: Added the draft decision [Configuration File Format and Location](/decisions/configuration-file-format-and-location.md).
 * **Creation**: Added the draft decision [File Composition Data and Limits](/decisions/file-composition-data-and-limits.md); the File Composition Detector (§9.13) now cites its entry cap.
 * **Creation**: Added the File Composition Detector (§9.13) to the [Metadata Detector Inventory](/architecture/scanning-and-evidence/detector-inventory.md).
