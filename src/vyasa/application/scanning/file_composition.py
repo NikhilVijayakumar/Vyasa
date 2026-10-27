@@ -37,6 +37,18 @@ def _extensions(data: dict, field: str, source: str) -> frozenset[str]:
     return frozenset(found)
 
 
+def _labels(data: dict, field: str, source: str) -> dict[str, str]:
+    values = data.get(field, {})
+    if not isinstance(values, dict):
+        raise FileTypeDataError(f"{source}: '{field}' must be an object")
+    found = {}
+    for key, label in values.items():
+        if not isinstance(label, str) or not label.strip():
+            raise FileTypeDataError(f"{source}: '{field}' has an invalid label for {key!r}")
+        found[key.casefold()] = label
+    return found
+
+
 def load_file_types(path: Path | str) -> FileTypes:
     """Load and validate file-type data."""
     source = str(path)
@@ -54,7 +66,11 @@ def load_file_types(path: Path | str) -> FileTypes:
     overlap = sorted(code & documentation)
     if overlap:
         raise FileTypeDataError(f"{source}: extension {overlap[0]!r} is in both lists")
-    return FileTypes(version=version, code_extensions=code, documentation_extensions=documentation)
+    languages = _labels(data, "languages", source)
+    manifests = _labels(data, "manifests", source)
+    if languages and set(languages) != code:
+        raise FileTypeDataError(f"{source}: 'languages' differs from 'code_extensions' at {sorted(set(languages) ^ code)[0]!r}")
+    return FileTypes(version, code, documentation, languages, manifests)
 
 
 def default_file_types() -> FileTypes:
