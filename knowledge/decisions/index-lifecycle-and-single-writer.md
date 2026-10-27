@@ -24,7 +24,7 @@ An index is trusted only if a failed scan, a second scan, or an unmounted drive 
 
 # Decision
 
-**Vanished projects.** A project whose checkout was not found by a complete scan becomes `missing`; one that exists but cannot be read becomes `inaccessible`. Its record, history, and observations stay. Nothing is deleted. A partial or failed scan changes no project to missing, because it did not see the whole tree. Seeing the checkout again restores `active`.
+**Vanished projects.** A project whose checkout was not found by a complete scan becomes `missing`; one that exists but cannot be read becomes `inaccessible`. Its record, history, and observations stay. Nothing is deleted. A partial or failed scan, or a complete one that skipped directories by depth, link, or Git-link policy, changes no project to missing, because it did not see the whole tree. Seeing the checkout again restores `active`.
 
 **Single writer.** A lock row holds an owner and a heartbeat time. A writer takes it at the start of a run and refreshes it while working. A second writer finds a live lock and is refused with `OPERATION_IN_PROGRESS`; it is not queued. A lock whose heartbeat is older than 60 seconds is dead and may be taken over. WAL mode and a 5 second busy timeout sit underneath.
 

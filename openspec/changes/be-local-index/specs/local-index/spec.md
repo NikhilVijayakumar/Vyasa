@@ -138,6 +138,12 @@ The system SHALL mark a stored checkout under a scanned root `missing` when a co
 - **WHEN** the run is stored
 - **THEN** the project's state is unchanged
 
+#### Scenario: Skipped directories
+
+- **GIVEN** a stored project and a `completed` run that reports directories skipped by depth, link, or Git-link policy
+- **WHEN** the run is stored
+- **THEN** no project is marked `missing`, because the whole tree was not seen
+
 #### Scenario: Reappears
 
 - **GIVEN** a `missing` project

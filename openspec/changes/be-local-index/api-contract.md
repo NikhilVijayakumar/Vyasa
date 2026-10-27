@@ -18,13 +18,15 @@ In: `vyasa.adapters.sqlite` (open, migrate, lock, repository functions), `vyasa.
 
 | Operation | Kind | Access | Input | Success output | Errors |
 |---|---|---|---|---|---|
-| `open_index(path, *, read_only=False, now)` | Python function | Creates the data directory and file unless `read_only`; migrates unless `read_only` | database path | `sqlite3.Connection` configured per §5 | `INDEX_SCHEMA_TOO_NEW`, `INDEX_MIGRATION_FAILED`, `INDEX_UNAVAILABLE` |
-| `index_path(environ=None, ...)` | Python function | None; pure | as `data_directory` | `<data directory>/index.sqlite3` | none |
-| `store_run(connection, run, *, owner, now)` | Python function | Writes the index; one writer | a `DiscoveryRun` | `StoredRun` (run id, status, counts of added, updated, unchanged, missing, inaccessible) | `OPERATION_IN_PROGRESS`; any storage error after marking the run `interrupted` |
-| `list_projects(connection, state=None)` | Python function | Read | optional state | rows ordered by path | none |
-| `freshness(connection, now, window=24h)` | Python function | Read; no writes | connection, clock | `current`, `stale`, `partial`, or `unknown` | none |
+| `open_index(path, *, read_only=False, migrations=<packaged>)` | Python function | Creates the data directory and file unless `read_only`; migrates unless `read_only` | database path | `sqlite3.Connection` configured per §5 | `INDEX_SCHEMA_TOO_NEW`, `INDEX_MIGRATION_FAILED`, `INDEX_UNAVAILABLE` |
+| `index_path(environ=None, ...)` | Python function (`vyasa.application.indexing`) | None; pure | as `data_directory` | `<data directory>/index.sqlite3` | none |
+| `store_run(connection, run, *, owner, now)` | Python function | Writes the index; one writer | a `DiscoveryRun` | `StoredRun` (run id, status, counts) | `OPERATION_IN_PROGRESS`; any storage error after marking the run `interrupted` |
+| `list_projects(connection, state=None)` | Python function (`vyasa.adapters.sqlite.projects`) | Read | optional state | rows ordered by path | none |
+| `freshness(connection, now=None)` | Python function | Read; no writes | connection, clock | `current`, `stale`, `partial`, or `unknown` | none |
 
-`StoredRun` counts: `added`, `updated`, `unchanged`, `missing`, `inaccessible`, `restored`.
+`StoredRun` counts include only non-zero keys among `added`, `updated`, `unchanged`, `restored`, `missing`, `inaccessible`. `migrations` selects the migration directory (tests only).
+
+A `completed` run marks checkouts `missing` only when none of its warnings hides directories (everything but an ignore-file warning does).
 
 ## 4. Error Model
 
