@@ -73,7 +73,7 @@ def test_first_open_creates_directory_file_and_schema(tmp_path):
     path = tmp_path / "new" / "index.sqlite3"
     connection = open_index(path)
     assert path.is_file()
-    assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
+    assert connection.execute("PRAGMA user_version").fetchone()[0] == 2
     connection.close()
 
 
@@ -107,15 +107,16 @@ def _migrations(tmp_path, *extra):
 
 def test_pending_migration_makes_a_backup_and_keeps_data(tmp_path):
     path = tmp_path / "index.sqlite3"
-    only_first = _migrations(tmp_path)
-    connection = open_index(path, migrations=only_first)
-    store(connection, make_run([repo("a")]))
+    connection = open_index(path, migrations=_migrations(tmp_path))
+    connection.execute(
+        "INSERT INTO projects (project_id, display_name, state, created_at, updated_at, last_seen_at)"
+        " VALUES ('p', 'a', 'active', 't', 't', 't')"
+    )
     connection.close()
-    both = _migrations_with_second(tmp_path)
-    connection = open_index(path, migrations=both)
+    connection = open_index(path, migrations=_migrations_with_second(tmp_path))
     assert connection.execute("PRAGMA user_version").fetchone()[0] == 2
     assert (tmp_path / "index.sqlite3.bak-v1").is_file()
-    assert len(projects.list_projects(connection)) == 1
+    assert connection.execute("SELECT COUNT(*) FROM projects").fetchone()[0] == 1
     connection.close()
 
 
@@ -133,12 +134,13 @@ def test_failed_migration_rolls_back(tmp_path):
     folder = tmp_path / "bad"
     folder.mkdir()
     (folder / "0001_initial.sql").write_text((MIGRATIONS / "0001_initial.sql").read_text())
-    (folder / "0002_bad.sql").write_text("CREATE TABLE half (x INTEGER); SELECT nonsense FROM nowhere;")
+    (folder / "0002_identity.sql").write_text((MIGRATIONS / "0002_identity.sql").read_text())
+    (folder / "0003_bad.sql").write_text("CREATE TABLE half (x INTEGER); SELECT nonsense FROM nowhere;")
     with pytest.raises(IndexStoreError) as error:
         open_index(path, migrations=folder)
     assert error.value.code == MIGRATION_FAILED
     check = sqlite3.connect(path)
-    assert check.execute("PRAGMA user_version").fetchone()[0] == 1
+    assert check.execute("PRAGMA user_version").fetchone()[0] == 2
     assert check.execute("SELECT name FROM sqlite_master WHERE name = 'half'").fetchone() is None
     check.close()
 
