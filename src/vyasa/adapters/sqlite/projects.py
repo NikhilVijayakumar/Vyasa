@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 
 from vyasa.domain.discovery import Candidate
+from vyasa.domain.languages import LanguageOutcome
 from vyasa.domain.profile import ABSENT, PROFILE_PATH, ProfileResult
 from vyasa.domain.index import (
     ACTIVE,
@@ -143,6 +144,37 @@ def _store_profile(connection: sqlite3.Connection, checkout_id: int, profile: Pr
     )
 
 
+KEPT_OBSERVATIONS = 2
+
+
+def _store_languages(connection: sqlite3.Connection, checkout_id: int, outcome: LanguageOutcome | None, run_id: str, stamp: str) -> None:
+    """Add one observation and keep the newest two. No outcome means the checkout was not assessed: nothing changes."""
+    if outcome is None:
+        return
+    report = outcome.report
+    if report is None:
+        status, stopped, reason, version = "failed", None, outcome.failed, 0
+    else:
+        status = "complete" if report.complete else "partial"
+        stopped, reason, version = report.stopped_by, None, report.evidence.types_version
+    observation = connection.execute(
+        "INSERT INTO language_observations (checkout_id, run_id, observed_at, status, stopped_by, types_version, reason, duration_ms)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (checkout_id, run_id, stamp, status, stopped, version, reason, round(outcome.seconds * 1000)),
+    ).lastrowid
+    if report is not None:
+        connection.executemany(
+            "INSERT INTO checkout_languages (observation_id, label, status, files) VALUES (?, ?, ?, ?)",
+            [(observation, label, "files_detected", count) for label, count in report.files_detected]
+            + [(observation, label, "declared", None) for label in report.declared],
+        )
+    connection.execute(
+        "DELETE FROM language_observations WHERE checkout_id = ? AND observation_id NOT IN"
+        " (SELECT observation_id FROM language_observations WHERE checkout_id = ? ORDER BY observation_id DESC LIMIT ?)",
+        (checkout_id, checkout_id, KEPT_OBSERVATIONS),
+    )
+
+
 def project_profile(connection: sqlite3.Connection, project_id: str) -> dict:
     """The profile shown for a project: an active checkout first, readable before not, then the earliest seen."""
     row = connection.execute(
@@ -246,6 +278,7 @@ def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run
                 (str(root), *fields, ACTIVE, stamp, run_id, row["checkout_id"]),
             )
         _store_profile(connection, checkout_id, candidate.profile, run_id, stamp)
+        _store_languages(connection, checkout_id, candidate.languages, run_id, stamp)
         refresh_state(connection, project_id, stamp)
         connection.execute("UPDATE projects SET last_seen_at = ? WHERE project_id = ?", (stamp, project_id))
         connection.execute("COMMIT")
