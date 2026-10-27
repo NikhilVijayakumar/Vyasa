@@ -57,6 +57,8 @@ SKIP_ADVICE: dict[str, str] = {
     "symlink": "Directory links are not followed. If the target should be scanned, "
     "add its real location as a workspace root.",
     "git_link": "A .git entry that is a link is not followed. Replace it with a real .git directory or file.",
+    "ignore_file": "Fix or remove the listed lines in the repository's .vyasaignore. "
+    "Invalid lines are skipped; valid lines still apply.",
 }
 
 
@@ -68,6 +70,7 @@ class ScanWarning:
     count: int
     examples: tuple[Path, ...]
     advice: str
+    details: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

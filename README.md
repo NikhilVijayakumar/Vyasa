@@ -443,3 +443,16 @@ roots = ["E:/Python", "D:/Projects", "~/work"]
 ```
 
 Use absolute paths. On Windows write them with forward slashes or in single quotes, for example `'E:\Python'`. Roots may sit on different drives. A root inside another is kept and reported.
+
+### Telling Vyasa what to skip inside a repository
+
+A repository can list directories Vyasa must not scan in a `.vyasaignore` file at its root, for example reference data for coding agents or large fixtures:
+
+```text
+# one directory pattern per line
+data/novel/output     # a path from the repository root
+fixtures              # a name, at any depth
+data/*/cache          # * stays inside one folder, ** crosses folders, ? is one character
+```
+
+The file can only remove directories from scanning. Negation (`!`), drive letters and `..` are reported and skipped, and a file over 64 KiB is ignored. When Vyasa skips directories because of the depth limit, its report says how many, gives examples, and suggests adding them here.

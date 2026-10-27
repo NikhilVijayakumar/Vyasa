@@ -304,3 +304,41 @@ def test_composition_invariants():
     assert sample.total == 7 and sample.documentation_only is False
     partial = FileComposition(0, 5, 0, "depth", None)
     assert partial.documentation_only is None and not partial.complete
+
+
+# -- repository-provided ignore file ------------------------------------------------------------------------------
+
+
+def test_files_in_ignored_directories_are_not_counted_and_the_count_stays_complete(tmp_path):
+    make(tmp_path, "a.py", "reference/one.md", "reference/two.md", "src/b.py", "src/reference/c.md")
+    (tmp_path / ".vyasaignore").write_text("reference\n", encoding="utf-8")
+    result = run(tmp_path)
+    assert (result.code, result.documentation, result.other) == (2, 0, 1)
+    assert result.complete
+
+
+def test_ignore_rules_are_relative_to_the_checkout(tmp_path):
+    make(tmp_path, "data/keep/a.py", "other/data/b.py", "data/skip/c.py")
+    (tmp_path / ".vyasaignore").write_text("data/skip\n", encoding="utf-8")
+    assert run(tmp_path).code == 2
+
+
+def test_evidence_records_the_use_of_an_ignore_file_without_its_text(tmp_path):
+    make(tmp_path, "a.py")
+    (tmp_path / ".vyasaignore").write_text("reference\nbuild-?\n", encoding="utf-8")
+    result = run(tmp_path)
+    assert result.evidence.ignore.patterns == 2
+    assert len(result.evidence.ignore.digest) == 64
+    assert "reference" not in repr(result.evidence)
+
+
+def test_no_ignore_file_means_no_ignore_evidence(tmp_path):
+    make(tmp_path, "a.py")
+    assert run(tmp_path).evidence.ignore is None
+
+
+def test_an_oversized_ignore_file_is_not_used_and_leaves_no_evidence(tmp_path):
+    make(tmp_path, "keep/a.py")
+    (tmp_path / ".vyasaignore").write_text("keep\n" + "x\n" * 40000, encoding="utf-8")
+    result = run(tmp_path)
+    assert result.code == 1 and result.evidence.ignore is None

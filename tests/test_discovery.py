@@ -483,3 +483,141 @@ def test_a_root_that_is_itself_a_symlink_is_searched(tmp_path):
     result = run(link)
     assert found(result) == ["proj"]
     assert result.status == COMPLETE
+
+
+# -- repository-provided ignore file -----------------------------------------------------------------------
+
+
+def ignore(directory, text):
+    (directory / ".vyasaignore").write_text(text, encoding="utf-8")
+
+
+def warning(result, reason):
+    return next((w for w in result.warnings if w.reason == reason), None)
+
+
+def test_an_ignored_directory_is_not_entered_counted_as_excluded_and_not_warned(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/inner")
+    repo(root, "src/real")
+    ignore(root, "data\n")
+    result = run(tmp_path)
+    assert found(result) == ["proj", "proj/src/real"]
+    assert result.counts[EXCLUDED] == 1
+    assert result.warnings == () and result.status == COMPLETE
+
+
+def test_a_bare_name_is_ignored_at_every_depth(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "a/fixtures/x")
+    repo(root, "a/b/fixtures/y")
+    ignore(root, "fixtures\n")
+    result = run(tmp_path)
+    assert found(result) == ["proj"]
+    assert result.counts[EXCLUDED] == 2
+
+
+def test_a_path_pattern_is_anchored_at_the_repository_root(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/novel/output/hidden")
+    repo(root, "other/data/novel/output/shown")
+    ignore(root, "data/novel/output\n")
+    assert found(run(tmp_path)) == ["proj", "proj/other/data/novel/output/shown"]
+
+
+def test_glob_patterns_apply(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/x/cache/gone")
+    repo(root, "data/x/y/cache/kept")
+    ignore(root, "data/*/cache\n")
+    assert found(run(tmp_path)) == ["proj", "proj/data/x/y/cache/kept"]
+
+
+def test_an_ignore_file_does_not_reach_a_sibling_repository(tmp_path):
+    first = repo(tmp_path, "first")
+    second = repo(tmp_path, "second")
+    repo(first, "data/inner")
+    repo(second, "data/inner")
+    ignore(first, "data\n")
+    assert found(run(tmp_path)) == ["first", "second", "second/data/inner"]
+
+
+def test_a_nested_repository_keeps_the_enclosing_rules_and_adds_its_own(tmp_path):
+    outer = repo(tmp_path, "outer")
+    inner = repo(outer, "pkg/inner")
+    for where in (outer, inner):
+        for name in ("vendor-data", "cache", "keep"):
+            repo(where, f"{name}/probe")
+    ignore(outer, "vendor-data\n")
+    ignore(inner, "cache\n")
+    result = run(tmp_path)
+    kept = found(result)
+    assert "outer/pkg/inner/keep/probe" in kept
+    assert "outer/pkg/inner/vendor-data/probe" not in kept
+    assert "outer/pkg/inner/cache/probe" not in kept
+    assert "outer/cache/probe" in kept
+    assert "outer/vendor-data/probe" not in kept
+
+
+def test_an_ignored_directory_below_the_depth_limit_is_excluded_not_warned(tmp_path):
+    root = repo(tmp_path, "proj")
+    (root / "x" / "deep").mkdir(parents=True)
+    ignore(root, "deep\n")
+    result = run(tmp_path, max_depth=2)
+    assert result.counts[EXCLUDED] == 1
+    assert warning(result, "max_depth") is None
+
+
+def test_a_bad_line_is_reported_and_the_valid_line_still_applies(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/inner")
+    ignore(root, "!keep\ndata\n")
+    result = run(tmp_path)
+    assert found(result) == ["proj"]
+    assert result.status == COMPLETE
+    notice = warning(result, "ignore_file")
+    assert notice is not None
+    assert notice.count == 1 and notice.examples == (root,)
+    assert notice.details == ("proj/.vyasaignore: line 1: negation is not supported",)
+    assert ".vyasaignore" in notice.advice
+
+
+def test_an_oversized_ignore_file_is_reported_and_none_of_it_applies(tmp_path):
+    root = repo(tmp_path, "proj")
+    repo(root, "data/inner")
+    (root / ".vyasaignore").write_text("data\n" + "x\n" * 40000, encoding="utf-8")
+    result = run(tmp_path)
+    assert "proj/data/inner" in found(result)
+    notice = warning(result, "ignore_file")
+    assert notice is not None and "larger than 64 KiB" in notice.details[0]
+
+
+def test_the_ignore_file_of_a_non_repository_is_not_read(tmp_path):
+    (tmp_path / "plain" / "data" / "inner").mkdir(parents=True)
+    repo(tmp_path, "plain/data/inner")
+    ignore(tmp_path / "plain", "data\n")
+    assert found(run(tmp_path)) == ["plain/data/inner"]
+
+
+def test_an_ignore_file_at_the_root_of_a_repository_that_is_the_workspace_root_applies(tmp_path):
+    repo(tmp_path)
+    repo(tmp_path, "data/inner")
+    ignore(tmp_path, "data\n")
+    assert found(run(tmp_path)) == ["."]
+
+
+def test_only_pointer_and_ignore_files_are_opened(tmp_path, monkeypatch):
+    plain = repo(tmp_path, "plain")
+    pointer(tmp_path, "sub", "gitdir: ../.git/modules/sub\n")
+    ignore(plain, "data\n")
+    (plain / "secret.txt").write_text("x", encoding="utf-8")
+    opened = []
+    real = builtins.open
+
+    def recording(file, *args, **kwargs):
+        opened.append(os.path.basename(os.fspath(file)))
+        return real(file, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", recording)
+    run(tmp_path)
+    assert sorted(opened) == [".git", ".vyasaignore"]

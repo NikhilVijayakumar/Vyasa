@@ -8,7 +8,7 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 |---|---|---|
 | Intent | 2 | 0 |
 | Scope | 3 | 1 |
-| Behaviour | 4 | 0 |
+| Behaviour | 7 | 0 |
 | Data | 2 | 1 |
 | Integration | 2 | 0 |
 | Architecture | 2 | 1 |
@@ -86,6 +86,27 @@ Run with the `grill-me` skill. Each question was answered with a recommendation 
 - **Status:** Settled
 - **Feeds:** FR-015 S1
 
+
+**Q15. How does a repository tell Vyasa what to skip inside it (FR-022)?**
+
+- **Recommendation:** A plain `.vyasaignore` file at the repository root listing directories: a bare name at any depth, or a path from the root, with `*`, `**`, and `?`. It can only remove directories from scanning.
+- **Why:** Vyasa cannot know which directories hold reference data or fixtures; the repository's owner does. On a real workspace 868 directories below the depth limit were such folders.
+- **Status:** Settled
+- **Feeds:** FR-022 S1–S6
+
+**Q16. What stops the file from being used against Vyasa?**
+
+- **Recommendation:** It is untrusted repository content. Negation, drive letters, and `..` are invalid and reported; the file is at most 64 KiB and 1,000 patterns; it affects only directories below its own repository; a mistake makes Vyasa scan more, never less than the repository asked.
+- **Why:** The worst a hostile file can do is hide its own repository's directories.
+- **Status:** Recommended
+- **Feeds:** FR-022 S7–S9
+
+**Q17. How do the files of nested repositories combine?**
+
+- **Recommendation:** A nested repository has its own file, and the files of every enclosing repository still apply to it.
+- **Why:** An outer repository's decision to ignore a directory must not be undone by an inner one.
+- **Status:** Recommended
+- **Feeds:** FR-022 S10, S11
 
 ## Data
 
