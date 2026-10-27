@@ -24,7 +24,7 @@ Repositories may be hostile. Running Git inside one can execute programs named i
 
 # Decision
 
-Read remotes, HEAD, and refs by parsing `.git` files directly, without following includes. Permit a closed set of read-only plumbing commands only where files are not enough (for example reading the root commit), run with no system or global configuration, monitor and hook features disabled, a timeout, no pager or prompts, and fixed argument lists. Nothing from repository content is placed in a command. The only operation that writes into a repository is explicit draft generation, limited to one named file.
+Read remotes, HEAD, and refs by parsing `.git` files directly, without following includes. Permit a closed set of read-only plumbing commands only where files are not enough (none is used today), run with no system or global configuration, monitor and hook features disabled, a timeout, no pager or prompts, and fixed argument lists. Nothing from repository content is placed in a command. The only operation that writes into a repository is explicit draft generation, limited to one named file.
 
 # Alternatives considered
 

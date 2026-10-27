@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Update**: [Stored Identity With Aliases](/decisions/stored-identity-with-aliases.md) no longer uses a root-commit identity: a repository with no usable remote is a local project matched by path.
 * **Creation**: Added the draft decision [Review Decisions Stay Local](/decisions/review-decisions-stay-local.md).
 * **Update**: [Stored Identity With Aliases](/decisions/stored-identity-with-aliases.md) now covers the ambiguous status and the review flags for conflicts and duplicate checkouts.
 * **Update**: [Stored Identity With Aliases](/decisions/stored-identity-with-aliases.md) now states how checkouts, project state, conflicts, and the no-remote fallback work.
