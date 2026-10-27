@@ -111,13 +111,31 @@ The system SHALL stop descending when the depth limit, the time limit, or the en
 
 ### Requirement: Symlinks and exclusions
 
-The system SHALL NOT follow directory symlinks, SHALL count a symlinked file as itself, and SHALL NOT count files inside directories named in the exclusion set.
+The system SHALL NOT follow directory symlinks or junctions, SHALL count a symlinked file as itself, and SHALL NOT count files inside directories whose name matches the exclusion set, compared case-insensitively. The checkout root itself SHALL NOT be excluded by name.
 
 #### Scenario: Symlink escape
 
 - **GIVEN** a directory symlink inside the checkout points outside it
 - **WHEN** the composition is computed
 - **THEN** no file behind the symlink is counted
+
+#### Scenario: Junction escape
+
+- **GIVEN** a directory junction inside the checkout points outside it
+- **WHEN** the composition is computed
+- **THEN** no file behind the junction is counted
+
+#### Scenario: Excluded directory name ignores case
+
+- **GIVEN** the exclusion set contains `node_modules` and the checkout has a directory named `Node_Modules`
+- **WHEN** the composition is computed
+- **THEN** files in that directory are not counted
+
+#### Scenario: Checkout named like an exclusion
+
+- **GIVEN** the checkout directory is itself named `build`, which is in the exclusion set
+- **WHEN** the composition is computed
+- **THEN** its files are counted
 
 #### Scenario: Excluded directory
 
@@ -128,19 +146,25 @@ The system SHALL NOT follow directory symlinks, SHALL count a symlinked file as 
 
 ### Requirement: Evidence
 
-The system SHALL return with every result the file-type data version, the exclusion set, and the completeness marker.
+The system SHALL return with every result the file-type data version, the exclusion set, the limits used, and the completeness marker.
 
 #### Scenario: Evidence present
 
 - **GIVEN** any computed composition
 - **WHEN** the result is read
-- **THEN** it carries the data version, the sorted exclusion set, and the completeness marker
+- **THEN** it carries the data version, the sorted exclusion set, the limits used, and the completeness marker
 
 #### Scenario: Deterministic order
 
 - **GIVEN** the same tree listed in two different directory orders
 - **WHEN** the composition is computed for each
 - **THEN** the results are equal
+
+#### Scenario: Partial counts are repeatable
+
+- **GIVEN** a tree larger than the entry cap
+- **WHEN** the composition is computed twice
+- **THEN** both results have the same counts and the same stopping bound
 
 ### Requirement: Validated versioned file-type data
 

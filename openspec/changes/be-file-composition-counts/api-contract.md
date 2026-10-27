@@ -21,11 +21,13 @@ In: `vyasa.application.scanning.file_composition.compose`, the `FileTypes` loade
 | `compose(root, types, limits, exclusions)` | Python function | Lists directories and file names under `root`; opens no file; writes nothing | `root: Path`, `types: FileTypes`, `limits: WalkLimits`, `exclusions: frozenset[str]` | `FileComposition` | `ValueError` when `root` is not a directory |
 | `load_file_types(path)` | Python function | Reads one JSON file | `path: Path` | `FileTypes` | `FileTypeDataError` naming the field or extension |
 
-`WalkLimits` fields (defaults): `max_depth = 6`, `max_entries = 50_000`, `max_seconds = 60.0`. A `clock` callable may be injected for tests.
+`WalkLimits` fields (defaults): `max_depth = 20`, `max_entries = 50_000`, `max_seconds = 60.0`. A `clock` callable may be injected for tests.
 
 `FileComposition` fields: `code`, `documentation`, `other` (non-negative integers), `total` (their sum), `complete` (bool), `stopped_by` (`None`, `"depth"`, `"entries"`, `"time"`, or `"unreadable"`), `documentation_only` (`True`, `False`, or `None` for unknown), `evidence`.
 
-`evidence` fields: `types_version` (int), `exclusions` (sorted tuple of names), `complete`, `stopped_by`.
+`evidence` fields: `types_version` (int), `exclusions` (sorted tuple of names), `limits` (the `WalkLimits` used), `complete`, `stopped_by`.
+
+`DEFAULT_EXCLUSIONS` is exported: `.git`, `node_modules`, `.venv`, `venv`, `__pycache__`, `target`, `build`, `dist`. Names compare case-insensitively. `stopped_by` records the first cause observed; an unreadable directory does not stop the walk, a bound does.
 
 ## 4. Error Model
 
@@ -42,7 +44,7 @@ A walk problem is a result, not an exception: partial counts are reported, never
 
 ## 5. Trust Boundary
 
-`root` and the checkout contents are untrusted: names are classified and counted, never executed, parsed, or opened. Directory symlinks are not followed, so nothing outside `root` is read. The file-type data is trusted package data validated on load. Only counts and the exclusion set leave the function; no path is returned.
+`root` and the checkout contents are untrusted: names are classified and counted, never executed, parsed, or opened. Directory symlinks and Windows junctions are not followed, so nothing outside `root` is read. The file-type data is trusted package data validated on load. Only counts and the exclusion set leave the function; no path is returned.
 
 ## 6. Data Model
 

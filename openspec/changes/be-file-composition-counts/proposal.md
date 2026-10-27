@@ -39,7 +39,7 @@ Changes are judged on MCP tool and interface contracts, data model, and trust bo
 ## 3. Scope
 
 ### In Scope
-- Project scaffolding as a prerequisite: `pyproject.toml`, `src/vyasa` package, `tests/`.
+- Project scaffolding as a prerequisite: `pyproject.toml` (setuptools build backend, no runtime dependency), `src/vyasa` package, `tests/`.
 - `FileTypes` (loaded and validated from a versioned data file), `WalkLimits`, `FileComposition`, and `compose(root, types, limits, exclusions)`.
 - A bounded walk adapter and the default exclusion set.
 
@@ -80,7 +80,7 @@ Layered as `knowledge/architecture/system-architecture/structure.md` proposes: a
 ### Risks
 | Risk | Impact | Mitigation or Investigation |
 |---|---|---|
-| Depth 6 makes common nested layouts partial | Many counts partial | Limit is a parameter; validate against real workspaces and adjust the default |
+| The inventory depth of 6 makes about half of real counts partial | Most counts unknown | Counting uses its own depth of 20 (measured: 0 of 63 projects partial at 16); the limits are parameters |
 | First code in the repository sets structure | Layout churn | Follow the proposed layout; create only the packages used |
 | Time limit makes tests flaky | Unreliable tests | The clock is injected; no test sleeps |
 
@@ -88,7 +88,7 @@ Layered as `knowledge/architecture/system-architecture/structure.md` proposes: a
 - A checkout path is given; discovery is not needed to test the core.
 
 ### Open Questions
-- [ ] Whether the default depth of 6 suits counting; validated later against representative workspaces (not blocking).
+- [ ] Owner confirmation of the counting depth of 20 (grill Q1); the earlier confirmation of the entry cap assumed depth 6.
 
 ## 8. Acceptance Summary
 
@@ -115,7 +115,7 @@ Layered as `knowledge/architecture/system-architecture/structure.md` proposes: a
 - [x] Assumptions and unresolved questions are visible.
 - [x] The proposing team is identified and its focus and skills applied.
 - [x] The proposal is consistent with existing specifications and project conventions.
-- [ ] Significant ambiguities have been challenged and resolved (grill-me not yet run on this change).
+- [x] Significant ambiguities have been challenged and resolved (`docs/reviews/file-composition-counts-grill.md`); one decision awaits the owner.
 - [x] The change has a stable OpenSpec ID and follows the project's Git discipline.
 
 **Status:** Draft

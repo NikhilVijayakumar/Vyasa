@@ -19,7 +19,7 @@ The repository has no source tree. The proposed layout is in `knowledge/architec
 ### Constraints
 - Technical constraints: Python 3.12+, `pytest`, no runtime dependency.
 - Security and privacy constraints: names only, no file opened, no path returned, no symlink followed.
-- Performance and reliability constraints: depth 6, 50,000 entries, 60 seconds, all parameters.
+- Performance and reliability constraints: depth 20, 50,000 entries, 60 seconds, all parameters (see the file composition decision).
 - Compatibility and migration constraints: none.
 - Operational constraints: the walk is synchronous and single-threaded.
 
@@ -67,7 +67,7 @@ See `api-contract.md`.
 
 No stored state. The data file is read once per process.
 
-The walk uses `os.walk(topdown=True, followlinks=False)`. Each visited directory and file counts as one entry. Directories named in the exclusion set are removed from the walk list before descent. Depth is the number of path parts below `root`; a directory deeper than `max_depth` is not entered and marks the walk `depth`. `onerror` marks `unreadable`. The clock is checked per directory.
+The walk uses `os.walk(topdown=True, followlinks=False)`. Each visited directory and file counts as one entry. On Windows `os.walk` still descends into a junction (probed 2026-10-27: a file behind a junction was listed), so every subdirectory is also pruned when `os.path.islink` or `os.path.isjunction` is true. The root is never pruned, even if it is itself a link or named like an exclusion. Directory names are compared by `casefold` against the exclusion set and pruned before descent. Names are sorted at each level so a partial result is repeatable. Depth is the number of path parts below `root`; a directory deeper than `max_depth` is not entered and marks the walk `depth`. `stopped_by` keeps the first cause observed. `onerror` marks `unreadable`. The clock is checked per directory.
 
 ## 6. Error Handling and Resilience
 
@@ -96,7 +96,7 @@ Trust boundary as in the contract. Nothing outside `root` is listed because syml
 One test per scenario in `specs/file-composition/spec.md`.
 
 ### Test Strategy
-Unit tests with `pytest` and `tmp_path` fixtures (domain and loader), and adapter tests against real temporary trees. No integration or persistence layer exists.
+Unit tests with `pytest` and `tmp_path` fixtures (domain and loader), and adapter tests against real temporary trees. Symlink and junction fixtures are created for real (both were creatable on the target machine on 2026-10-27) and skipped with a stated reason where the platform refuses. No integration or persistence layer exists.
 
 ### Testability
 Small limits are passed as parameters. The clock is a callable. The symlink test creates a symlink and skips with a stated reason if the platform refuses.
@@ -107,7 +107,7 @@ Small limits are passed as parameters. The clock is a callable. The symlink test
 ## 10. Implementation and Migration Considerations
 
 ### Implementation Order
-Scaffolding, then data loader, then classification and counts, then the walk and bounds, then symlinks and exclusions.
+Scaffolding (setuptools build backend, `pytest` with `pythonpath = src`), then data loader, then classification and counts, then the walk and bounds, then symlinks and exclusions.
 
 ### Migration and Rollout
 None.

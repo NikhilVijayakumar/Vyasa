@@ -7,7 +7,7 @@
 ## 1. Preparation and Baseline
 
 - [ ] 1.1 Review the proposal, spec, contract, design, and ADR.
-- [ ] 1.2 Record the baseline: `python3 scripts/verify_workflows.py` (known failure: skill-reference check) and `python3 scripts/verify_knowledge.py`.
+- [ ] 1.2 Record the baseline (`python` where `python3` is absent): `python3 scripts/verify_workflows.py` (known failure: skill-reference check) and `python3 scripts/verify_knowledge.py`.
 - [ ] 1.3 Confirm branch `feature/be-file-composition-counts`.
 
 ## 2. Prerequisite: project scaffolding
@@ -45,8 +45,8 @@
 
 **Traceability:** Requirements: Symlinks and exclusions; Evidence (deterministic order)
 
-- [ ] 6.1 Test first: symlink escape (skip with a reason where the platform cannot create one), excluded directory, shuffled order.
-- [ ] 6.2 Implement pruning and the default exclusion set.
+- [ ] 6.1 Test first: symlink escape, junction escape (Windows), excluded directory, exclusion name case, checkout named like an exclusion, shuffled order, repeatable partial result (skip a link test with a stated reason where the platform cannot create one).
+- [ ] 6.2 Implement pruning (`islink` and `isjunction`), case-insensitive exclusion, sorted traversal, and `DEFAULT_EXCLUSIONS`.
 - [ ] 6.3 Run tests; refactor.
 
 ## 7. Final Verification
