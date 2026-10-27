@@ -3,13 +3,13 @@ type: Decision
 title: "Project Markers Are Presence-Only With Three States and Capped Relative Paths"
 description: README, documentation, agent instruction, OpenSpec, and test markers are found from names and directories only, reported as detected, not detected, or unknown, with capped repository-relative evidence.
 tags: [adr, scanner, markers, evidence]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-27T20:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 

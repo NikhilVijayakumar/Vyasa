@@ -1,7 +1,7 @@
 # Implementation Tasks: be-project-markers
 
 - **OpenSpec Change ID:** `be-project-markers`
-- **Status:** Implemented, pending review and merge
+- **Status:** Implemented and archived
 - **Related artifacts:** `proposal.md`, `specs/`, `design.md`, `api-contract.md`, `adr.md`
 
 ## Task Planning Rules
@@ -73,13 +73,13 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 ## 9. Documentation and Handover
 
 - [x] 9.1 Behavior matches the decision concept; no knowledge change needed beyond the creation entry already in `knowledge/log.md`.
-- [ ] 9.2 Mark the decision concept stable when the owner accepts it.
+- [x] 9.2 Mark the decision concept stable when the owner accepts it.
 
 ## 10. Review, Merge, and Archive
 
-- [ ] 10.1 Pull request with the change ID.
-- [ ] 10.2 `git fetch`, merge into `develop` after review and verification (never force-push).
-- [ ] 10.3 Archive the change.
+- [x] 10.1 Pull request with the change ID: not opened; merged locally to `develop` under owner instruction.
+- [x] 10.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 10.3 Archive the change.
 
 ## Verification Record
 
@@ -87,4 +87,4 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 
 ## Completion Summary
 
-Not yet complete.
+Implemented, merged into `develop`, and archived. The decision concept is accepted.
