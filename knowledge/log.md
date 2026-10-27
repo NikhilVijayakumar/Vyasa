@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Creation**: Added the draft decision [Language Observations Are Stored by the Scan and Filtered, Never Merged](/decisions/language-observations-in-index.md).
 * **Creation**: Added the draft decision [Language Evidence Has Two Statuses and a Fixed Table](/decisions/language-evidence-statuses.md).
 * **Update**: [Knowledge Profile Enforces Sections and Supersession](/decisions/knowledge-profile-section-rules.md) accepted (status stable) after review; the bundle already satisfies every rule.
 * **Update**: [Canonical Profile and Draft Handling](/decisions/canonical-profile-and-draft.md) is supported by a generated guide and JSON Schema that an agent reads over MCP before writing the profile.
