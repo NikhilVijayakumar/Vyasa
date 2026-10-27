@@ -41,7 +41,7 @@ Stored identity with aliases; index lifecycle and single writer.
 ## 4. Architecture and Design
 
 ### Architectural Approach
-`_raise(project, kind, evidence)` inserts or reopens the flag and writes `flagged` only when the row was absent, cleared, or its evidence changed. `_clear(project, kind)` clears an open flag and writes `resolved`. `refresh_state` calls `_sync_duplicate`, so every path that changes checkout states (upsert, absent, inaccessible) re-evaluates the duplicate flag. The conflict branch sets `ambiguous` and raises `identity_unresolved`. A non-conflicting rescan of an `ambiguous` project restores `resolved` (has aliases) or `provisional` and clears the flag. A run that omits the checkout touches nothing, so ambiguity survives absence.
+`_raise(project, kind, evidence)` inserts or reopens the flag and writes `flagged` only when the row was absent, cleared, or its evidence changed. `_clear(project, kind)` clears an open flag and writes `resolved`. `sync_duplicates` runs at the end of `store_run`, after absent checkouts are marked, over the projects the run touched and those with an open duplicate flag, so a move inside one run never flags. The conflict branch sets `ambiguous` and raises `identity_unresolved`. A non-conflicting rescan of an `ambiguous` project restores `resolved` (has aliases) or `provisional` and clears the flag. A run that omits the checkout touches nothing, so ambiguity survives absence.
 
 ### Components and Responsibilities
 | Component | Responsibility | Dependencies |

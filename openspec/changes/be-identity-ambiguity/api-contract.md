@@ -38,7 +38,7 @@ Inputs are trusted candidate fields. Evidence holds project ids, alias values, a
 
 Evidence: `duplicate_checkout` is `{"rule": "same_remote_identity", "aliases": [...sorted], "active_checkouts": n}`; `identity_unresolved` is `{"alias": a, "alias_owner": id, "path_project": id}`.
 
-Invariants: a project has an open `duplicate_checkout` flag iff it has more than one active checkout; an open `identity_unresolved` flag iff its status is `ambiguous`; flags are never deleted; flag changes happen in the transaction that changed the evidence.
+Invariants: at the end of each run a project has an open `duplicate_checkout` flag iff it has more than one active checkout (evaluated after absent checkouts are marked, so a move inside one run never flags); an open `identity_unresolved` flag iff its status is `ambiguous`; flags are never deleted; flag changes happen in the transaction that changed the evidence.
 
 ## 7. Migration and Compatibility
 

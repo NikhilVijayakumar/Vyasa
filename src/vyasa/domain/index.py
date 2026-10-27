@@ -16,6 +16,11 @@ FAILED = "failed"
 INTERRUPTED = "interrupted"
 RUN_STATUSES = (RUNNING, COMPLETED, PARTIAL, FAILED, INTERRUPTED)
 
+DUPLICATE_CHECKOUT = "duplicate_checkout"
+IDENTITY_UNRESOLVED = "identity_unresolved"
+FLAG_OPEN = "open"
+FLAG_CLEARED = "cleared"
+
 CURRENT = "current"
 STALE = "stale"
 UNKNOWN = "unknown"

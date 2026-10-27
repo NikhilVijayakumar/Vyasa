@@ -122,9 +122,9 @@ def test_conflicting_alias_and_path_change_nothing_but_an_event(db):
     assert projects.list_aliases(db, b) == ["h/o/b"]
     assert db.execute("SELECT remote_identity FROM checkouts WHERE path LIKE '%b'").fetchone()[0] == "h/o/b"
     kinds = [e["kind"] for e in projects.list_events(db, b)]
-    assert kinds == ["created", "identity_conflict"]
+    assert kinds == ["created", "identity_conflict", "flagged"]
     store(db, make_run([repo("a", remote("h/o/a")), repo("b", remote("h/o/a"))]))
-    assert len(projects.list_events(db, b)) == 2
+    assert len(projects.list_events(db, b)) == 3
 
 
 def test_conflicting_checkout_is_not_marked_missing(db):
