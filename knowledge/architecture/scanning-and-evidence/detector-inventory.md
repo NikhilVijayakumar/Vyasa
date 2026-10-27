@@ -288,7 +288,7 @@ Rules:
 - A file is counted once. Directory symlinks are not followed, and a symlinked file is counted as itself, not as its target.
 - Vendored, generated, and version-control directories are excluded by the configured exclusion rules; the exclusion list is part of the evidence.
 - The count is "files detected", in the sense of §9.3. It does not say a language is used or documentation is complete (§9.6).
-- The count walk is bounded by depth and time. Reaching a bound makes the observation `partial`: the counts are lower bounds and `documentation_only` is `unknown`. A partial count never supports a conclusion that something is absent.
+- The count walk is bounded by depth, time, and an entry cap of its own (see [File Composition Data and Limits](/decisions/file-composition-data-and-limits.md)). Reaching a bound makes the observation `partial`: the counts are lower bounds and `documentation_only` is `unknown`. A partial count never supports a conclusion that something is absent.
 - The language detector's per-language histogram and these counts come from one walk, so they agree.
 - The counts describe one checkout. The same project in two workspace roots has two observations; they are never summed.
 

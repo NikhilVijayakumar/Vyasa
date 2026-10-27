@@ -21,3 +21,4 @@ Architecture decision records. All are drafts until reviewed and accepted; each 
 * [Refresh and Integration Tools Are Disabled by Default](explicit-tools-disabled-by-default.md) - The refresh tool and any later synchronization or discovery tools are not offered to agents unless configured.
 * [Retention Defaults](retention-defaults.md) - Observations keep the current and previous value; run history and logs are bounded by count and age.
 * [Knowledge Profile Enforces Sections and Supersession](knowledge-profile-section-rules.md) - The bundle profile requires named sections per type, bans open questions in stable concepts, and makes a deprecated decision name its replacement.
+* [File Composition Data and Limits](file-composition-data-and-limits.md) - File types are versioned data shared with the language detector, and counting has its own entry cap because it reads no content.
