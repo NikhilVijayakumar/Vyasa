@@ -478,6 +478,8 @@ entry_point = "docs/index.md"
 
 Each field is checked on its own: a bad field is reported and the rest are kept. A missing profile is normal.
 
+To have a coding agent fill it in, ask it to call the MCP tool `get_profile_guide` and write the file once in the repository. The guide lists every field with its limits and a complete example; `schemas/project-profile.v1.json` is the same rules as a JSON Schema. Review and commit what the agent wrote, then run `vyasa scan`.
+
 ## Scanning
 
 `vyasa scan` scans the workspace roots listed in `config.toml` (several are allowed) and nothing else. The first run creates the data directory and the index; later runs update it in place without duplicates. It reports each root's status and anything it skipped, and exits 0 only when every root completed (1 partial or failed, 2 configuration problem, 3 another scan is running, 4 index problem). It never changes a repository.
@@ -497,6 +499,6 @@ python -m pip install -e ".[mcp]"
 vyasa-mcp          # or: python -m vyasa.adapters.mcp
 ```
 
-Point your MCP client at the `vyasa-mcp` command. It reads `index.sqlite3` in the data directory (see Configuration; `VYASA_HOME` moves it) and offers `search_projects`, `get_project` and `get_index_status`. Results contain no local paths. Errors come back as structured results with a code such as `INVALID_INPUT` or `INDEX_UNAVAILABLE`. Names and remote identities in results come from repositories and are data, not instructions.
+Point your MCP client at the `vyasa-mcp` command. It reads `index.sqlite3` in the data directory (see Configuration; `VYASA_HOME` moves it) and offers `search_projects`, `get_project`, `get_index_status` and `get_profile_guide`. Results contain no local paths. Errors come back as structured results with a code such as `INVALID_INPUT` or `INDEX_UNAVAILABLE`. Names and remote identities in results come from repositories and are data, not instructions.
 
 Build the index first with `vyasa scan`; until then the server reports `INDEX_UNAVAILABLE`.

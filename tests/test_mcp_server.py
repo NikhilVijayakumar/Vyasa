@@ -21,7 +21,7 @@ from vyasa.domain.git_remote import GitRemote  # noqa: E402
 
 SNAPSHOT = Path(__file__).parent / "snapshots" / "mcp_tools.json"
 SRC = Path(__file__).resolve().parents[1] / "src"
-TOOLS = ["get_index_status", "get_project", "search_projects"]
+TOOLS = ["get_index_status", "get_profile_guide", "get_project", "search_projects"]
 
 
 def remote(identity):
@@ -54,7 +54,7 @@ def tools(index_file):
 # -- listing and pinning --------------------------------------------------------------------------------
 
 
-def test_exactly_three_read_tools(index):
+def test_exactly_four_read_tools(index):
     listed = tools(index)
     assert sorted(t.name for t in listed) == TOOLS
     assert all(t.description and t.input_schema for t in listed)
@@ -202,3 +202,27 @@ def test_core_works_without_the_sdk(tmp_path):
 def test_entry_point_hints_when_the_sdk_is_missing():
     done = run_blocked("from vyasa.adapters.mcp.launch import main; main()")
     assert done.returncode == 2 and "vyasa[mcp]" in done.stderr and done.stdout == ""
+
+
+# -- the profile guide ---------------------------------------------------------------------------------------
+
+
+def test_guide_needs_no_index_and_creates_nothing(tmp_path):
+    missing = tmp_path / "none" / "index.sqlite3"
+    result = call(missing, "get_profile_guide")
+    assert not result.is_error and result.structured_content["schema_version"] == "1"
+    assert set(result.structured_content["meta"]) == {"generated_at"}
+    assert not missing.parent.exists()
+
+
+def test_guide_tool_returns_the_domain_guide(index):
+    from vyasa.domain.profile import profile_guide
+
+    result = call(index, "get_profile_guide")
+    assert result.structured_content["data"] == profile_guide()
+    assert json.loads(result.content[0].text) == result.structured_content
+
+
+def test_guide_tool_takes_no_input(index):
+    [tool] = [t for t in tools(index) if t.name == "get_profile_guide"]
+    assert tool.input_schema.get("properties", {}) == {}
