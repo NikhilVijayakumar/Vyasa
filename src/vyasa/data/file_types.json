@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "code_extensions": [
+    ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte",
+    ".go", ".rs", ".java", ".kt", ".scala", ".c", ".h", ".cc", ".cpp", ".hpp",
+    ".cs", ".rb", ".php", ".swift", ".dart", ".lua", ".r", ".sql",
+    ".sh", ".bash", ".ps1", ".html", ".css", ".scss"
+  ],
+  "documentation_extensions": [".md", ".mdx", ".rst", ".adoc"]
+}

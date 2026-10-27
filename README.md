@@ -421,3 +421,14 @@ Vyasa will be successful when:
 **Implementation strategy:** Local MCP → Google Sheets synchronization → Remote repository APIs.
 
 **Guiding principle:** Organize knowledge about existing projects so that developers and coding agents can find and reuse it before creating something new.
+
+---
+
+## Development
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest
+```
+
+Requires Python 3.12 or newer. The tests are platform independent; tests that need a directory symlink or a Windows junction skip with a stated reason where the platform cannot create one.

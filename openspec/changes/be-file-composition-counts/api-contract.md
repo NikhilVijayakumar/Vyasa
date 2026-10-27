@@ -23,9 +23,9 @@ In: `vyasa.application.scanning.file_composition.compose`, the `FileTypes` loade
 
 `WalkLimits` fields (defaults): `max_depth = 20`, `max_entries = 50_000`, `max_seconds = 60.0`. A `clock` callable may be injected for tests.
 
-`FileComposition` fields: `code`, `documentation`, `other` (non-negative integers), `total` (their sum), `complete` (bool), `stopped_by` (`None`, `"depth"`, `"entries"`, `"time"`, or `"unreadable"`), `documentation_only` (`True`, `False`, or `None` for unknown), `evidence`.
+`FileComposition` fields: `code`, `documentation`, `other` (non-negative integers), `total` (their sum, a property), `complete` (bool, a property), `stopped_by` (`None`, `"depth"`, `"entries"`, `"time"`, or `"unreadable"`), `documentation_only` (`True`, `False`, or `None` for unknown), `evidence`.
 
-`evidence` fields: `types_version` (int), `exclusions` (sorted tuple of names), `limits` (the `WalkLimits` used), `complete`, `stopped_by`.
+`evidence` fields: `types_version` (int), `exclusions` (sorted tuple of names), `limits` (the `WalkLimits` used). The completeness marker is `complete` and `stopped_by` on the result.
 
 `DEFAULT_EXCLUSIONS` is exported: `.git`, `node_modules`, `.venv`, `venv`, `__pycache__`, `target`, `build`, `dist`. Names compare case-insensitively. `stopped_by` records the first cause observed; an unreadable directory does not stop the walk, a bound does.
 
