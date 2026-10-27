@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-27
+* **Update**: [Knowledge Profile Enforces Sections and Supersession](/decisions/knowledge-profile-section-rules.md) accepted (status stable) after review; the bundle already satisfies every rule.
 * **Update**: [Canonical Profile and Draft Handling](/decisions/canonical-profile-and-draft.md) is supported by a generated guide and JSON Schema that an agent reads over MCP before writing the profile.
 * **Update**: [Canonical Profile and Draft Handling](/decisions/canonical-profile-and-draft.md) now uses TOML (`.vyasa/project-profile.toml`) and says an agent or maintainer writes the profile once while Vyasa only reads it.
 * **Update**: [Stored Identity With Aliases](/decisions/stored-identity-with-aliases.md) no longer uses a root-commit identity: a repository with no usable remote is a local project matched by path.
