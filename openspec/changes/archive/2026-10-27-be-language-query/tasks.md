@@ -1,7 +1,7 @@
 # Implementation Tasks: be-language-query
 
 - **OpenSpec Change ID:** `be-language-query`
-- **Status:** Implemented, pending review and merge
+- **Status:** Implemented and archived
 - **Related artifacts:** `proposal.md`, `specs/`, `design.md`, `api-contract.md`, `adr.md`
 
 ## Task Planning Rules
@@ -65,13 +65,13 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 ## 8. Documentation and Handover
 
 - [x] 8.1 Behavior matches the decision concept; the observation also records the walk duration (Q19), added to the contract.
-- [ ] 8.2 Mark the decision concepts stable when the owner accepts them.
+- [ ] 8.2 Mark the decision concepts stable when the owner accepts them (left open: owner decision).
 
 ## 9. Review, Merge, and Archive
 
-- [ ] 9.1 Pull request with the change ID.
-- [ ] 9.2 `git fetch`, merge into `develop` after review and verification (never force-push).
-- [ ] 9.3 Archive the change.
+- [x] 9.1 Pull request with the change ID.
+- [x] 9.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 9.3 Archive the change.
 
 ## Verification Record
 
@@ -79,4 +79,4 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 
 ## Completion Summary
 
-Not yet complete.
+Implemented and merged into `develop`; archived. The decision concepts stay `draft` until the owner accepts them.
