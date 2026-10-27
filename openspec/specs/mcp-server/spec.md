@@ -7,13 +7,13 @@ TBD - created by archiving change be-mcp-server. Update Purpose after archive.
 
 ### Requirement: The server speaks stdio and lists its tools
 
-The system SHALL provide a server started with `python -m vyasa.adapters.mcp` (and `vyasa-mcp`) that speaks MCP over standard input and output only, opens no network listener, and lists exactly `search_projects`, `get_project`, and `get_index_status`, each with a description and an input schema.
+The system SHALL provide a server started with `python -m vyasa.adapters.mcp` (and `vyasa-mcp`) that speaks MCP over standard input and output only, opens no network listener, and lists exactly `search_projects`, `get_project`, `get_index_status`, and `get_profile_guide`, each with a description and an input schema.
 
 #### Scenario: Discover tools
 
 - **GIVEN** the server is started as a subprocess
 - **WHEN** a client lists tools over stdio
-- **THEN** it receives exactly those three tools with schemas
+- **THEN** it receives exactly those four tools with schemas
 
 #### Scenario: Standard output is protocol only
 
@@ -118,3 +118,25 @@ The system SHALL declare the MCP SDK only as the optional extra `mcp`, import it
 - **GIVEN** the `mcp` package cannot be imported
 - **WHEN** the entry point runs
 - **THEN** it exits non-zero with a message naming the `mcp` extra
+
+### Requirement: The profile guide needs no index
+
+The system SHALL serve `get_profile_guide` with no input, with no index present, without opening any file, and in the shared envelope with `meta.generated_at`.
+
+#### Scenario: No index
+
+- **GIVEN** no index file
+- **WHEN** `get_profile_guide` is called
+- **THEN** it returns the guide and creates no file
+
+#### Scenario: Same guide as the domain
+
+- **GIVEN** the tool result
+- **WHEN** it is compared with `profile_guide()`
+- **THEN** `data` is equal
+
+#### Scenario: Read-only and path-free
+
+- **GIVEN** the tool list
+- **WHEN** the tool's annotations and schema are read
+- **THEN** it is marked read-only and takes no properties
