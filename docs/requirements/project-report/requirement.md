@@ -35,6 +35,7 @@ The profile says what a project is in short, bounded fields. A coding agent work
   - Report text used for identity, search ranking, or any decision.
   - Parsing the report body (code blocks, links) beyond section splitting.
 - **Deferred:**
+  - Per-repository limits (limits are per installation).
   - Staleness comparison against the repository head commit.
   - Multiple reports per repository (monorepo components).
   - Full-text search over reports.
@@ -47,8 +48,9 @@ Vyasa MUST provide a report template to coding agents over MCP, MUST read `.vyas
 
 - The template MUST list the sections, what each is for, the limits, the file path, and the rules for the writer, including that facts come from the repository and that unknown items are omitted rather than guessed.
 - The template MUST work without an index.
-- The scan MUST read the file as text only when `.vyasa` is a real directory and the file is a real file, at most 256 KiB, and MUST NOT run anything from it.
-- The scan MUST keep the sections whose heading is in the template, up to 16 KiB each, and MUST report each heading it drops and why.
+- The scan MUST read the file as text only when `.vyasa` is a real directory and the file is a real file, at most the file limit, and MUST NOT run anything from it.
+- The scan MUST keep the sections whose heading is in the template, up to the section limit each, and MUST report each heading it drops and why.
+- The file limit (default 256 KiB) and the section limit (default 16 KiB) MUST be configurable in `config.toml` under `report`, MUST be validated against fixed bounds, and MUST be stored with each observation and shown in the template when known.
 - A stored report MUST carry its source (the checkout), the time of the scan, and the content hash; the text MUST be marked as declared by the repository.
 - The report MUST be served only from the index, MUST include no local path of the machine, and MUST be returned as data.
 - A missing report MUST be an ordinary state (`not_present`), distinct from `unreadable` and `invalid`.
@@ -79,7 +81,7 @@ Observable behaviour is specified as Gherkin scenarios in `features/`. Scenarios
 | PR-001 | A markdown report beside the profile; the profile stays the structured summary. | Q1 |
 | PR-002 | The scan stores a bounded copy; the MCP serves from the index. | Q2 |
 | PR-003 | Fixed H2 section names; others are dropped and reported. | Q3 |
-| PR-004 | Limits: 256 KiB file, 16 KiB per section. | Q4 |
+| PR-004 | Limits are configurable; defaults 256 KiB file and 16 KiB per section; hard bounds apply. | Q4 |
 | PR-005 | Staleness comparison with the head commit is deferred. | Q6 |
 
 ## Delivery

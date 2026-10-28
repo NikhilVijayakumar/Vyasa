@@ -45,9 +45,9 @@ Run with the `grill-me` skill. Answer each question with a recommendation; nothi
 
 **Q4. What are the size limits?**
 
-- **Recommendation:** 256 KiB file, 16 KiB per section, about a dozen sections.
-- **Why:** Large enough for a real description, small enough to bound the index and any agent's context.
-- **Status:** Recommended
+- **Recommendation:** Configurable in `config.toml` under `report` (`max_file_kib`, `max_section_kib`); defaults 256 KiB file and 16 KiB per section; fixed bounds keep the index and any agent's context bounded.
+- **Why:** Owner asked on 2026-10-28 for configurable limits with these defaults. Configuration has no settings but workspace roots so far, so the bounds are explicit.
+- **Status:** Settled
 - **Feeds:** FR-028
 
 ## Behaviour

@@ -17,7 +17,9 @@ The profile is short, structured, and bounded on purpose. A coding agent can und
 
 # Decision
 
-The report is one markdown file at `.vyasa/project-report.md`, beside the profile. Vyasa serves a template over MCP that names the path, the fixed second-level sections, their purpose, the limits, and the rules for the writer. The agent combines the deterministic context Vyasa already provides with its own inspection and writes the file. The scan reads it as text only, never through a link, at most 256 KiB, keeps sections whose headings are in the template up to 16 KiB each, drops and reports the rest, and stores the sections with the checkout, the content hash, and the scan time. MCP serves the stored copy, marked as declared by the repository and as untrusted text, whole or by section; `get_project` shows only the status and section sizes. A missing report is ordinary, and a failed read never removes other stored data.
+The report is one markdown file at `.vyasa/project-report.md`, beside the profile. Vyasa serves a template over MCP that names the path, the fixed second-level sections, their purpose, the limits, and the rules for the writer. The agent combines the deterministic context Vyasa already provides with its own inspection and writes the file. The scan reads it as text only, never through a link, at most the file limit (default 256 KiB), keeps sections whose headings are in the template up to the section limit (default 16 KiB) each, drops and reports the rest, and stores the sections with the checkout, the content hash, and the scan time. MCP serves the stored copy, marked as declared by the repository and as untrusted text, whole or by section; `get_project` shows only the status and section sizes. A missing report is ordinary, and a failed read never removes other stored data.
+
+The two limits are settings in `config.toml` under `report`, validated against fixed bounds (file 16 to 4096 KiB, section 1 to 1024 KiB and not above the file limit). They are per installation; the scan records the limits it applied so the MCP server, which reads no configuration, can show them in the template.
 
 # Alternatives considered
 
@@ -30,7 +32,8 @@ The report is one markdown file at `.vyasa/project-report.md`, beside the profil
 
 - A project can be described in depth without a second source of truth for what the scanner owns.
 - The report can be wrong or stale; it is labelled declared, and a staleness check is a later change.
-- The index grows by at most the report limit per checkout.
+- The index grows by at most the configured file limit per checkout, never more than 4096 KiB.
+- The configuration gains its first tunable setting beyond workspace roots; its bounds are explicit and enforced.
 - Report text is returned as data and never as instructions.
 
 # Related

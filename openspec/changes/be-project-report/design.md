@@ -34,6 +34,7 @@ Profile read and storage pattern; per-checkout observation tables; envelope and 
 |---|---|---|
 | The report is read safely | `report_reader.read(checkout_root)` reuses the profile's safe-read helper | Fixture tests: missing, link, oversize |
 | Sections are kept by name and bounded | `vyasa.domain.report.read_report(text)` | Unit tests incl. hostile text |
+| Report limits are configurable inside bounds | `ReportLimits` and the `report` table in `load_workspace_config` | Config tests: defaults, values, bounds, section above file, type, unknown key |
 | Stored reports keep their provenance | store step and tables | Database test, failed-read keeps rows |
 | Template from the section definition | `report_template()` from `SECTIONS` | Example reads clean; limits equal constants |
 | Tools | `get_report_template`, `get_project_report`, `get_project.report` | MCP contract tests, snapshot |
@@ -42,7 +43,7 @@ Profile read and storage pattern; per-checkout observation tables; envelope and 
 ## 4. Architecture and Design
 
 ### Architectural Approach
-`vyasa.domain.report` holds `SECTIONS` (name, purpose), the limits, `read_report(text)` (pure: split on `## `, match names, bound, strip, reject credential URLs, return status/sections/dropped), `report_template()`, and `EXAMPLE`. The scanner step reads the file with the profile's existing safe-read helper (extended to a size parameter) and calls `read_report`. The store step writes `report_observations` and `report_sections` in the checkout's existing transaction. Query functions `get_project_report` and the `report` object assemble from those tables. The MCP adapter adds two thin tools.
+`vyasa.domain.report` holds `SECTIONS` (name, purpose), `ReportLimits` (defaults 256 KiB and 16 KiB, bounds 16 to 4096 and 1 to 1024), the limits, `read_report(text, limits)` (pure: split on `## `, match names, bound, strip, reject credential URLs, return status/sections/dropped), `report_template()`, and `EXAMPLE`. `load_workspace_config` parses the optional `report` table into `ReportLimits` (all problems reported together, as for roots) and carries it on `WorkspaceConfig`; the scan passes it to the reader and the store records it on the observation. `report_template()` takes optional stored limits; the MCP tool reads them from the latest observation, so the server never reads the configuration. The scanner step reads the file with the profile's existing safe-read helper (extended to a size parameter) and calls `read_report`. The store step writes `report_observations` and `report_sections` in the checkout's existing transaction. Query functions `get_project_report` and the `report` object assemble from those tables. The MCP adapter adds two thin tools.
 
 ### Components and Responsibilities
 | Component | Responsibility | Dependencies |

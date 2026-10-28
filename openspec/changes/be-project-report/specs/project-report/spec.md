@@ -24,7 +24,7 @@ The report file, its sections, the scan read, and storage.
 
 ### Requirement: The report is read safely
 
-The system SHALL read `.vyasa/project-report.md` at the root of each eligible project as text, at most 256 KiB, only when `.vyasa` is a real directory and the file a real file, SHALL NOT run anything from it, and SHALL NOT let a failure stop the scan.
+The system SHALL read `.vyasa/project-report.md` at the root of each eligible project as text, at most the file limit (default 256 KiB), only when `.vyasa` is a real directory and the file a real file, SHALL NOT run anything from it, and SHALL NOT let a failure stop the scan.
 
 #### Scenario: Missing report
 
@@ -40,13 +40,13 @@ The system SHALL read `.vyasa/project-report.md` at the root of each eligible pr
 
 #### Scenario: Oversize file
 
-- **GIVEN** a report larger than 256 KiB
+- **GIVEN** a report larger than the file limit
 - **WHEN** the checkout is scanned
-- **THEN** the report status is `invalid` with a size reason and the scan continues
+- **THEN** the report status is `invalid` with a size reason naming the limit and the scan continues
 
 ### Requirement: Sections are kept by name and bounded
 
-The system SHALL split the report on second-level headings, SHALL keep each section whose heading matches a template section (case-insensitive, trimmed), up to 16 KiB of text each, SHALL drop and report each unknown heading, each duplicate, and each section over its limit with a reason, and SHALL strip control characters and reject a section containing a URL that carries credentials.
+The system SHALL split the report on second-level headings, SHALL keep each section whose heading matches a template section (case-insensitive, trimmed), up to the section limit (default 16 KiB) of text each, SHALL drop and report each unknown heading, each duplicate, and each section over its limit with a reason, and SHALL strip control characters and reject a section containing a URL that carries credentials.
 
 #### Scenario: Known sections kept
 
@@ -59,6 +59,12 @@ The system SHALL split the report on second-level headings, SHALL keep each sect
 - **GIVEN** a report with a heading not in the template
 - **WHEN** it is scanned
 - **THEN** that section is not stored and the heading is reported with a reason
+
+#### Scenario: Section over the configured limit
+
+- **GIVEN** a section limit of 1 KiB in the configuration and a 2 KiB section
+- **WHEN** it is scanned
+- **THEN** that section is dropped with a reason naming 1 KiB and the other sections are kept
 
 #### Scenario: Credential URL rejected
 
@@ -74,7 +80,13 @@ The system SHALL split the report on second-level headings, SHALL keep each sect
 
 ### Requirement: Stored reports keep their provenance
 
-The system SHALL store, per checkout, the report status, the content hash, the scan time, the sections with their sizes, and the dropped headings with reasons, and SHALL keep the previous stored report when a later read fails.
+The system SHALL store, per checkout, the report status, the limits that were applied, the content hash, the scan time, the sections with their sizes, and the dropped headings with reasons, and SHALL keep the previous stored report when a later read fails.
+
+#### Scenario: Applied limits recorded
+
+- **GIVEN** a configured file limit
+- **WHEN** a checkout is scanned
+- **THEN** the stored observation holds the file and section limits that were applied
 
 #### Scenario: Hash and time
 
@@ -90,7 +102,7 @@ The system SHALL store, per checkout, the report status, the content hash, the s
 
 ### Requirement: The template is generated from the section definition
 
-The system SHALL produce a template containing the report path, the format, the maximum file and section sizes, every section with its purpose, a complete example that validates, and rules for the writer, all derived from the same definition the reader uses.
+The system SHALL produce a template containing the report path, the format, the maximum file and section sizes (the limits applied by the latest scan when an index exists, otherwise the defaults, with their source), every section with its purpose, a complete example that validates, and rules for the writer, all derived from the same definition the reader uses.
 
 #### Scenario: Example is valid
 

@@ -8,6 +8,7 @@ The profile holds a short, bounded summary of a project. A coding agent working 
 
 - **project-report**: a fixed-section markdown report at `.vyasa/project-report.md`, read by the scan as bounded text and stored by section with its hash and scan time.
 - **mcp-server**: `get_report_template` (no index) and `get_project_report` (from the index), plus a report status object in `get_project`.
+- **workspace-configuration**: an optional `[report]` table sets the file and section limits (defaults 256 KiB and 16 KiB) inside fixed bounds.
 - **profile-context**: the context workflow adds a step that names the report template.
 
 ## 1. Problem and Motivation
@@ -33,6 +34,7 @@ There is no durable place for an agent's detailed reading of a repository, and n
 - [ ] `vyasa scan` stores the report by section, bounded, with source and time.
 - [ ] Any agent can fetch the report, whole or by section, from the index.
 - [ ] A hostile report cannot break the scan or the server.
+- [ ] The file and section limits are configurable, default to 256 KiB and 16 KiB, and are checked against fixed bounds.
 
 ### Team Focus
 
@@ -49,13 +51,13 @@ MCP tool contract, untrusted text handling, size bounds, no drift between the te
 
 ### In Scope
 
-- Report definition, reader, storage migration, two tools, status in `get_project`, workflow step, docs.
+- Report definition, reader, configurable limits, storage migration, two tools, status in `get_project`, workflow step, docs.
 
 ### Out of Scope
 
 - Vyasa writing the report or calling any model.
 - Staleness comparison with the head commit (stored declared commit and date only).
-- Monorepo component reports, full-text search, synchronization.
+- Monorepo component reports, full-text search, synchronization, per-repository limits.
 
 ### Constraints
 
@@ -82,6 +84,7 @@ One domain module defines the sections (names, purposes, limits). The template, 
 | REQ-004 | The report is served from the index as declared data | cross-repo use | Must |
 | REQ-005 | `get_project` shows status only | small default response | Must |
 | REQ-006 | A failure keeps other data | integrity | Must |
+| REQ-007 | Limits are configurable inside bounds | tunable, still bounded | Must |
 
 ## 7. Risks and Open Questions
 
@@ -92,7 +95,7 @@ One domain module defines the sections (names, purposes, limits). The template, 
 | Agent invents facts | Misleading report | Template says omit unknowns; text is labelled declared |
 | Prompt injection in report text | Agent misled | Returned as typed data with a warning field; never as instructions |
 | Secrets written into the report | Leak into the index | Reject credential-bearing URLs; template forbids secrets |
-| Report grows the index | Disk use | 256 KiB per checkout |
+| Report grows the index | Disk use | Default 256 KiB per checkout; configured limit capped at 4096 KiB |
 
 ### Assumptions
 

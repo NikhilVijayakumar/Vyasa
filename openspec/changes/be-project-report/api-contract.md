@@ -12,7 +12,7 @@ Fixes the report file, the template, the stored shape, the two new tools, and th
 
 ## 2. Scope
 
-In: `vyasa.domain.report`, the scan read, migration `0011`, `get_report_template`, `get_project_report`, `get_project.report`, the context workflow step. Out: Sheets and provider calls (not affected); any repository write.
+In: `report` settings in the configuration, `vyasa.domain.report`, the scan read, migration `0011`, `get_report_template`, `get_project_report`, `get_project.report`, the context workflow step. Out: Sheets and provider calls (not affected); any repository write.
 
 ## 3. Interface Surface
 
@@ -24,7 +24,7 @@ In: `vyasa.domain.report`, the scan read, migration `0011`, `get_report_template
 | `get_project_report` | MCP tool | index, read-only | `project_id` (string), optional `section` (string) | per-checkout report, see below | `PROJECT_NOT_FOUND`, `INVALID_INPUT`, `INDEX_UNAVAILABLE`, `INTERNAL_ERROR` |
 | `get_project` | MCP tool | index, read-only | unchanged | adds `report` per checkout | unchanged |
 
-Template `data`: `path` (`.vyasa/project-report.md`), `format` (`markdown`), `max_bytes` (262144), `max_section_bytes` (16384), `sections` (list of `{name, purpose}`), `example` (markdown text), `rules` (list of strings), `schema_version` (1).
+Template `data`: `path` (`.vyasa/project-report.md`), `format` (`markdown`), `limits` (`{max_file_bytes, max_section_bytes, source}` where `source` is `index` when taken from the latest report observation and `default` otherwise; defaults 262144 and 16384), `sections` (list of `{name, purpose}`), `example` (markdown text), `rules` (list of strings), `schema_version` (1).
 
 Sections (fixed order): Overview; Purpose and Users; Architecture; Modules; Key Flows; Interfaces; Data and Storage; Build, Run, and Test; Dependencies and Integrations; Risks and Limitations; Open Questions.
 
@@ -55,10 +55,22 @@ Migration `0011_project_report.sql` (additive):
 
 | Table | Columns | Constraints |
 |---|---|---|
-| `report_observations` | `checkout_id` (PK, FK), `status`, `content_hash`, `scanned_at`, `dropped_json` | one row per checkout |
+| `report_observations` | `checkout_id` (PK, FK), `status`, `content_hash`, `scanned_at`, `max_file_bytes`, `max_section_bytes`, `dropped_json` | one row per checkout |
 | `report_sections` | `checkout_id` (FK), `name`, `text`, `size`, `position` | PK (`checkout_id`, `name`); text at most 16 KiB |
 
 Invariants: sections exist only when status is `present`; a failed read keeps the previous rows and records the failure status in a separate column `last_failure` so earlier text stays servable; deleting a checkout deletes its rows.
+
+### Configuration
+
+`config.toml` gains an optional table:
+
+```toml
+[report]
+max_file_kib = 256      # 16 to 4096
+max_section_kib = 16    # 1 to 1024, not above max_file_kib
+```
+
+Invalid values reject the whole configuration (existing rule). Limits are per installation, read by `vyasa scan`; the MCP server does not read the configuration and learns the limits from the index.
 
 ## 7. Migration and Compatibility
 
@@ -70,6 +82,7 @@ Additive migration; older indexes upgrade on the next scan. Existing tools are u
 |---|---|
 | reader and limits | The report is read safely; Sections are kept by name and bounded |
 | tables | Stored reports keep their provenance |
+| limits | Report limits are configurable inside bounds |
 | template | The template is generated from the section definition |
 | tools | The report template needs no index; The stored report is served as declared data; Project details show the report status only |
 

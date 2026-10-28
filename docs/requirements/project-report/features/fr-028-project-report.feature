@@ -26,6 +26,24 @@ Feature: Project report
     When Vyasa scans it
     Then the report status is invalid with a size reason and the scan continues
 
+  @FR-028-S11
+  Scenario: Limits come from the configuration
+    Given a configuration that sets the section limit below a section's size
+    When Vyasa scans a checkout with that section
+    Then the section is dropped with the configured limit named and the stored observation records the limit
+
+  @FR-028-S12
+  Scenario: Limits default when unset
+    Given a configuration with no report settings
+    When Vyasa scans a checkout with a 200 KiB report
+    Then the report is read under the defaults of 256 KiB and 16 KiB
+
+  @FR-028-S13
+  Scenario: An out-of-bounds limit rejects the configuration
+    Given a configuration with a report limit outside the allowed bounds
+    When the configuration is loaded
+    Then loading fails naming the setting and nothing is scanned
+
   @FR-028-S5
   Scenario: A missing report is ordinary
     Given a checkout without a report

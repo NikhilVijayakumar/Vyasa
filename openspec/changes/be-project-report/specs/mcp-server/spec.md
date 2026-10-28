@@ -16,13 +16,19 @@ Give agents the template, and later the content, through read-only tools.
 
 ### Requirement: The report template needs no index
 
-The system SHALL provide a `get_report_template` tool that takes no input, reads no file and no index, and returns the template in the shared envelope.
+The system SHALL provide a `get_report_template` tool that takes no input, reads no repository file, reads the index only to learn the applied limits when one exists, and returns the template in the shared envelope.
 
 #### Scenario: No index
 
 - **GIVEN** no index exists
 - **WHEN** `get_report_template` is called
-- **THEN** it returns the template and not `INDEX_UNAVAILABLE`
+- **THEN** it returns the template with the default limits, source `default`, and not `INDEX_UNAVAILABLE`
+
+#### Scenario: Limits from the latest scan
+
+- **GIVEN** an index whose latest report observation applied a 512 KiB file limit
+- **WHEN** `get_report_template` is called
+- **THEN** the template shows 512 KiB with source `index`
 
 ### Requirement: The stored report is served as declared data
 
