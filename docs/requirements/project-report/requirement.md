@@ -1,7 +1,7 @@
 # Requirement: Project Report
 
 - **Package:** `docs/requirements/project-report/`
-- **Status:** Grilled — owner confirmed Q1–Q2; the rest are recommendations awaiting confirmation
+- **Status:** Grilled — owner confirmed every recommendation on 2026-10-28
 - **Roadmap phase:** P1
 - **Owns:** FR-028
 - **Grill log:** [grill-log.md](grill-log.md)
@@ -59,7 +59,7 @@ Vyasa MUST provide a report template to coding agents over MCP, MUST read `.vyas
 
 ## Expected Behaviour
 
-Observable behaviour is specified as Gherkin scenarios in `features/`. Scenarios tagged `@proposed` come from grill recommendations and become normative when the recommendation is confirmed.
+Observable behaviour is specified as Gherkin scenarios in `features/`. The owner confirmed every grill recommendation on 2026-10-28, so all scenarios are normative.
 
 ## Constraints
 
