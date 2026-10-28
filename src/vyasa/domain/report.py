@@ -1,4 +1,4 @@
-"""The project report: its size limits, and (in later slices) its sections, reader, and template.
+"""The project report: its size limits, sections, reader, and template.
 
 Nothing here touches the filesystem.
 """
@@ -145,6 +145,7 @@ class ReportResult:
     dropped: tuple[tuple[str, str], ...] = ()
     content_hash: str | None = None
     limits: ReportLimits = ReportLimits()
+    reason: str | None = None
 
 
 _CREDENTIAL_URL = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")

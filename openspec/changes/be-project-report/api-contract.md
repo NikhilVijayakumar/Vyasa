@@ -28,7 +28,7 @@ Template `data`: `path` (`.vyasa/project-report.md`), `format` (`markdown`), `li
 
 Sections (fixed order): Overview; Purpose and Users; Architecture; Modules; Key Flows; Interfaces; Data and Storage; Build, Run, and Test; Dependencies and Integrations; Risks and Limitations; Open Questions.
 
-`get_project_report` `data`: `project_id`, `checkouts` (list of `{checkout_id, status, content_hash, scanned_at, sections: [{name, text, size}], dropped: [{heading, reason}], origin: "declared", warning}`). `status` is one of `present`, `not_present`, `unreadable`, `invalid`, `not_assessed`. With `section`, `sections` holds only that one. `checkout_id` is the opaque id already used by `get_project`.
+`get_project_report` `data`: `project_id`, `checkouts` (list of `{checkout_id, status, content_hash, scanned_at, sections: [{name, text, size}], dropped: [{heading, reason}], origin: "declared", warning}`). `status` is one of `present`, `not_present`, `unreadable`, `invalid`, `not_assessed`; `reason` is present for the last two failures; when `status` is not `present` and earlier sections are kept, `kept_from` holds their `content_hash` and `scanned_at`. With `section`, `sections` holds only that one. `checkout_id` is the opaque id already used by `get_project`.
 
 `get_project.report` per checkout: `{status, sections: [{name, size}], dropped: [{heading, reason}], content_hash, scanned_at}`; no text.
 
@@ -55,10 +55,12 @@ Migration `0011_project_report.sql` (additive):
 
 | Table | Columns | Constraints |
 |---|---|---|
-| `report_observations` | `checkout_id` (PK, FK), `status`, `content_hash`, `scanned_at`, `max_file_bytes`, `max_section_bytes`, `dropped_json` | one row per checkout |
-| `report_sections` | `checkout_id` (FK), `name`, `text`, `size`, `position` | PK (`checkout_id`, `name`); text at most 16 KiB |
+| `report_observations` | `checkout_id` (PK, FK), `status`, `reason`, `content_hash`, `scanned_at`, `max_file_bytes`, `max_section_bytes`, `dropped_json`, `kept_hash`, `kept_at` | one row per checkout |
+| `report_sections` | `checkout_id` (FK), `name`, `text`, `size`, `position` | PK (`checkout_id`, `name`); text at most the section limit |
 
-Invariants: sections exist only when status is `present`; a failed read keeps the previous rows and records the failure status in a separate column `last_failure` so earlier text stays servable; deleting a checkout deletes its rows.
+`status` is the latest read: `present`, `not_present`, `unreadable`, or `invalid` (`reason` says why for the last two). `content_hash` and `scanned_at` belong to that read. `kept_hash` and `kept_at` say which read the stored sections came from.
+
+Invariants: a `present` read replaces the sections and sets `kept_*` to its own hash and time; `not_present` deletes the sections (the report is gone, an ordinary state); an `unreadable` or `invalid` read keeps the earlier sections and `kept_*`, so earlier text stays servable and its origin is visible; checkouts are never deleted, so rows are only replaced.
 
 ### Configuration
 

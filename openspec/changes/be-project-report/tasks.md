@@ -28,8 +28,8 @@
 
 **Traceability:** Requirements: The report is read safely; Sections are kept by name and bounded; Stored reports keep their provenance; Vyasa writes no report and starts no agent
 
-- [ ] 3.1 Tests first: configured limit applied and recorded, missing, link, oversize, valid, unknown and duplicate headings, credential URL, control characters, failed read keeps rows, repository hash unchanged.
-- [ ] 3.2 Scanner step with the safe-read helper; migration `0011_project_report.sql`; store step.
+- [x] 3.1 Tests first: configured limit applied and recorded, missing, link, oversize, valid, unknown and duplicate headings, credential URL, control characters, failed read keeps rows, repository hash unchanged.
+- [x] 3.2 Scanner step with the safe-read helper; migration `0011_project_report.sql`; store step.
 
 ## 4. Slice: serve the report
 
