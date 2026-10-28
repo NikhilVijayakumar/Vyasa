@@ -105,6 +105,21 @@
       "open_world_hint": false,
       "read_only_hint": true
     },
+    "description": "Explain how to write a project report: the file path (`.vyasa/project-report.md`), the fixed second-level sections and what each is for, the size limits and where they come from (`default` or the latest scan), a complete example, and rules for the writer. Call this, and get_profile_context, before writing the report in a repository, then write the file yourself from what you verify there; Vyasa only reads it on its next scan and never writes it.",
+    "input_schema": {
+      "properties": {},
+      "title": "get_report_templateArguments",
+      "type": "object"
+    },
+    "name": "get_report_template"
+  },
+  {
+    "annotations": {
+      "destructive_hint": false,
+      "idempotent_hint": true,
+      "open_world_hint": false,
+      "read_only_hint": true
+    },
     "description": "Search the indexed projects. `query` matches a project's name or remote identity (1 to 200 characters, case-insensitive). `state` is one or more of active, missing, inaccessible. `provider` is one or more of github, bitbucket, gitlab, other, local, none. `identity_status` is one or more of resolved, provisional, ambiguous. `language` is one or more programming-language labels (for example Python, Rust, Go; case-insensitive; an unknown label is rejected with the allowed list) and matches a project when any of its active checkouts has that language in its latest scan; `language_status` limits it to `files_detected` (source files with a recognized extension) or `declared` (a recognized manifest file such as Cargo.toml exists). `documentation_only` true returns projects with an active checkout whose latest complete scan found documentation files and no code files; false returns those whose scan found code or other files; a partial or never-counted checkout matches neither. `marker` is one or more of readme, docs, agent_instructions, openspec_directory, openspec_config, openspec_specs, openspec_changes, tests (an unknown name is rejected with the allowed list) and `marker_state` is `detected` (default) or `not_detected`; markers are found from file and directory names only, so `not_detected` means not detected by those rules, and it is only used for a complete latest scan: a partial or never-assessed checkout matches neither state. `technology` is one or more technology keys such as fastapi, django, react, jest, tokio, gin (an unknown key is rejected with the allowed list) and matches a project when any of its active checkouts declares it in a supported root manifest (Python pyproject.toml and requirements*.txt, package.json, Cargo.toml, go.mod) in its latest scan, including as a dev or optional dependency; manifests below the root are not read, and a malformed, partial, or never-assessed checkout matches nothing. Each result lists its `languages` and, when `language` is given, `language_matches`. A language missing from a partial or never-scanned result is unknown, not absent. Filters combine with AND; several values in one filter combine with OR. Results are ordered by name; `limit` is 1 to 100 (default 20); pass `next_cursor` as `cursor` for the next page.",
     "input_schema": {
       "properties": {

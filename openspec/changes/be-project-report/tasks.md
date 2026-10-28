@@ -14,8 +14,8 @@
 
 **Traceability:** Requirements: The template is generated from the section definition; The report template needs no index
 
-- [ ] 2.1 Tests first: example reads clean, limits equal constants, rules present, tool works with no index.
-- [ ] 2.2 `vyasa.domain.report` (`SECTIONS`, limits, `read_report`, `report_template`, `EXAMPLE`); `get_report_template` tool; tool snapshot update.
+- [x] 2.1 Tests first: example reads clean, limits equal constants, rules present, tool works with no index.
+- [x] 2.2 `vyasa.domain.report` (`SECTIONS`, limits, `read_report`, `report_template`, `EXAMPLE`); `get_report_template` tool; tool snapshot update.
 
 ## 3a. Slice: configurable limits
 

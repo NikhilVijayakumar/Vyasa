@@ -21,6 +21,7 @@ from vyasa.application import query as queries
 from vyasa.application.indexing.store import index_path
 from vyasa.domain.index import INTERNAL_ERROR, UNAVAILABLE, IndexStoreError
 from vyasa.domain.profile import profile_guide
+from vyasa.domain.report import report_template
 
 INSTRUCTIONS = (
     "Vyasa answers questions about the software projects indexed on this machine. Every tool is read-only and "
@@ -103,6 +104,12 @@ def build_server(index_file: Path) -> MCPServer:
     def get_profile_guide() -> CallToolResult:
         """Explain how to write a project's Vyasa profile in schema version 2 (version 1 is still read): the file path and format, every field with its limits and allowed values, a complete example, and rules for the writer. Call this before writing `.vyasa/project-profile.toml` in a repository, then write the file yourself; Vyasa only reads it, on its next scan."""
         result = {"schema_version": queries.SCHEMA_VERSION, "data": profile_guide(), "meta": {"generated_at": datetime.now(timezone.utc).isoformat()}}
+        return CallToolResult(content=[TextContent(type="text", text=json.dumps(result))], structured_content=result)
+
+    @server.tool(annotations=READ_ONLY)
+    def get_report_template() -> CallToolResult:
+        """Explain how to write a project report: the file path (`.vyasa/project-report.md`), the fixed second-level sections and what each is for, the size limits and where they come from (`default` or the latest scan), a complete example, and rules for the writer. Call this, and get_profile_context, before writing the report in a repository, then write the file yourself from what you verify there; Vyasa only reads it on its next scan and never writes it."""
+        result = {"schema_version": queries.SCHEMA_VERSION, "data": report_template(), "meta": {"generated_at": datetime.now(timezone.utc).isoformat()}}
         return CallToolResult(content=[TextContent(type="text", text=json.dumps(result))], structured_content=result)
 
     return server
