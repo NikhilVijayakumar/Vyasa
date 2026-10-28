@@ -20,6 +20,7 @@ as Gherkin, a grill log, and diagrams. The baseline documents (`functional-requi
 | [project-query](project-query/requirement.md) | FR-009–012 | P1 |
 | [mcp-server](mcp-server/requirement.md) | FR-013, NFR-021, 038, 039 | P1 |
 | [project-profile](project-profile/requirement.md) | FR-014, FR-026, FR-027 | P1 |
+| [project-report](project-report/requirement.md) | FR-028 | P1 |
 | [shared-registry](shared-registry/requirement.md) | FR-016, FR-017, NFR-018, 035 | P2 |
 | [remote-discovery](remote-discovery/requirement.md) | FR-018, FR-019, NFR-022, 036, 037 | P3 |
 | [data-ownership](data-ownership/requirement.md) | DOR-001–012 | P1–P3 |

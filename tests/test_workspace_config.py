@@ -293,3 +293,51 @@ def test_home_override_beats_a_frozen_executable(tmp_path):
 def test_source_run_keeps_the_platform_directory(tmp_path):
     local = tmp_path / "Local"
     assert data_directory({"LOCALAPPDATA": str(local)}, tmp_path, "win32", frozen_executable=None) == local / "Vyasa"
+
+
+# -- report limits -----------------------------------------------------------------
+
+
+def report_body(tmp_path, report):
+    return toml_roots(tmp_path) + report
+
+
+def test_report_limits_default_when_unset(tmp_path):
+    config = load(tmp_path, toml_roots(tmp_path))
+    assert (config.report.max_file_kib, config.report.max_section_kib) == (256, 16)
+
+
+def test_report_limits_are_read(tmp_path):
+    config = load(tmp_path, report_body(tmp_path, "[report]\nmax_file_kib = 512\nmax_section_kib = 32\n"))
+    assert (config.report.max_file_bytes, config.report.max_section_bytes) == (512 * 1024, 32 * 1024)
+
+
+def test_one_report_limit_may_be_given_alone(tmp_path):
+    config = load(tmp_path, report_body(tmp_path, "[report]\nmax_section_kib = 8\n"))
+    assert (config.report.max_file_kib, config.report.max_section_kib) == (256, 8)
+
+
+@pytest.mark.parametrize(
+    "report, named",
+    [
+        ("max_file_kib = 100000", "report.max_file_kib"),
+        ("max_file_kib = 15", "report.max_file_kib"),
+        ("max_section_kib = 0", "report.max_section_kib"),
+        ("max_section_kib = 2000", "report.max_section_kib"),
+        ("max_file_kib = 16\nmax_section_kib = 32", "report.max_section_kib"),
+        ('max_file_kib = "big"', "report.max_file_kib"),
+        ("max_file_kib = true", "report.max_file_kib"),
+        ("max_file_kib = 1.5", "report.max_file_kib"),
+        ("surprise = 1", "report.surprise"),
+    ],
+)
+def test_bad_report_limits_reject_the_configuration(tmp_path, report, named):
+    with pytest.raises(ConfigError) as error:
+        load(tmp_path, report_body(tmp_path, f"[report]\n{report}\n"))
+    assert named in str(error.value)
+
+
+def test_report_must_be_a_table(tmp_path):
+    with pytest.raises(ConfigError) as error:
+        load(tmp_path, "report = 3\n" + toml_roots(tmp_path))
+    assert "report" in str(error.value)

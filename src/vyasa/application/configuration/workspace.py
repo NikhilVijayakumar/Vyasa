@@ -12,6 +12,7 @@ import tomllib
 from collections.abc import Mapping
 from pathlib import Path
 
+from vyasa.domain.report import limits_from_table
 from vyasa.domain.workspace_config import (
     ACCESSIBLE,
     MISSING,
@@ -131,19 +132,22 @@ def load_workspace_config(
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
         raise ConfigError((f"{source}: cannot be read as TOML ({error})",)) from error
 
-    problems = [f"{source}: unknown key '{key}'" for key in data if key != "workspace"]
+    problems = [f"{source}: unknown key '{key}'" for key in data if key not in ("workspace", "report")]
     workspace = data.get("workspace", {})
     if not isinstance(workspace, dict):
         problems.append(f"{source}: 'workspace' must be a table")
         workspace = {}
     problems += [f"{source}: unknown key 'workspace.{key}'" for key in workspace if key != "roots"]
     roots = _roots(workspace.get("roots", []), home, source, problems)
+    report_problems: list[str] = []
+    report = limits_from_table(data.get("report"), report_problems)
+    problems += [f"{source}: {problem}" for problem in report_problems]
     if problems:
         raise ConfigError(tuple(problems))
     if not roots:
         return NotConfigured(f"{source}: workspace.roots lists no roots")
     kept, warnings = _drop_nested(roots)
-    return WorkspaceConfig(roots=tuple(kept), source=source, warnings=warnings)
+    return WorkspaceConfig(roots=tuple(kept), source=source, warnings=warnings, report=report)
 
 
 def check_root(root: Path) -> str:

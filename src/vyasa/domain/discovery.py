@@ -10,6 +10,7 @@ from pathlib import Path
 from vyasa.domain.git_remote import GitRemote
 from vyasa.domain.languages import LanguageOutcome
 from vyasa.domain.profile import ProfileResult
+from vyasa.domain.report import ReportLimits, ReportResult
 
 ELIGIBLE = "eligible"
 EXCLUDED = "excluded"
@@ -52,6 +53,7 @@ class DiscoveryOptions:
     markers: frozenset[str] = DISCOVERY_MARKERS
     marker_suffixes: tuple[str, ...] = DISCOVERY_MARKER_SUFFIXES
     descend_into_repositories: bool = False
+    report_limits: ReportLimits = ReportLimits()
 
 
 @dataclass(frozen=True)
@@ -72,6 +74,7 @@ class Candidate:
     remote: GitRemote | None = None
     remote_status: str | None = None
     profile: ProfileResult | None = None
+    report: ReportResult | None = None
     languages: LanguageOutcome | None = None
 
 

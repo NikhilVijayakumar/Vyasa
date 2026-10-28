@@ -196,3 +196,19 @@ The system SHALL include in every bundle a fixed workflow that tells the agent t
 - **THEN** the workflow is the same fixed list of steps and contains no repository text
 
 ---
+
+### Requirement: The workflow names the report
+
+The system SHALL add to the context workflow a step that tells the agent to fetch `get_report_template`, to write `.vyasa/project-report.md` from the observed facts and its own inspection, and to ask the user to run a scan afterwards, and SHALL state the report status of each checkout in the bundle.
+
+#### Scenario: Step present
+
+- **GIVEN** a context bundle
+- **WHEN** the workflow is read
+- **THEN** it names `get_report_template`, the report path, and the rescan
+
+#### Scenario: Status per checkout
+
+- **GIVEN** a context bundle for a project with one checkout that has a report
+- **WHEN** it is read
+- **THEN** the checkout shows the report status and section names, no text

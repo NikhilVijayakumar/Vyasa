@@ -9,6 +9,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from vyasa.adapters.sqlite import reports
 from vyasa.domain.discovery import Candidate
 from vyasa.domain.file_composition import documentation_only
 from vyasa.domain.frameworks import ECOSYSTEMS, FrameworkReport
@@ -438,6 +439,7 @@ def upsert(connection: sqlite3.Connection, candidate: Candidate, root: Path, run
                 (str(root), *fields, ACTIVE, stamp, run_id, row["checkout_id"]),
             )
         _store_profile(connection, checkout_id, candidate.profile, run_id, stamp)
+        reports.store(connection, checkout_id, candidate.report, run_id, stamp)
         _store_languages(connection, checkout_id, candidate.languages, run_id, stamp)
         refresh_state(connection, project_id, stamp)
         connection.execute("UPDATE projects SET last_seen_at = ? WHERE project_id = ?", (stamp, project_id))

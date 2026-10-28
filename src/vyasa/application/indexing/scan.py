@@ -15,7 +15,7 @@ from vyasa.application.scanning.checkout_scan import scan_checkout
 from vyasa.application.scanning.file_composition import default_file_types
 from vyasa.application.scanning.frameworks import default_registry
 from vyasa.application.scanning.markers import default_marker_rules
-from vyasa.domain.discovery import COMPLETE, ELIGIBLE, PARTIAL, DiscoveryRun, ScanWarning
+from vyasa.domain.discovery import COMPLETE, ELIGIBLE, PARTIAL, DiscoveryOptions, DiscoveryRun, ScanWarning
 from vyasa.domain.languages import DETECTION_ERROR, CheckoutScan, LanguageOutcome
 from vyasa.domain.workspace_config import WorkspaceConfig
 
@@ -68,7 +68,7 @@ def scan_workspace(
     connection: sqlite3.Connection,
     *,
     owner: str,
-    discover: Callable[[Path], DiscoveryRun] = discover_repositories,
+    discover: Callable[[Path], DiscoveryRun] | None = None,
     detect: Callable[[Path], CheckoutScan] | None = None,
     now: Callable[[], datetime] = _utc_now,
 ) -> tuple[RootResult, ...]:
@@ -78,6 +78,7 @@ def scan_workspace(
     raises ``OPERATION_IN_PROGRESS``.
     """
     detect = detect or default_detect()
+    discover = discover or (lambda root: discover_repositories(root, DiscoveryOptions(report_limits=config.report)))
     results = []
     for root in config.roots:
         run = enrich_run(discover(root), detect)
