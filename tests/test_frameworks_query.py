@@ -85,6 +85,12 @@ def test_frameworks_are_stored_with_the_observation(db):
     assert [r[1:] for r in rows(db, "checkout_nested_manifests", "a")] == [("javascript", 2)]
 
 
+def test_a_dependency_declared_twice_in_one_scope_is_stored_once(db):
+    twice = mf("pyproject.toml", "python", ("pandas", ">=2", "optional"), ("pandas", ">=1", "optional"))
+    store(db, make_run([framed("a", fw(twice))]))
+    assert [r[1:] for r in rows(db, "checkout_dependencies", "a")] == [("pyproject.toml", "pandas", ">=2", "optional")]
+
+
 def test_non_parsed_manifests_store_status_and_reason_only(db):
     bad = mf("package.json", "javascript", status="malformed", reason="syntax")
     store(db, make_run([framed("a", fw(bad))]))
