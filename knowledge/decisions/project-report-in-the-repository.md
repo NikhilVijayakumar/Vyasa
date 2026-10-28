@@ -1,0 +1,40 @@
+---
+type: Decision
+title: "A Long-Form Project Report Lives in the Repository, Is Indexed as a Bounded Copy, and Is Written by a Coding Agent"
+description: A markdown report at a fixed path, split into fixed sections, is read by the scan with size limits and served from the index; Vyasa supplies the template and never writes the report or calls a model.
+tags: [adr, report, mcp, agents, profile]
+status: draft
+generated: { by: claude-code/sonnet-5.5, at: 2026-10-28T14:00:00Z }
+---
+
+# Status
+
+Proposed (draft). It becomes stable when reviewed and accepted.
+
+# Context
+
+The profile is short, structured, and bounded on purpose. A coding agent can understand much more about a repository than those fields hold, and that understanding is lost when the session ends. Vyasa must stay deterministic and must not call a model, so the reading has to be done by the agent that is already working in the repository, and the result has to be durable, queryable from another repository, and safe to treat as untrusted text.
+
+# Decision
+
+The report is one markdown file at `.vyasa/project-report.md`, beside the profile. Vyasa serves a template over MCP that names the path, the fixed second-level sections, their purpose, the limits, and the rules for the writer. The agent combines the deterministic context Vyasa already provides with its own inspection and writes the file. The scan reads it as text only, never through a link, at most 256 KiB, keeps sections whose headings are in the template up to 16 KiB each, drops and reports the rest, and stores the sections with the checkout, the content hash, and the scan time. MCP serves the stored copy, marked as declared by the repository and as untrusted text, whole or by section; `get_project` shows only the status and section sizes. A missing report is ordinary, and a failed read never removes other stored data.
+
+# Alternatives considered
+
+- **Raise the profile limits.** Rejected: it weakens the bounded, validated profile and mixes summary and detail.
+- **Serve only the path and hash and let the agent read the file.** Rejected: a project could not be understood from another repository.
+- **Have Vyasa call a model to write the report.** Rejected: it contradicts deterministic extraction and adds credentials and network access.
+- **A free-form report with no fixed sections.** Rejected: nothing could be fetched in part, and the scan would have to parse prose.
+
+# Consequences
+
+- A project can be described in depth without a second source of truth for what the scanner owns.
+- The report can be wrong or stale; it is labelled declared, and a staleness check is a later change.
+- The index grows by at most the report limit per checkout.
+- Report text is returned as data and never as instructions.
+
+# Related
+
+- [Profile Schema Version 2 Is the Full Template](profile-schema-v2-full-template.md)
+- [Coding Agents Get Observed Facts and Differences as Context](profile-context-for-agents.md)
+- [Deterministic Extraction Without a Language Model](deterministic-extraction-without-llm.md)

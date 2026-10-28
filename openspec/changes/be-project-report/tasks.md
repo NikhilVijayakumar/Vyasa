@@ -1,0 +1,46 @@
+# Implementation Tasks: be-project-report
+
+- **OpenSpec Change ID:** `be-project-report`
+- **Status:** Ready for implementation
+- **Related artifacts:** `proposal.md`, `specs/`, `design.md`, `api-contract.md`, `adr.md`
+
+## 1. Preparation and Baseline
+
+- [ ] 1.1 Review the proposal, specs, contract, design, and ADR.
+- [ ] 1.2 Record the baseline: `venv\Scripts\python.exe -m pytest` (1005 passed, 2 skipped) and `python scripts/verify_knowledge.py`.
+- [ ] 1.3 Confirm branch `feature/be-project-report`.
+
+## 2. Slice: template over MCP
+
+**Traceability:** Requirements: The template is generated from the section definition; The report template needs no index
+
+- [ ] 2.1 Tests first: example reads clean, limits equal constants, rules present, tool works with no index.
+- [ ] 2.2 `vyasa.domain.report` (`SECTIONS`, limits, `read_report`, `report_template`, `EXAMPLE`); `get_report_template` tool; tool snapshot update.
+
+## 3. Slice: scan reads and stores the report
+
+**Traceability:** Requirements: The report is read safely; Sections are kept by name and bounded; Stored reports keep their provenance; Vyasa writes no report and starts no agent
+
+- [ ] 3.1 Tests first: missing, link, oversize, valid, unknown and duplicate headings, credential URL, control characters, failed read keeps rows, repository hash unchanged.
+- [ ] 3.2 Scanner step with the safe-read helper; migration `0011_project_report.sql`; store step.
+
+## 4. Slice: serve the report
+
+**Traceability:** Requirements: The stored report is served as declared data; Project details show the report status only
+
+- [ ] 4.1 Tests first: whole, one section, unknown section, no report, unknown project, status without text, no path.
+- [ ] 4.2 `get_project_report` tool; `report` object in `get_project`.
+
+## 5. Slice: workflow step
+
+**Traceability:** Requirement: The workflow names the report
+
+- [ ] 5.1 Tests first: step present, status per checkout.
+- [ ] 5.2 Context bundle change.
+
+## 6. Documentation and verification
+
+- [ ] 6.1 Update `docs/setup.md` (tools, report path, rescan) and the README tool list.
+- [ ] 6.2 End to end with the built MCP: write a report in a temp repo, `vyasa scan`, fetch it.
+- [ ] 6.3 `pytest`, `verify_workflows.py`, `verify_knowledge.py`, `verify_requirements.py`, `openspec validate be-project-report`.
+- [ ] 6.4 Knowledge capture: accept the decision; update the profile-context decision if the workflow wording changes.
