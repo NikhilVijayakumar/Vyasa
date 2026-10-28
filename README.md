@@ -427,9 +427,12 @@ Vyasa will be successful when:
 ## Development
 
 ```bash
-python -m pip install -e ".[dev]"
+# inside the project virtual environment (venv/)
+python -m pip install -e ".[dev,mcp,build]"
 python -m pytest
 ```
+
+Setup, MCP client configuration, a standalone build (`scripts/build_mcp.py`, output folder from `VYASA_MCP_OUT` in `.env`), an example configuration (`examples/config.toml`), and the limitations are in [docs/setup.md](docs/setup.md).
 
 Requires Python 3.12 or newer. The tests are platform independent; tests that need a directory symlink or a Windows junction skip with a stated reason where the platform cannot create one.
 
