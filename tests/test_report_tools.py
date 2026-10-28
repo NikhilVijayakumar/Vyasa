@@ -173,3 +173,17 @@ def test_report_tool_inputs_are_not_paths(index):
     [tool] = [t for t in tools(index) if t.name == "get_project_report"]
     assert set(tool.input_schema["properties"]) == {"project_id", "section"}
     assert {name for name, _ in SECTIONS} >= {"Overview"} and INVALID == "invalid"
+
+
+def test_the_context_workflow_names_the_report_and_shows_status_only(index):
+    from vyasa.application.profile_context import profile_context
+
+    db = open_index(index, read_only=True)
+    try:
+        bundle = profile_context(db, project_id(index, "alpha"))
+    finally:
+        db.close()
+    workflow = " ".join(bundle["data"]["workflow"])
+    assert "get_report_template" in workflow and ".vyasa/project-report.md" in workflow and "scan" in workflow
+    [checkout] = bundle["data"]["checkouts"]
+    assert checkout["report"]["status"] == "present" and "Hello" not in json.dumps(bundle)

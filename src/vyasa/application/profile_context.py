@@ -53,6 +53,8 @@ WORKFLOW = (
     "that a declaration is wrong, and never just to make a difference disappear.",
     "Keep secrets, credentials, private contact details, and absolute paths out of the profile. Point to documents with paths "
     "relative to the repository.",
+    "Each checkout's report shows whether a project report exists. To describe the project in depth, call get_report_template and "
+    "write .vyasa/project-report.md from what you verify in the repository; then ask the maintainer to run a scan so Vyasa stores it.",
     "Tell the maintainer exactly what you wrote and which facts supported it, so they can review and commit it.",
 )
 

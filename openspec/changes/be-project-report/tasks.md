@@ -42,8 +42,8 @@
 
 **Traceability:** Requirement: The workflow names the report
 
-- [ ] 5.1 Tests first: step present, status per checkout.
-- [ ] 5.2 Context bundle change.
+- [x] 5.1 Tests first: step present, status per checkout.
+- [x] 5.2 Context bundle change.
 
 ## 6. Documentation and verification
 
