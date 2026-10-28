@@ -3,13 +3,13 @@ type: Decision
 title: "A Long-Form Project Report Lives in the Repository, Is Indexed as a Bounded Copy, and Is Written by a Coding Agent"
 description: A markdown report at a fixed path, split into fixed sections, is read by the scan with size limits and served from the index; Vyasa supplies the template and never writes the report or calls a model.
 tags: [adr, report, mcp, agents, profile]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-28T14:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 
@@ -29,6 +29,8 @@ The two limits are settings in `config.toml` under `report`, validated against f
 - **A free-form report with no fixed sections.** Rejected: nothing could be fetched in part, and the scan would have to parse prose.
 
 # Consequences
+
+- A failed or invalid read keeps the earlier sections and says which read they came from; a missing file removes them.
 
 - A project can be described in depth without a second source of truth for what the scanner owns.
 - The report can be wrong or stale; it is labelled declared, and a staleness check is a later change.

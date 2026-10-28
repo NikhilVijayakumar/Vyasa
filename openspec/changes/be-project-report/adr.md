@@ -2,7 +2,7 @@
 
 ## 1. Decision Status
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-28
 - **OpenSpec Change ID:** `be-project-report`
 - **Decision owners:** Nikhil Vijayakumar

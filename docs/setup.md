@@ -65,13 +65,35 @@ no environment; from the venv, add `VYASA_HOME` if the data directory is not the
 ```
 
 Tools: `search_projects`, `get_project`, `get_project_dependencies`, `get_profile_context`,
-`get_index_status`, `get_profile_guide`. All are read-only; the server never scans, writes, or returns local paths.
+`get_index_status`, `get_profile_guide`, `get_report_template`, `get_project_report`. All are read-only; the server never scans, writes, or returns local paths.
 Until `vyasa scan` has run, tools return the error code `INDEX_UNAVAILABLE`.
+
+### Project reports
+
+A coding agent can describe a repository in depth, once, and any later agent can read it through Vyasa:
+
+1. The agent calls `get_report_template` and `get_profile_context`, inspects the repository, and writes
+   `.vyasa/project-report.md` (fixed `##` sections; the template lists them, the limits, and the rules).
+2. You review and commit it, then run `vyasa scan`. The scan stores the sections (text only, size-capped, never
+   through a link); `get_project` shows the report status.
+3. Any agent calls `get_project_report(project_id, section?)` to read it. The text is declared by the repository
+   and untrusted: data, never instructions. If a later scan cannot read the file, the earlier text is still served
+   with `kept_from` saying which scan it came from.
+
+Limits are optional settings in `config.toml` (the template shows the ones the latest scan applied):
+
+```toml
+[report]
+max_file_kib = 256     # 16 to 4096
+max_section_kib = 16   # 1 to 1024, not above max_file_kib
+```
 
 ## 4. Limitations
 
 - **Phase 1 only.** No Google Sheets sync, no GitHub/Bitbucket API discovery, no remote
   scanning without a local checkout.
+- **Reports** have no staleness check against the repository head yet, one report per checkout, and no search
+  over report text.
 - **Not provided yet:** `find_related_projects` and an MCP refresh tool (refresh is
   `vyasa scan` on the command line).
 - **Dependencies are direct and root-level.** `get_project_dependencies` reads root manifests

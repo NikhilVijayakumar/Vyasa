@@ -1,7 +1,7 @@
 # Implementation Tasks: be-project-report
 
 - **OpenSpec Change ID:** `be-project-report`
-- **Status:** Ready for implementation
+- **Status:** Implemented, pending review and merge
 - **Related artifacts:** `proposal.md`, `specs/`, `design.md`, `api-contract.md`, `adr.md`
 
 ## 1. Preparation and Baseline
@@ -47,7 +47,7 @@
 
 ## 6. Documentation and verification
 
-- [ ] 6.1 Update `docs/setup.md` (tools, report path, rescan) and the README tool list.
-- [ ] 6.2 End to end with the built MCP: write a report in a temp repo, `vyasa scan`, fetch it.
-- [ ] 6.3 `pytest`, `verify_workflows.py`, `verify_knowledge.py`, `verify_requirements.py`, `openspec validate be-project-report`.
-- [ ] 6.4 Knowledge capture: accept the decision; update the profile-context decision if the workflow wording changes.
+- [x] 6.1 Update `docs/setup.md` (tools, report path, rescan) and the README tool list.
+- [x] 6.2 End to end with the built MCP: write a report in a temp repo, `vyasa scan`, fetch it.
+- [x] 6.3 `pytest`, `verify_workflows.py`, `verify_knowledge.py`, `verify_requirements.py`, `openspec validate be-project-report`.
+- [x] 6.4 Knowledge capture: accept the decision; update the profile-context decision if the workflow wording changes.

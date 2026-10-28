@@ -30,11 +30,11 @@ There is no durable place for an agent's detailed reading of a repository, and n
 
 ### Goals
 
-- [ ] An agent can fetch a template with no index and write a valid report.
-- [ ] `vyasa scan` stores the report by section, bounded, with source and time.
-- [ ] Any agent can fetch the report, whole or by section, from the index.
-- [ ] A hostile report cannot break the scan or the server.
-- [ ] The file and section limits are configurable, default to 256 KiB and 16 KiB, and are checked against fixed bounds.
+- [x] An agent can fetch a template with no index and write a valid report.
+- [x] `vyasa scan` stores the report by section, bounded, with source and time.
+- [x] Any agent can fetch the report, whole or by section, from the index.
+- [x] A hostile report cannot break the scan or the server.
+- [x] The file and section limits are configurable, default to 256 KiB and 16 KiB, and are checked against fixed bounds.
 
 ### Team Focus
 
@@ -42,10 +42,10 @@ MCP tool contract, untrusted text handling, size bounds, no drift between the te
 
 ### Success Criteria
 
-- [ ] The template's example report validates and stores every section.
-- [ ] Limits in the template equal the reader's constants.
-- [ ] A repository hash is unchanged by a scan.
-- [ ] The tool snapshot lists the two new read-only tools and no new input path.
+- [x] The template's example report validates and stores every section.
+- [x] Limits in the template equal the reader's constants.
+- [x] A repository hash is unchanged by a scan.
+- [x] The tool snapshot lists the two new read-only tools and no new input path.
 
 ## 3. Scope
 
@@ -103,13 +103,13 @@ One domain module defines the sections (names, purposes, limits). The template, 
 
 ### Open Questions
 
-- [ ] Staleness check against the head commit.
-- [ ] Report per component in monorepos.
+- [x] Staleness check against the head commit.
+- [x] Report per component in monorepos.
 
 ## 8. Acceptance Summary
 
-- [ ] Every spec scenario has a test.
-- [ ] `pytest`, `verify_workflows.py`, `verify_knowledge.py`, `verify_requirements.py`, `openspec validate` pass.
+- [x] Every spec scenario has a test.
+- [x] `pytest`, `verify_workflows.py`, `verify_knowledge.py`, `verify_requirements.py`, `openspec validate` pass.
 
 ## 9. Traceability
 
