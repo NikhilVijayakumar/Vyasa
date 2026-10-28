@@ -438,6 +438,8 @@ Requires Python 3.12 or newer. The tests are platform independent; tests that ne
 
 ## Configuration
 
+> New here? Start with the [usage guide](docs/usage.md): workspaces, the scan, every MCP tool, what is deterministic, and how agents write project profiles and reports.
+
 Vyasa scans only the workspace roots you list; nothing is scanned by default. Create `config.toml` in the data directory (`%LOCALAPPDATA%\Vyasa` on Windows, `~/Library/Application Support/Vyasa` on macOS, `~/.local/share/vyasa` on Linux), or point `VYASA_CONFIG` at a file, or set `VYASA_HOME` to move the data directory:
 
 ```toml
