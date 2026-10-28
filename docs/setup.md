@@ -1,5 +1,7 @@
 # Setup, MCP client configuration, and limitations
 
+For day-to-day use (workspaces, tools, what is observed versus declared) see [usage.md](usage.md).
+
 ## 1. Install (from a clone)
 
 Use the project virtual environment (`venv/`). Python 3.12+.
