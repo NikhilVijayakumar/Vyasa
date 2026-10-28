@@ -49,6 +49,22 @@ Product changes use the `be-` prefix; framework and process changes use `openspe
 - Implementation tasks are vertical slices (`knowledge/practices/vertical-slices.md`).
 - Report failed, skipped, unavailable, and unverified checks honestly. Never claim verification succeeded without evidence.
 
+## Python environment
+
+Use the project virtual environment at `venv/` (repo root) for every install, test, script, and build. Never install into the global Python.
+
+| OS | Python | Activate |
+|---|---|---|
+| Windows | `venv\Scripts\python.exe` | `venv\Scripts\Activate.ps1` |
+| Linux / macOS | `venv/bin/python` | `source venv/bin/activate` |
+
+```bash
+venv/bin/python -m pip install -e ".[dev,mcp,build]"   # Windows: venv\Scripts\python.exe
+venv/bin/python -m pytest
+```
+
+Run the commands in the Verification section and `scripts/build_mcp.py` with that interpreter. Machine-local settings (for example `VYASA_MCP_OUT`) live in the git-ignored `.env`; `.env.example` is the template.
+
 ## Verification
 
 After changing a schema, a template, a change's proposal or specifications, or the skill layout:

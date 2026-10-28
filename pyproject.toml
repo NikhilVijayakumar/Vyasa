@@ -12,6 +12,7 @@ dependencies = []
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 mcp = ["mcp>=2,<3"]
+build = ["pyinstaller>=6"]
 
 [project.scripts]
 vyasa = "vyasa.adapters.cli.main:run"
