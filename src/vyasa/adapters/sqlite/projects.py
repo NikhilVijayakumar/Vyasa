@@ -225,10 +225,10 @@ def checkout_composition(connection: sqlite3.Connection, checkout_id: int) -> di
 def _store_frameworks(connection: sqlite3.Connection, observation: int, found: FrameworkReport) -> None:
     for manifest in found.manifests:
         connection.execute(
-            "INSERT INTO checkout_manifests (observation_id, path, ecosystem, status, reason, total_dependencies, skipped, workspace)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO checkout_manifests (observation_id, path, ecosystem, status, reason, total_dependencies, skipped, workspace,"
+            " declared_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (observation, manifest.path, manifest.ecosystem, manifest.status, manifest.reason, manifest.total_dependencies,
-             manifest.skipped, int(manifest.workspace)),
+             manifest.skipped, int(manifest.workspace), manifest.declared_name),
         )
         connection.executemany(
             "INSERT INTO checkout_dependencies (observation_id, path, name, constraint_text, scope) VALUES (?, ?, ?, ?, ?)",

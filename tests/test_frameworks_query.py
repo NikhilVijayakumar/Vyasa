@@ -74,8 +74,8 @@ def test_frameworks_are_stored_with_the_observation(db):
     store(db, make_run([framed("a", fw(PY, JS, nested=[("javascript", 2)]))]))
     assert version(db, "a") == [REGISTRY.version]
     assert rows(db, "checkout_manifests", "a") == [
-        (rows(db, "checkout_manifests", "a")[0][0], "package.json", "javascript", "parsed", None, 1, 0, 1),
-        (rows(db, "checkout_manifests", "a")[1][0], "pyproject.toml", "python", "parsed", None, 3, 2, 0),
+        (rows(db, "checkout_manifests", "a")[0][0], "package.json", "javascript", "parsed", None, 1, 0, 1, None),
+        (rows(db, "checkout_manifests", "a")[1][0], "pyproject.toml", "python", "parsed", None, 3, 2, 0, None),
     ]
     deps = [r[1:] for r in rows(db, "checkout_dependencies", "a")]
     assert ("pyproject.toml", "fastapi", ">=0.1", "runtime") in [(p, n, c, s) for p, n, c, s in deps]

@@ -10,17 +10,17 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use the projec
 
 ## 1. Preparation and Baseline
 
-- [ ] 1.1 Review the proposal, specs, contract, design, and ADR.
-- [ ] 1.2 Record the baseline: `python -m pytest` (953 passed, 2 skipped on `develop`) and `python scripts/verify_workflows.py`.
-- [ ] 1.3 Confirm branch `feature/be-get-project-dependencies`.
+- [x] 1.1 Review the proposal, specs, contract, design, and ADR.
+- [x] 1.2 Record the baseline: `python -m pytest` (953 passed, 2 skipped on `develop`) and `python scripts/verify_workflows.py`.
+- [x] 1.3 Confirm branch `feature/be-get-project-dependencies`.
 
 ## 2. Implementation Slice: declared names recorded and stored
 
 **Traceability:** Requirements: Parsed manifests record the package name they declare · Knowledge: `knowledge/decisions/internal-dependencies-by-declared-package-name.md`
 
-- [ ] 2.1 Test first: name in each ecosystem (normalized), none declared, not text, too long, unparsed manifest, `requirements*.txt` has none, dependencies and counts unchanged; stored on the manifest row; a database at every earlier version upgrades to 10.
-- [ ] 2.2 Add `declared_name` to `ParsedManifest`, set it in the four parsers and bound it in `_bounded`, store it in `scan_workspace`, and add `0010_declared_names.sql` (column and index).
-- [ ] 2.3 Run tests; refactor.
+- [x] 2.1 Test first: name in each ecosystem (normalized), none declared, not text, too long, unparsed manifest, `requirements*.txt` has none, dependencies and counts unchanged; stored on the manifest row; a database at every earlier version upgrades to 10.
+- [x] 2.2 Add `declared_name` to `ParsedManifest`, set it in the four parsers and bound it in `_bounded`, store it in `scan_workspace`, and add `0010_declared_names.sql` (column and index).
+- [x] 2.3 Run tests; refactor.
 
 ## 3. Implementation Slice: dependencies with evidence
 

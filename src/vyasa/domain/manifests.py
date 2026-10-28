@@ -59,6 +59,13 @@ def _requirement(text: str, scope: str) -> Dependency | None:
     return Dependency(normalize(PYTHON, match.group(1)), constraint, scope)
 
 
+def _declared(ecosystem: str, value: object) -> str | None:
+    """The package name a manifest declares, in the form dependencies are matched in; None unless it is usable text."""
+    if not isinstance(value, str) or not 0 < len(value.strip()) <= MAX_NAME:
+        return None
+    return normalize(ecosystem, value.strip())
+
+
 def _table(value: object) -> dict:
     if not isinstance(value, dict):
         raise ManifestParseError("structure")
@@ -109,8 +116,10 @@ def _pyproject(text: str, _name: str) -> ParsedManifest:
     data = _loads_toml(text)
     found: list[Dependency] = []
     skipped = 0
+    name = None
     if "project" in data:
         project = _table(data["project"])
+        name = _declared(PYTHON, project.get("name"))
         if "dependencies" in project:
             skipped += _requirement_list(project["dependencies"], RUNTIME, found)
         for group in _table(project.get("optional-dependencies", {})).values():
@@ -126,7 +135,7 @@ def _pyproject(text: str, _name: str) -> ParsedManifest:
         _poetry_table(poetry["dev-dependencies"], DEV, found)
     for group in _table(poetry.get("group", {})).values():
         _poetry_table(_table(group).get("dependencies", {}), DEV, found)
-    return ParsedManifest(tuple(found), skipped)
+    return ParsedManifest(tuple(found), skipped, declared_name=name or _declared(PYTHON, poetry.get("name")))
 
 
 def _requirements(text: str, name: str) -> ParsedManifest:
@@ -164,7 +173,7 @@ def _package_json(text: str, _name: str) -> ParsedManifest:
             continue
         for name, constraint in _table(data[section]).items():
             found.append(Dependency(str(name), constraint if isinstance(constraint, str) else None, scope))
-    return ParsedManifest(tuple(found), 0, "workspaces" in data)
+    return ParsedManifest(tuple(found), 0, "workspaces" in data, _declared(JAVASCRIPT, data.get("name")))
 
 
 _CARGO_SECTIONS = (("dependencies", RUNTIME), ("dev-dependencies", DEV), ("build-dependencies", BUILD))
@@ -187,16 +196,20 @@ def _cargo(text: str, _name: str) -> ParsedManifest:
     for platform in _table(data.get("target", {})).values():
         for section, _scope in _CARGO_SECTIONS:
             skipped += len(_table(_table(platform).get(section, {})))
-    return ParsedManifest(tuple(found), skipped, "workspace" in data)
+    return ParsedManifest(tuple(found), skipped, "workspace" in data, _declared(RUST, _table(data.get("package", {})).get("name")))
 
 
 def _go_mod(text: str, _name: str) -> ParsedManifest:
     found: list[Dependency] = []
     skipped = 0
     in_block = False
+    module = None
     for raw in text.splitlines():
         line = raw.strip()
         if len(line) > MAX_LINE or not line or line.startswith("//"):
+            continue
+        if module is None and line.startswith("module") and line[6:7] in (" ", "	"):
+            module = _declared(GO, line[6:].split("//")[0].strip().strip('"`'))
             continue
         if in_block:
             if line.startswith(")"):
@@ -220,7 +233,7 @@ def _go_mod(text: str, _name: str) -> ParsedManifest:
             skipped += 1
         else:
             found.append(Dependency(match.group(1), match.group(2), RUNTIME))
-    return ParsedManifest(tuple(found), skipped)
+    return ParsedManifest(tuple(found), skipped, declared_name=module)
 
 
 _PARSERS: dict[str, Callable[[str, str], ParsedManifest]] = {
@@ -251,4 +264,4 @@ def _bounded(parsed: ParsedManifest) -> ParsedManifest:
         elif constraint is not None and len(constraint) > MAX_CONSTRAINT:
             constraint = None
         kept.append(Dependency(dependency.name, constraint, dependency.scope))
-    return ParsedManifest(tuple(kept), skipped, parsed.workspace)
+    return ParsedManifest(tuple(kept), skipped, parsed.workspace, parsed.declared_name)
