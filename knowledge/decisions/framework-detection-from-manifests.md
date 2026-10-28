@@ -3,13 +3,13 @@ type: Decision
 title: "Frameworks Come From Strictly Read Root Manifests With Scoped Dependencies and Honest States"
 description: Technologies are declared by supported root manifests read under strict rules, kept with their scopes, mapped through a registry, and reported per ecosystem with absence claimed only after a complete assessment.
 tags: [adr, scanner, frameworks, security]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-28T09:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 

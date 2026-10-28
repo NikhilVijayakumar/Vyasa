@@ -3,7 +3,7 @@ type: Decision
 title: "Technology Registry as Versioned Data"
 description: A versioned data file maps dependency names to technology keys, display names, and categories.
 tags: [adr, technologies, detectors, search]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T12:00:00Z }
 sources:
   - id: det
@@ -16,7 +16,7 @@ sources:
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 

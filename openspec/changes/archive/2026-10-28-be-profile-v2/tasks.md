@@ -50,12 +50,12 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 ## 6. Documentation and Handover
 
 - [x] 6.1 Behavior matches the decision concept; the people-field rule and the key sanitizing are covered by the validator and its tests.
-- [ ] 6.2 Mark the decision concept stable when the owner accepts it.
+- [x] 6.2 Mark the decision concept stable when the owner accepts it.
 
 ## 7. Review, Merge, and Archive
 
-- [ ] 7.1 Pull request with the change ID.
-- [ ] 7.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 7.1 Pull request with the change ID. Skipped: owner chose direct merge to develop (solo repository).
+- [x] 7.2 `git fetch`, merge into `develop` after review and verification (never force-push).
 - [ ] 7.3 Archive the change.
 
 ## Verification Record
