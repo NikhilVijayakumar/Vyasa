@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from vyasa.domain.report import ReportLimits
+
 ACCESSIBLE = "accessible"
 MISSING = "missing"
 NOT_A_DIRECTORY = "not_a_directory"
@@ -26,6 +28,7 @@ class WorkspaceConfig:
     roots: tuple[Path, ...]
     source: Path
     warnings: tuple[str, ...] = ()
+    report: ReportLimits = ReportLimits()
 
 
 @dataclass(frozen=True)

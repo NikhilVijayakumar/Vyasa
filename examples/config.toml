@@ -2,3 +2,8 @@
 # Windows: use forward slashes or single quotes, e.g. 'E:\Python'.
 [workspace]
 roots = ["E:/Python", "D:/Projects", "~/work"]
+
+# Optional. Size limits for a project report (.vyasa/project-report.md), in KiB.
+# [report]
+# max_file_kib = 256     # 16 to 4096
+# max_section_kib = 16   # 1 to 1024, not above max_file_kib

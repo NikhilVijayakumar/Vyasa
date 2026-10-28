@@ -6,9 +6,9 @@
 
 ## 1. Preparation and Baseline
 
-- [ ] 1.1 Review the proposal, specs, contract, design, and ADR.
-- [ ] 1.2 Record the baseline: `venv\Scripts\python.exe -m pytest` (1005 passed, 2 skipped) and `python scripts/verify_knowledge.py`.
-- [ ] 1.3 Confirm branch `feature/be-project-report`.
+- [x] 1.1 Review the proposal, specs, contract, design, and ADR.
+- [x] 1.2 Record the baseline: `venv\Scripts\python.exe -m pytest` (1005 passed, 2 skipped) and `python scripts/verify_knowledge.py`.
+- [x] 1.3 Confirm branch `feature/be-project-report`.
 
 ## 2. Slice: template over MCP
 
@@ -21,8 +21,8 @@
 
 **Traceability:** Requirement: Report limits are configurable inside bounds
 
-- [ ] 3a.1 Tests first: defaults, values, out of bounds, section above file, wrong type, unknown key.
-- [ ] 3a.2 `ReportLimits`, the `report` table in `load_workspace_config`, `examples/config.toml` comment.
+- [x] 3a.1 Tests first: defaults, values, out of bounds, section above file, wrong type, unknown key.
+- [x] 3a.2 `ReportLimits`, the `report` table in `load_workspace_config`, `examples/config.toml` comment.
 
 ## 3. Slice: scan reads and stores the report
 
