@@ -12,7 +12,7 @@ from pathlib import Path
 from vyasa.adapters.sqlite import reports
 from vyasa.domain.discovery import Candidate
 from vyasa.domain.file_composition import documentation_only
-from vyasa.domain.frameworks import ECOSYSTEMS, FrameworkReport
+from vyasa.domain.frameworks import ECOSYSTEMS, Dependency, FrameworkReport
 from vyasa.domain.languages import LanguageOutcome
 from vyasa.domain.markers import MARKERS
 from vyasa.domain.profile import ABSENT, PROFILE_PATH, ProfileResult
@@ -232,9 +232,12 @@ def _store_frameworks(connection: sqlite3.Connection, observation: int, found: F
             (observation, manifest.path, manifest.ecosystem, manifest.status, manifest.reason, manifest.total_dependencies,
              manifest.skipped, int(manifest.workspace), manifest.declared_name),
         )
+        unique: dict[tuple[str, str], Dependency] = {}
+        for dependency in manifest.dependencies:  # one row per name and scope; a manifest may declare both twice
+            unique.setdefault((dependency.name, dependency.scope), dependency)
         connection.executemany(
             "INSERT INTO checkout_dependencies (observation_id, path, name, constraint_text, scope) VALUES (?, ?, ?, ?, ?)",
-            [(observation, manifest.path, d.name, d.constraint, d.scope) for d in manifest.dependencies],
+            [(observation, manifest.path, d.name, d.constraint, d.scope) for d in unique.values()],
         )
     connection.executemany(
         "INSERT INTO checkout_technologies (observation_id, key, scopes, manifests) VALUES (?, ?, ?, ?)",
