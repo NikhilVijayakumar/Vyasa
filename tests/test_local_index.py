@@ -121,6 +121,29 @@ def test_pending_migration_makes_a_backup_and_keeps_data(tmp_path):
     connection.close()
 
 
+@pytest.mark.parametrize("old", range(1, len(sorted(MIGRATIONS.glob("0*.sql")))))
+def test_every_earlier_schema_version_upgrades_to_current(tmp_path, old):
+    steps = sorted(MIGRATIONS.glob("0*.sql"))
+    folder = tmp_path / "old"
+    folder.mkdir()
+    for file in steps[:old]:
+        (folder / file.name).write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+    path = tmp_path / "index.sqlite3"
+    connection = open_index(path, migrations=folder)
+    connection.execute(
+        "INSERT INTO projects (project_id, display_name, state, created_at, updated_at, last_seen_at)"
+        " VALUES ('p', 'a', 'active', 't', 't', 't')"
+    )
+    connection.close()
+    connection = open_index(path)
+    assert connection.execute("PRAGMA user_version").fetchone()[0] == len(steps)
+    assert connection.execute("SELECT display_name FROM projects WHERE project_id = 'p'").fetchone()[0] == "a"
+    assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+    assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+    assert (tmp_path / f"index.sqlite3.bak-v{old}").is_file()
+    connection.close()
+
+
 def _migrations_with_second(tmp_path):
     folder = tmp_path / "migrations2"
     folder.mkdir()
