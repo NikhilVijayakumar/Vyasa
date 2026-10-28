@@ -21,7 +21,7 @@ from vyasa.domain.git_remote import GitRemote  # noqa: E402
 
 SNAPSHOT = Path(__file__).parent / "snapshots" / "mcp_tools.json"
 SRC = Path(__file__).resolve().parents[1] / "src"
-TOOLS = ["get_index_status", "get_profile_context", "get_profile_guide", "get_project", "get_project_dependencies", "get_report_template", "search_projects"]
+TOOLS = ["get_index_status", "get_profile_context", "get_profile_guide", "get_project", "get_project_dependencies", "get_project_report", "get_report_template", "search_projects"]
 
 
 def remote(identity):
@@ -54,7 +54,7 @@ def tools(index_file):
 # -- listing and pinning --------------------------------------------------------------------------------
 
 
-def test_exactly_seven_read_tools(index):
+def test_exactly_eight_read_tools(index):
     listed = tools(index)
     assert sorted(t.name for t in listed) == TOOLS
     assert all(t.description and t.input_schema for t in listed)

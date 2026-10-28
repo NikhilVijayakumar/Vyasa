@@ -35,8 +35,8 @@
 
 **Traceability:** Requirements: The stored report is served as declared data; Project details show the report status only
 
-- [ ] 4.1 Tests first: whole, one section, unknown section, no report, unknown project, status without text, no path.
-- [ ] 4.2 `get_project_report` tool; `report` object in `get_project`.
+- [x] 4.1 Tests first: whole, one section, unknown section, no report, unknown project, status without text, no path.
+- [x] 4.2 `get_project_report` tool; `report` object in `get_project`.
 
 ## 5. Slice: workflow step
 

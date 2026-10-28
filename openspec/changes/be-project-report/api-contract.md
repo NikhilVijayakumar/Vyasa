@@ -28,9 +28,9 @@ Template `data`: `path` (`.vyasa/project-report.md`), `format` (`markdown`), `li
 
 Sections (fixed order): Overview; Purpose and Users; Architecture; Modules; Key Flows; Interfaces; Data and Storage; Build, Run, and Test; Dependencies and Integrations; Risks and Limitations; Open Questions.
 
-`get_project_report` `data`: `project_id`, `checkouts` (list of `{checkout_id, status, content_hash, scanned_at, sections: [{name, text, size}], dropped: [{heading, reason}], origin: "declared", warning}`). `status` is one of `present`, `not_present`, `unreadable`, `invalid`, `not_assessed`; `reason` is present for the last two failures; when `status` is not `present` and earlier sections are kept, `kept_from` holds their `content_hash` and `scanned_at`. With `section`, `sections` holds only that one. `checkout_id` is the opaque id already used by `get_project`.
+`get_project_report` `data`: `project_id`, `display_name`, `warning` (the untrusted-text notice), `checkouts` (list in the order `get_project` uses, each `{state, kind, status, reason, content_hash, scanned_at, sections: [{name, text, size}], dropped: [{heading, reason}], origin: "declared"}`, plus `kept_from` when earlier sections are kept). `status` is one of `present`, `not_present`, `unreadable`, `invalid`, `not_assessed`; `reason` is present for the last two failures; when `status` is not `present` and earlier sections are kept, `kept_from` holds their `content_hash` and `scanned_at`. With `section`, `sections` holds only that one.
 
-`get_project.report` per checkout: `{status, sections: [{name, size}], dropped: [{heading, reason}], content_hash, scanned_at}`; no text.
+`get_project.report` per checkout: `{status, reason, sections: [{name, size}], dropped: [{heading, reason}], content_hash, scanned_at}` and `kept_from` when applicable; no text. A checkout never read (or an index from before reports) has status `not_assessed`.
 
 Tool annotations: read-only, non-destructive, idempotent, closed-world.
 

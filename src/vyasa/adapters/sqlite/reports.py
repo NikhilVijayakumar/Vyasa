@@ -41,8 +41,15 @@ def store(connection: sqlite3.Connection, checkout_id: int, report: ReportResult
     # unreadable and invalid: the earlier sections and kept_* stay as they were
 
 
+def available(connection: sqlite3.Connection) -> bool:
+    """False for an index made before reports existed; its checkouts are then not assessed."""
+    return connection.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'report_observations'").fetchone() is not None
+
+
 def load(connection: sqlite3.Connection, checkout_id: int) -> dict | None:
     """The stored report of one checkout, or None when the checkout was never read."""
+    if not available(connection):
+        return None
     row = connection.execute("SELECT * FROM report_observations WHERE checkout_id = ?", (checkout_id,)).fetchone()
     if row is None:
         return None
@@ -61,6 +68,8 @@ def load(connection: sqlite3.Connection, checkout_id: int) -> dict | None:
 
 def latest_limits(connection: sqlite3.Connection) -> ReportLimits | None:
     """The limits the newest report observation was read under, or None when there is none."""
+    if not available(connection):
+        return None
     row = connection.execute(
         "SELECT max_file_bytes, max_section_bytes FROM report_observations ORDER BY scanned_at DESC, checkout_id DESC LIMIT 1"
     ).fetchone()
