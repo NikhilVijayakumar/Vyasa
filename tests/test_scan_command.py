@@ -93,6 +93,20 @@ def test_repositories_are_left_byte_identical(tmp_path, env):
     assert tree_hash(root) == before
 
 
+def test_scan_never_rewrites_the_human_maintained_profile(tmp_path, env):
+    environ, home = env
+    root = tmp_path / "w"
+    repo = git_repo(root / "r", "https://github.com/acme/r.git")
+    (repo / ".vyasa").mkdir()
+    profile = repo / ".vyasa" / "project-profile.toml"
+    profile.write_text('schema_version = 1\nname = "Declared"\npurpose = "Mine."\n')
+    configure(home, root)
+    before = profile.read_bytes()
+    scan(environ)
+    scan(environ)
+    assert profile.read_bytes() == before
+
+
 # -- bootstrap and report ----------------------------------------------------------------------------------
 
 

@@ -1,0 +1,4 @@
+# Copy to <data dir>/config.toml (see docs/setup.md). Absolute paths only.
+# Windows: use forward slashes or single quotes, e.g. 'E:\Python'.
+[workspace]
+roots = ["E:/Python", "D:/Projects", "~/work"]
