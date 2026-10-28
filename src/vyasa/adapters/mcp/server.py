@@ -85,6 +85,11 @@ def build_server(index_file: Path) -> MCPServer:
         return _run(index_file, queries.get_project, project_id)
 
     @server.tool(annotations=READ_ONLY)
+    def get_project_dependencies(project_id: str) -> CallToolResult:
+        """Get the direct dependencies of one project (`project_id` from search_projects) and the projects that depend on it, from the latest scan of its root manifests. Each dependency has its ecosystem, constraint, scope, and the manifest that declared it, and is `internal` (it names a package exactly one other indexed project declares in the same ecosystem, with that project), `ambiguous` (several projects declare it; all are listed), or `external`. `dependents` are the reverse relation, at most 100 with a total and a `dependents_truncated` flag. `coverage` says how far to trust the answer: the status (`complete`, `partial`, `not_assessed`), each root manifest's parse status, nested manifests that were not parsed, whether declared package names were recorded by the scan, and how many other projects could not be checked. Only direct dependencies from recognized manifests are reported, never transitive ones, so an empty list is not proof of no dependencies unless coverage is complete."""
+        return _run(index_file, queries.get_project_dependencies, project_id)
+
+    @server.tool(annotations=READ_ONLY)
     def get_profile_context(project_id: str) -> CallToolResult:
         """Give a coding agent what Vyasa observed about one project, to write or update its profile from evidence: the checkouts with their languages, file counts, markers, and frameworks from the latest scan; the profile as read; for each checkout the differences between the declared profile and those observations (findings for a person to review, claimed only where the scan was complete); and a short workflow. Use `project_id` from search_projects. Vyasa never launches an agent and never writes the profile: the agent writes `.vyasa/project-profile.toml` itself, after calling get_profile_guide."""
         return _run(index_file, profile_context.profile_context, project_id)

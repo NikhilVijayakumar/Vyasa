@@ -21,7 +21,7 @@ from vyasa.domain.git_remote import GitRemote  # noqa: E402
 
 SNAPSHOT = Path(__file__).parent / "snapshots" / "mcp_tools.json"
 SRC = Path(__file__).resolve().parents[1] / "src"
-TOOLS = ["get_index_status", "get_profile_context", "get_profile_guide", "get_project", "search_projects"]
+TOOLS = ["get_index_status", "get_profile_context", "get_profile_guide", "get_project", "get_project_dependencies", "search_projects"]
 
 
 def remote(identity):
@@ -54,7 +54,7 @@ def tools(index_file):
 # -- listing and pinning --------------------------------------------------------------------------------
 
 
-def test_exactly_five_read_tools(index):
+def test_exactly_six_read_tools(index):
     listed = tools(index)
     assert sorted(t.name for t in listed) == TOOLS
     assert all(t.description and t.input_schema for t in listed)
@@ -109,10 +109,24 @@ def test_project_and_status(index):
     assert status["data"]["projects"]["total"] == 2
 
 
+def test_dependencies_tool_answers_with_coverage_and_no_root(index):
+    pid = call(index, "search_projects", {"query": "alpha"}).structured_content["data"]["projects"][0]["project_id"]
+    result = call(index, "get_project_dependencies", {"project_id": pid})
+    data = result.structured_content["data"]
+    assert data["project_id"] == pid and data["coverage"]["status"] == "not_assessed"
+    assert data["dependencies"] == [] and data["dependents"] == [] and str(ROOT) not in json.dumps(result.structured_content)
+
+
+def test_dependencies_tool_takes_one_project_id(index):
+    (tool,) = [t for t in tools(index) if t.name == "get_project_dependencies"]
+    assert list(tool.input_schema["properties"]) == ["project_id"] and tool.input_schema["required"] == ["project_id"]
+
+
 def test_tools_leave_the_index_untouched(index):
     before = index.read_bytes()
     pid = call(index, "search_projects").structured_content["data"]["projects"][0]["project_id"]
     call(index, "get_project", {"project_id": pid})
+    call(index, "get_project_dependencies", {"project_id": pid})
     call(index, "get_index_status")
     assert index.read_bytes() == before
 
@@ -131,6 +145,8 @@ def test_no_result_contains_the_root(index):
     ("search_projects", {"limit": 0}, "INVALID_INPUT"),
     ("search_projects", {"cursor": "junk"}, "INVALID_CURSOR"),
     ("get_project", {"project_id": "nope"}, "PROJECT_NOT_FOUND"),
+    ("get_project_dependencies", {"project_id": "nope"}, "PROJECT_NOT_FOUND"),
+    ("get_project_dependencies", {"project_id": ""}, "INVALID_INPUT"),
 ])
 def test_domain_failures_are_structured(index, name, args, code):
     result = call(index, name, args)

@@ -58,22 +58,22 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use the projec
 
 **Traceability:** Requirements: The tool is read-only and bounded
 
-- [ ] 7.1 Test first: a tool call through the server, structured errors, the index unchanged, and the regenerated snapshot.
-- [ ] 7.2 Declare `get_project_dependencies` (read-only, one parameter) and describe the fields; regenerate the snapshot and check its diff only adds the tool.
-- [ ] 7.3 Run tests; refactor.
+- [x] 7.1 Test first: a tool call through the server, structured errors, the index unchanged, and the regenerated snapshot.
+- [x] 7.2 Declare `get_project_dependencies` (read-only, one parameter) and describe the fields; regenerate the snapshot and check its diff only adds the tool.
+- [x] 7.3 Run tests; refactor.
 
 ## 8. Final Verification
 
-- [ ] 8.1 `python -m pytest`
-- [ ] 8.2 `python scripts/verify_workflows.py` and `python scripts/verify_knowledge.py`
-- [ ] 8.3 `openspec validate be-get-project-dependencies`
-- [ ] 8.4 Build with `scripts/build_mcp.py`, scan a fixture workspace of two linked projects, and call the tool through the executable.
-- [ ] 8.5 Review the diff for scope and the contract (read-only, no absolute path, no file text).
-- [ ] 8.6 Each spec scenario has a test; record commands, outcomes, failures, skips.
+- [x] 8.1 `python -m pytest`
+- [x] 8.2 `python scripts/verify_workflows.py` and `python scripts/verify_knowledge.py`
+- [x] 8.3 `openspec validate be-get-project-dependencies`
+- [x] 8.4 Build with `scripts/build_mcp.py`, scan a fixture workspace of two linked projects, and call the tool through the executable.
+- [x] 8.5 Review the diff for scope and the contract (read-only, no absolute path, no file text).
+- [x] 8.6 Each spec scenario has a test; record commands, outcomes, failures, skips.
 
 ## 9. Documentation and Handover
 
-- [ ] 9.1 README MCP section and `docs/setup.md` list the tool and explain coverage; remove "get_project_dependencies not provided" from the limitations.
+- [x] 9.1 README MCP section and `docs/setup.md` list the tool and explain coverage; remove "get_project_dependencies not provided" from the limitations.
 - [ ] 9.2 Mark the decision concept stable when the owner accepts it.
 
 ## 10. Review, Merge, and Archive
@@ -84,8 +84,12 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use the projec
 
 ## Verification Record
 
-Not yet run.
+- `python -m pytest`: 1000 passed, 2 skipped (baseline 953 passed, 2 skipped). New: tests/test_declared_names.py, tests/test_project_dependencies.py, additions to tests/test_mcp_server.py, and the migration-chain test now covers version 10. Skips are the existing POSIX-permission and symlink skips.
+- `python scripts/verify_workflows.py` and `verify_knowledge.py`: all checks passed. `openspec validate be-get-project-dependencies`: valid (long-requirement warnings only).
+- Executable: `scripts/build_mcp.py` built `vyasa-mcp.exe`; a scan of two linked fixture projects answered `get_project_dependencies` over stdio: `Ledger_Core` resolved internal to `ledger`, `ledger` listed `app` as dependent, coverage complete, no local path, unknown id returned `PROJECT_NOT_FOUND`.
+- Contract refinements made while building (artifacts updated): `language_observations.names_recorded`, and coverage `partial` when any active checkout was not assessed.
+- Not run: the full `code-review-security` procedure; reviewed by inspection that all SQL values are bound and the only interpolated text is a constant.
 
 ## Completion Summary
 
-Not yet complete.
+Implemented through task 9.1. Pending: owner acceptance of the decision concept (9.2), then merge and archive (10.1–10.3).

@@ -25,7 +25,7 @@ In: `parse_manifest` and the four parsers, `ParsedManifest`, `detect_frameworks`
 `data` of `get_project_dependencies`:
 
 - `project_id`, `display_name`.
-- `coverage`: `status` (`complete`, `partial`, `not_assessed`: the weakest state among the project's active checkouts that were assessed, or `not_assessed` when none); `manifests` (list of `{path, ecosystem, status, reason, declared_name_recorded}`); `nested_not_parsed` (integer); `declared_names_recorded` (boolean, true when every parsed manifest of the project that can declare a name has the field recorded); `other_projects_unchecked` (integer: other projects with an active checkout whose observation is partial, not assessed, or lacks declared names for a manifest that could declare one).
+- `coverage`: `status` (`complete`, `partial`, `not_assessed`: `partial` when any active checkout was not assessed or its walk stopped early, `not_assessed` when none was assessed); `manifests` (list of `{path, ecosystem, status, reason, declared_name_recorded}`); `nested_not_parsed` (integer); `declared_names_recorded` (boolean, true when every parsed manifest of the project that can declare a name has the field recorded); `other_projects_unchecked` (integer: other projects with an active checkout whose observation is partial, not assessed, or lacks declared names for a manifest that could declare one).
 - `dependencies`: list of `{name, ecosystem, constraint, scope, source, resolution, projects}` where `source` is the manifest file name, `resolution` is `internal`, `ambiguous`, or `external`, and `projects` is a list of `{project_id, display_name}` (one for internal, several for ambiguous, empty for external). Ordered by ecosystem, name, scope, source.
 - `dependents`: list of `{project_id, display_name, ecosystem, name, constraint, scope, source, resolution}` where `resolution` is `internal` or `ambiguous`. At most 100, ordered by display name, project id, ecosystem, scope, source.
 - `dependents_total` (integer) and `dependents_truncated` (boolean).
@@ -54,7 +54,7 @@ Migration 0010 adds one nullable column:
 |---|---|---|---|---|
 | `checkout_manifests` | `declared_name` | text | No | Null unless the manifest is `parsed` and declares a text name of 1 to 214 characters; stored normalized for its ecosystem; always null for `requirements*.txt` |
 
-A lookup index `checkout_manifests_declared_name (ecosystem, declared_name)` is added for the reverse query. The match key between a dependency and a package is `(ecosystem, normalized name)`. Only manifests of active checkouts' latest observation (the same observation `get_project` uses) are used on either side. Invariant: a manifest that is not `parsed` has no declared name.
+A lookup index `checkout_manifests_declared_name (ecosystem, declared_name)` is added for the reverse query. `language_observations.names_recorded` (integer, null or 1) is set to 1 by every scan that stores frameworks, so a null `declared_name` on such an observation means the manifest declares none, while a null `names_recorded` means the observation predates the migration. The match key between a dependency and a package is `(ecosystem, normalized name)`. Only manifests of active checkouts' latest observation (the same observation `get_project` uses) are used on either side. Invariant: a manifest that is not `parsed` has no declared name.
 
 ## 7. Migrations and Backward Compatibility
 

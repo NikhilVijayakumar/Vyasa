@@ -52,4 +52,4 @@ The system SHALL record, for each parsed root manifest, the package name it decl
 
 - **GIVEN** a scanned checkout with a named manifest
 - **WHEN** the index is read
-- **THEN** the manifest row carries the declared name, and an observation made before the migration has none
+- **THEN** the manifest row carries the declared name and the observation is marked as having recorded names, while an observation made before the migration has neither
