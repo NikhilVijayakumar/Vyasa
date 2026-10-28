@@ -28,18 +28,26 @@ HOME_VARIABLE = "VYASA_HOME"
 CONFIG_VARIABLE = "VYASA_CONFIG"
 
 
+_RUNNING = object()
+
+
 def data_directory(
     environ: Mapping[str, str] | None = None,
     home: Path | None = None,
     platform: str | None = None,
+    frozen_executable: Path | None | object = _RUNNING,
 ) -> Path:
-    """The directory holding Vyasa's per-user data."""
+    """The directory holding Vyasa's data: `VYASA_HOME`, a built executable's sibling `data`, or the platform folder."""
     environ = os.environ if environ is None else environ
     home = Path.home() if home is None else home
     platform = sys.platform if platform is None else platform
     override = environ.get(HOME_VARIABLE)
     if override:
         return Path(override)
+    if frozen_executable is _RUNNING:
+        frozen_executable = Path(sys.executable) if getattr(sys, "frozen", False) else None
+    if frozen_executable is not None:
+        return Path(frozen_executable).parent.parent / "data"  # <root>/<exe folder>/<exe> -> <root>/data
     if platform.startswith("win"):
         return Path(environ.get("LOCALAPPDATA") or home / "AppData" / "Local") / "Vyasa"
     if platform == "darwin":
