@@ -3,13 +3,13 @@ type: Decision
 title: "Profile Schema Version 2 Declares the Project in Depth as Nested Tables"
 description: A second profile schema adds identity, purpose, scope, capabilities, declared technology, architecture, interfaces, references, and relationships as optional nested TOML tables, validated field by field, while version 1 keeps working.
 tags: [adr, profile, schema]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-28T12:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 

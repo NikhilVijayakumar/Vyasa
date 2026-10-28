@@ -61,8 +61,8 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 
 ## 8. Review, Merge, and Archive
 
-- [ ] 8.1 Pull request with the change ID.
-- [ ] 8.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 8.1 Pull request with the change ID. Skipped: owner chose direct merge to develop (solo repository).
+- [x] 8.2 `git fetch`, merge into `develop` after review and verification (never force-push).
 - [ ] 8.3 Archive the change.
 
 ## Verification Record

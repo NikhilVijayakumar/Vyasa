@@ -82,12 +82,12 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use `python` w
 ## 10. Documentation and Handover
 
 - [x] 10.1 Behavior matches the decision concepts, with the security caps added to the reading rules in code and tests.
-- [ ] 10.2 Mark the decision concepts stable when the owner accepts them.
+- [x] 10.2 Mark the decision concepts stable when the owner accepts them.
 
 ## 11. Review, Merge, and Archive
 
-- [ ] 11.1 Pull request with the change ID.
-- [ ] 11.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 11.1 Pull request with the change ID. Skipped: owner chose direct merge to develop (solo repository).
+- [x] 11.2 `git fetch`, merge into `develop` after review and verification (never force-push).
 - [ ] 11.3 Archive the change.
 
 ## Verification Record

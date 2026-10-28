@@ -3,13 +3,13 @@ type: Decision
 title: "Coding Agents Get Observed Facts and Differences as Context and Write the Profile Themselves"
 description: A read-only context bundle gives a coding agent the deterministic facts, the profile as read, and the differences between them; Vyasa never launches an agent or writes the profile.
 tags: [adr, profile, mcp, agents]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-28T12:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 
