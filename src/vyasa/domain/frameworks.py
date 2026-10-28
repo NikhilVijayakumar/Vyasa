@@ -49,6 +49,7 @@ class ParsedManifest:
     dependencies: tuple[Dependency, ...]
     skipped: int = 0
     workspace: bool = False
+    declared_name: str | None = None  # the package name the manifest declares, normalized; None when it declares none
 
 
 @dataclass(frozen=True)
@@ -63,6 +64,7 @@ class ManifestResult:
     total_dependencies: int
     skipped: int
     workspace: bool
+    declared_name: str | None = None
 
 
 @dataclass(frozen=True)

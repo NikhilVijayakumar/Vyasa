@@ -13,7 +13,7 @@ import sqlite3
 from collections.abc import Callable
 from datetime import datetime, timezone
 
-from vyasa.adapters.sqlite import projects, review
+from vyasa.adapters.sqlite import dependencies, projects, review
 from vyasa.application.indexing.store import freshness
 from vyasa.application.scanning.file_composition import default_file_types
 from vyasa.application.scanning.frameworks import default_registry
@@ -340,6 +340,17 @@ def get_project(
         "updated_at": row["updated_at"],
         "last_seen_at": row["last_seen_at"],
     }
+    return _envelope(connection, data, now())
+
+
+def get_project_dependencies(connection: sqlite3.Connection, project_id: str, *, now: Callable[[], datetime] = _utc_now) -> dict:
+    """Direct dependencies and dependents of one project from the current observations, with the coverage they rest on."""
+    if not isinstance(project_id, str) or not project_id:
+        raise IndexStoreError(INVALID_INPUT, "project_id must be a non-empty string")
+    row = connection.execute("SELECT project_id, display_name FROM projects WHERE project_id = ?", (project_id,)).fetchone()
+    if row is None:
+        raise IndexStoreError(PROJECT_NOT_FOUND, "no project has that identifier")
+    data = {"project_id": row["project_id"], "display_name": row["display_name"], **dependencies.project_dependencies(connection, project_id)}
     return _envelope(connection, data, now())
 
 

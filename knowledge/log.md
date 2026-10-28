@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-10-28
+* **Creation**: Added the draft decision [A Dependency Is Internal Only When Its Name Equals a Package Another Indexed Project Declares in the Same Ecosystem](/decisions/internal-dependencies-by-declared-package-name.md).
 * **Creation**: Added the draft decisions [Profile Schema Version 2 Declares the Project in Depth as Nested Tables](/decisions/profile-schema-v2-full-template.md) and [Coding Agents Get Observed Facts and Differences as Context and Write the Profile Themselves](/decisions/profile-context-for-agents.md).
 * **Creation**: Added the draft decision [Frameworks Come From Strictly Read Root Manifests With Scoped Dependencies and Honest States](/decisions/framework-detection-from-manifests.md).
 * **Update**: [Project Markers Are Presence-Only With Three States and Capped Relative Paths](/decisions/project-marker-observations.md) accepted (status stable) after implementation and verification.

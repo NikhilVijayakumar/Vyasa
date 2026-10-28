@@ -116,7 +116,7 @@ def _manifest(root: Path | str, name: str, ecosystem: str, limit: int, reader: C
     except Exception:
         return ManifestResult(name, ecosystem, MALFORMED, "structure", (), 0, 0, False)
     dependencies = tuple(sorted(parsed.dependencies, key=lambda d: (d.name, d.scope)))
-    return ManifestResult(name, ecosystem, PARSED, None, dependencies, len(dependencies), parsed.skipped, parsed.workspace)
+    return ManifestResult(name, ecosystem, PARSED, None, dependencies, len(dependencies), parsed.skipped, parsed.workspace, parsed.declared_name)
 
 
 def detect_frameworks(
@@ -145,7 +145,7 @@ def detect_frameworks(
     results = tuple(_manifest(root, name, ecosystem, limit, reader) for name, ecosystem in sorted(root_names))
     technologies = technologies_of(results, registry)  # from every dependency, before the storage cap
     capped = tuple(
-        ManifestResult(m.path, m.ecosystem, m.status, m.reason, m.dependencies[:MAX_DEPENDENCIES], m.total_dependencies, m.skipped, m.workspace)
+        ManifestResult(m.path, m.ecosystem, m.status, m.reason, m.dependencies[:MAX_DEPENDENCIES], m.total_dependencies, m.skipped, m.workspace, m.declared_name)
         for m in results
     )
     return FrameworkReport(capped, tuple(sorted(nested.items())), technologies, registry.version, stopped_by)

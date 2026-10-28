@@ -50,17 +50,20 @@ the data directory is not the default.
 }
 ```
 
-Tools: `search_projects`, `get_project`, `get_profile_context`, `get_index_status`,
-`get_profile_guide`. All are read-only; the server never scans, writes, or returns local paths.
+Tools: `search_projects`, `get_project`, `get_project_dependencies`, `get_profile_context`,
+`get_index_status`, `get_profile_guide`. All are read-only; the server never scans, writes, or returns local paths.
 Until `vyasa scan` has run, tools return the error code `INDEX_UNAVAILABLE`.
 
 ## 4. Limitations
 
 - **Phase 1 only.** No Google Sheets sync, no GitHub/Bitbucket API discovery, no remote
   scanning without a local checkout.
-- **Not provided yet:** `find_related_projects`, `get_project_dependencies`, and an MCP
-  refresh tool. Dependencies appear inside `get_project` under frameworks; refresh is
-  `vyasa scan` on the command line.
+- **Not provided yet:** `find_related_projects` and an MCP refresh tool (refresh is
+  `vyasa scan` on the command line).
+- **Dependencies are direct and root-level.** `get_project_dependencies` reads root manifests
+  only: no transitive dependencies, no lockfiles, no nested manifests (they are counted in
+  `coverage`). After upgrading, run `vyasa scan` again so declared package names are recorded;
+  until then `coverage` says they are unknown.
 - **Open decisions:** related-project criteria, grouping of multi-repository projects, and
   README quality are not assessed.
 - **Detection is rule-based.** Languages, markers, and frameworks come from documented rules
