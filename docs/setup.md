@@ -27,24 +27,38 @@ Either run from the venv or build a standalone executable.
 vyasa-mcp                      # stdio server; needs the index from `vyasa scan`
 ```
 
-Standalone build (Windows or Linux; builds for the OS it runs on):
+Standalone install (Windows or Linux; builds for the OS it runs on). One folder holds both
+executables and the data they share:
 
 ```bash
-cp .env.example .env           # set VYASA_MCP_OUT to the folder that keeps your MCP builds
-venv/bin/python scripts/build_mcp.py     # result: <VYASA_MCP_OUT>/Vyasa MCP/vyasa-mcp[.exe]
+cp .env.example .env           # set VYASA_MCP_OUT to the folder that keeps your Vyasa install
+venv/bin/python scripts/build_mcp.py
 ```
+
+```
+<VYASA_MCP_OUT>/Vyasa MCP/
+  vyasa/vyasa[.exe]            scan command (writes the index)
+  vyasa-mcp/vyasa-mcp[.exe]    MCP server (read-only)
+  data/config.toml             your workspace roots (seeded once from examples/config.toml)
+  data/index.sqlite3           the index, created by the first scan
+```
+
+Built executables use the `data/` folder of their install with no environment variables
+(`VYASA_HOME` still overrides). Edit `data/config.toml`, then run `<install>/vyasa/vyasa scan`
+from any directory; any process can then query the same data through `vyasa-mcp`. A rebuild
+replaces the two executable folders and never touches `data/`. To keep an existing per-user
+index, copy it into `data/`.
 
 ### MCP client configuration
 
-Point the client at the executable (or at `vyasa-mcp` inside the venv). Add `VYASA_HOME` only if
-the data directory is not the default.
+Point the client at the executable (or at `vyasa-mcp` inside the venv). A built executable needs
+no environment; from the venv, add `VYASA_HOME` if the data directory is not the default.
 
 ```json
 {
   "mcpServers": {
     "vyasa": {
-      "command": "E:\MCP\Vyasa MCP\vyasa-mcp.exe",
-      "env": { "VYASA_HOME": "C:\Users\you\AppData\Local\Vyasa" }
+      "command": "E:\MCP\Vyasa MCP\vyasa-mcp\vyasa-mcp.exe"
     }
   }
 }

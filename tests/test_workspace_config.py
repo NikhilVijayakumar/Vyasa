@@ -278,3 +278,18 @@ def test_single_quoted_literal_paths_load_without_escaping(tmp_path):
 def test_environment_variables_in_paths_are_not_expanded(tmp_path):
     with pytest.raises(ConfigError, match="absolute"):
         load(tmp_path, '[workspace]\nroots = ["$HOME/work"]\n')
+
+
+def test_frozen_executable_uses_the_data_folder_beside_its_folder(tmp_path):
+    exe = tmp_path / "root" / "vyasa-mcp" / "vyasa-mcp.exe"
+    assert data_directory({}, tmp_path, "win32", frozen_executable=exe) == tmp_path / "root" / "data"
+
+
+def test_home_override_beats_a_frozen_executable(tmp_path):
+    exe = tmp_path / "root" / "vyasa" / "vyasa.exe"
+    assert data_directory({"VYASA_HOME": str(tmp_path / "h")}, tmp_path, "win32", frozen_executable=exe) == tmp_path / "h"
+
+
+def test_source_run_keeps_the_platform_directory(tmp_path):
+    local = tmp_path / "Local"
+    assert data_directory({"LOCALAPPDATA": str(local)}, tmp_path, "win32", frozen_executable=None) == local / "Vyasa"
