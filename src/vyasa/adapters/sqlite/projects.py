@@ -223,6 +223,7 @@ def checkout_composition(connection: sqlite3.Connection, checkout_id: int) -> di
 
 
 def _store_frameworks(connection: sqlite3.Connection, observation: int, found: FrameworkReport) -> None:
+    connection.execute("UPDATE language_observations SET names_recorded = 1 WHERE observation_id = ?", (observation,))
     for manifest in found.manifests:
         connection.execute(
             "INSERT INTO checkout_manifests (observation_id, path, ecosystem, status, reason, total_dependencies, skipped, workspace,"

@@ -26,33 +26,33 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use the projec
 
 **Traceability:** Requirements: The tool lists direct dependencies with their evidence · Knowledge: `knowledge/decisions/framework-detection-from-manifests.md`
 
-- [ ] 3.1 Test first: scope and source, same name in two scopes, ordering, unknown id, invalid id, no local path, only active checkouts' latest observation.
-- [ ] 3.2 Implement `projects.project_dependencies` (own dependencies) and `query.get_project_dependencies` with the envelope and errors.
-- [ ] 3.3 Run tests; refactor.
+- [x] 3.1 Test first: scope and source, same name in two scopes, ordering, unknown id, invalid id, no local path, only active checkouts' latest observation.
+- [x] 3.2 Implement `projects.project_dependencies` (own dependencies) and `query.get_project_dependencies` with the envelope and errors.
+- [x] 3.3 Run tests; refactor.
 
 ## 4. Implementation Slice: internal, ambiguous, external
 
 **Traceability:** Requirements: A dependency is internal only by exact name in one ecosystem
 
-- [ ] 4.1 Test first: internal, other ecosystem, ambiguous with every candidate, not indexed, not itself, normalization, missing checkout is not a target.
-- [ ] 4.2 Add the resolution join on `(ecosystem, declared_name)` excluding the project itself.
-- [ ] 4.3 Run tests; refactor.
+- [x] 4.1 Test first: internal, other ecosystem, ambiguous with every candidate, not indexed, not itself, normalization, missing checkout is not a target.
+- [x] 4.2 Add the resolution join on `(ecosystem, declared_name)` excluding the project itself.
+- [x] 4.3 Run tests; refactor.
 
 ## 5. Implementation Slice: dependents
 
 **Traceability:** Requirements: The tool lists dependents
 
-- [ ] 5.1 Test first: a dependent, ambiguous dependent, none, ordering, truncation at 100 with total.
-- [ ] 5.2 Add the reverse join with a count and the 100 limit.
-- [ ] 5.3 Run tests; refactor.
+- [x] 5.1 Test first: a dependent, ambiguous dependent, none, ordering, truncation at 100 with total.
+- [x] 5.2 Add the reverse join with a count and the 100 limit.
+- [x] 5.3 Run tests; refactor.
 
 ## 6. Implementation Slice: coverage
 
 **Traceability:** Requirements: Every answer states its coverage · Knowledge: `knowledge/decisions/partial-results-never-imply-absence.md`
 
-- [ ] 6.1 Test first: complete, unparsed manifest, partial walk, not assessed, nested manifests, names not recorded yet, other projects unchecked.
-- [ ] 6.2 Build the coverage object from manifest rows, observation status, nested counts, and the unchecked count.
-- [ ] 6.3 Run tests; refactor.
+- [x] 6.1 Test first: complete, unparsed manifest, partial walk, not assessed, nested manifests, names not recorded yet, other projects unchecked.
+- [x] 6.2 Build the coverage object from manifest rows, observation status, nested counts, and the unchecked count.
+- [x] 6.3 Run tests; refactor.
 
 ## 7. Implementation Slice: MCP declaration
 

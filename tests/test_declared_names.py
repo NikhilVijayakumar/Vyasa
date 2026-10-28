@@ -83,3 +83,8 @@ def test_name_is_stored_on_the_manifest_row(db):
     store(db, make_run([framed("a", fw(replace(JS, declared_name="app"), PY))]))
     got = {r[1]: r[-1] for r in rows(db, "checkout_manifests", "a")}
     assert got == {"package.json": "app", "pyproject.toml": None}
+
+
+def test_new_observations_say_names_were_recorded(db):
+    store(db, make_run([framed("a", fw(PY))]))
+    assert [r[0] for r in db.execute("SELECT names_recorded FROM language_observations")] == [1]
