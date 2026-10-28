@@ -3,13 +3,13 @@ type: Decision
 title: "A Dependency Is Internal Only When Its Name Equals a Package Another Indexed Project Declares in the Same Ecosystem"
 description: Dependencies and dependents come from the direct dependencies already read from root manifests; a dependency maps to an indexed project only by exact normalized name within one ecosystem, and any other case stays external or ambiguous with the coverage stated.
 tags: [adr, mcp, dependencies, evidence]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-28T14:00:00Z }
 ---
 
 # Status
 
-Proposed (draft). It becomes stable when reviewed and accepted.
+Accepted. Implemented and verified.
 
 # Context
 

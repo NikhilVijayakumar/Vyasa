@@ -74,13 +74,13 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use the projec
 ## 9. Documentation and Handover
 
 - [x] 9.1 README MCP section and `docs/setup.md` list the tool and explain coverage; remove "get_project_dependencies not provided" from the limitations.
-- [ ] 9.2 Mark the decision concept stable when the owner accepts it.
+- [x] 9.2 Mark the decision concept stable when the owner accepts it.
 
 ## 10. Review, Merge, and Archive
 
-- [ ] 10.1 Pull request with the change ID.
-- [ ] 10.2 `git fetch`, merge into `develop` after review and verification (never force-push).
-- [ ] 10.3 Archive the change.
+- [x] 10.1 Pull request with the change ID. Skipped: owner chose direct merge to develop (solo repository).
+- [x] 10.2 `git fetch`, merge into `develop` after review and verification (never force-push).
+- [x] 10.3 Archive the change.
 
 ## Verification Record
 
@@ -92,4 +92,4 @@ Each slice is test first (Red–Green–Refactor) and ends green. Use the projec
 
 ## Completion Summary
 
-Implemented through task 9.1. Pending: owner acceptance of the decision concept (9.2), then merge and archive (10.1–10.3).
+Implemented, verified, and accepted; merged to develop and archived.
