@@ -15,7 +15,8 @@ from typing import TextIO
 from vyasa.adapters.sqlite.database import open_index
 from vyasa.application import profile_context
 from vyasa.application import query as queries
-from vyasa.application.configuration.workspace import load_workspace_config, check_roots
+from vyasa.application.configuration.workspace import load_workspace_config, check_roots, data_directory
+from vyasa.application.configuration.workspace_names import read_name, write_name
 from vyasa.application.indexing.scan import RootResult, scan_workspace
 from vyasa.application.scanning.frameworks import default_registry
 from vyasa.application.indexing.store import index_path
@@ -141,7 +142,7 @@ def indexed_query(args: argparse.Namespace, environ: Mapping[str, str], out: Tex
                 raise IndexStoreError(UNAVAILABLE, config.reason)
             if args.operation == "workspaces":
                 out.write(json.dumps({"schema_version": "1", "data": {"workspaces": [
-                    {"root": str(item.root), "status": item.status} for item in check_roots(config)
+                    {"root": str(item.root), "status": item.status, "name": read_name(data_directory(environ), item.root)} for item in check_roots(config)
                 ]}}) + "\n")
                 return OK
             workspace = str(selected_root(config, args.workspace))
@@ -179,6 +180,21 @@ def indexed_query(args: argparse.Namespace, environ: Mapping[str, str], out: Tex
     return OK
 
 
+def name_workspace(root: str, name: str, environ: Mapping[str, str], out: TextIO) -> int:
+    try:
+        config = load_workspace_config(None, environ)
+        if isinstance(config, NotConfigured):
+            raise IndexStoreError(UNAVAILABLE, config.reason)
+        configured = selected_root(config, root)
+        value = write_name(data_directory(environ), configured, name)
+        out.write(json.dumps({"schema_version": "1", "data": {"root": str(configured), "name": value}}) + "\n")
+        return OK
+    except (IndexStoreError, ConfigError) as error:
+        code = error.code if isinstance(error, IndexStoreError) else INVALID_INPUT
+        out.write(json.dumps({"error": {"code": code, "message": str(error)}}) + "\n")
+        return INDEX
+
+
 def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = None, out: TextIO | None = None, err: TextIO | None = None) -> int:
     out, err = out or sys.stdout, err or sys.stderr
     parser = argparse.ArgumentParser(prog="vyasa", description="Local-first workspace intelligence.")
@@ -186,6 +202,11 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
     scan_parser = commands.add_parser("scan", help="scan the configured workspace roots and update the index")
     scan_parser.add_argument("--workspace", help="scan only this configured workspace root")
     scan_parser.add_argument("--config", help="path to a configuration file (default: config.toml in the data directory)")
+    workspace_parser = commands.add_parser("workspace", help="manage local workspace metadata")
+    workspace_commands = workspace_parser.add_subparsers(dest="workspace_operation", required=True)
+    set_name_parser = workspace_commands.add_parser("set-name")
+    set_name_parser.add_argument("--root", required=True)
+    set_name_parser.add_argument("--name", required=True)
     query_parser = commands.add_parser("query", help="query the existing index as JSON without scanning")
     operations = query_parser.add_subparsers(dest="operation", required=True)
     operations.add_parser("version", help="report the installed backend version")
@@ -209,6 +230,8 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
         args = parser.parse_args(argv)
     except SystemExit as exit_:
         return USAGE if exit_.code else OK
+    if args.command == "workspace":
+        return name_workspace(args.root, args.name, os.environ if environ is None else environ, out)
     if args.command == "profile-context":
         return profile_context_command(args.path, out, err)
     if args.command == "query":

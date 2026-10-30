@@ -9,3 +9,5 @@
 * [Explicit Operations](explicit-operations.md) - Queries only read the index; anything that scans, writes, or contacts another system is a separate operation the user chose.
 * [Local-First Operation](local-first.md) - The core works entirely on the local machine and offline; integrations extend it without becoming required.
 * [Glossary](glossary.md) - Definitions of the terms Vyasa documents use, in one place.
+
+* [Workspace Names](workspace-names.md) - Human-managed local display names for configured workspace roots.

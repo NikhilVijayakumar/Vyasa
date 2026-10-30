@@ -1,0 +1,3 @@
+# Design
+
+Store a small JSON name record per normalized configured root, addressed by a SHA-256 digest under the local data directory. This is human-managed metadata, not an additional source of configured roots. Read the existing record before replacing it, reject corrupt records, write a temporary file in the same directory and atomically replace the record. A missing record means unnamed. Duplicate names are allowed; clients retain the root. The existing TOML remains unchanged and existing installations with no metadata continue to work. Moving a root results in a new unnamed root; old metadata remains available if the root returns. Backups should include the metadata directory.
