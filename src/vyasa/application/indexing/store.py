@@ -85,9 +85,18 @@ def store_run(
     return StoredRun(run.run_id, status, dict(counts))
 
 
+def latest_workspace_run(connection: sqlite3.Connection):
+    """Read the latest workspace run, including schema-11 read-only indexes."""
+    version = connection.execute("PRAGMA user_version").fetchone()[0]
+    where = " WHERE scope_kind = 'workspace'" if version >= 12 else ""
+    return connection.execute(
+        "SELECT status, finished_at, counts FROM scan_runs" + where + " ORDER BY started_at DESC, rowid DESC LIMIT 1"
+    ).fetchone()
+
+
 def freshness(connection: sqlite3.Connection, now: datetime | None = None) -> str:
     """Read-only: how current the index is."""
-    row = connection.execute("SELECT status, finished_at FROM scan_runs ORDER BY started_at DESC, rowid DESC LIMIT 1").fetchone()
+    row = latest_workspace_run(connection)
     if row is None:
         return _freshness(None, None, now or _utc_now())
     finished = datetime.fromisoformat(row["finished_at"]) if row["finished_at"] else None

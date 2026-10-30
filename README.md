@@ -489,6 +489,8 @@ To give the agent the facts Vyasa has already observed, have it call the MCP too
 
 ## Scanning
 
+`vyasa scan --project PROJECT_ID --json` refreshes the indexed checkouts of one project within currently configured roots. It returns a versioned JSON result with a status and each checkout outcome; exit 1 can mean partial or failed, so inspect the status. It leaves unrelated checkouts and index-wide freshness unchanged. A missing recorded path is reported as missing; the operation does not search for moved checkouts. Clients can probe `vyasa query capabilities` for `project_scan` version 1 before using this command.
+
 `vyasa scan` scans the workspace roots listed in `config.toml` (several are allowed) and nothing else. The first run creates the data directory and the index; later runs update it in place without duplicates. It reports each root's status and anything it skipped, and exits 0 only when every root completed (1 partial or failed, 2 configuration problem, 3 another scan is running, 4 index problem). It never changes a repository.
 
 ```bash

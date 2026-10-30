@@ -14,7 +14,7 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 
 from vyasa.adapters.sqlite import dependencies, projects, reports, review
-from vyasa.application.indexing.store import freshness
+from vyasa.application.indexing.store import freshness, latest_workspace_run
 from vyasa.application.scanning.file_composition import default_file_types
 from vyasa.application.scanning.frameworks import default_registry
 from vyasa.domain.markers import MARKERS
@@ -406,9 +406,7 @@ def get_project_dependencies(connection: sqlite3.Connection, project_id: str, *,
 
 
 def get_index_status(connection: sqlite3.Connection, *, now: Callable[[], datetime] = _utc_now) -> dict:
-    run = connection.execute(
-        "SELECT status, finished_at, counts FROM scan_runs ORDER BY started_at DESC, rowid DESC LIMIT 1"
-    ).fetchone()
+    run = latest_workspace_run(connection)
     counts = {s: 0 for s in PROJECT_STATES}
     for r in connection.execute("SELECT state, COUNT(*) AS n FROM projects GROUP BY state"):
         counts[r["state"]] = r["n"]
