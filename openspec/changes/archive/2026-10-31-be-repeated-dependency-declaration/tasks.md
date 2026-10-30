@@ -68,8 +68,8 @@
 - [x] 6.2 Ensure the required review and verification gates are satisfied.
 - [x] 6.3 Prepare the pull request with the OpenSpec change ID and traceability references.
 - [x] 6.4 Merge the normal feature or fix change into `develop` only after required review and verification.
-- [ ] 6.5 Confirm the change is integrated according to project policy before archiving its OpenSpec artifacts.
-- [ ] 6.6 Archive the change and preserve the relevant traceability and durable knowledge.
+- [x] 6.5 Confirm the change is integrated according to project policy before archiving its OpenSpec artifacts. Integrated on `develop` by merge `b1cfb0d` (`fix/be-repeated-dependency-declaration`); `openspec validate` passes.
+- [x] 6.6 Archive the change and preserve the relevant traceability and durable knowledge. Archived as `openspec/changes/archive/2026-10-31-be-repeated-dependency-declaration`; `framework-detection` spec updated.
 
 ---
 
@@ -98,4 +98,4 @@
 - **Outstanding failures or risks:** None. Every check in the record was executed; none is skipped or blocked.
 - **Known deviations:** None in behavior. `python3`, the interpreter AGENTS.md names, is not on this host, so the project venv interpreter ran the same scripts.
 - **Pull request:** None (direct fix branch merge per project policy)
-- **Archive status:** Not Archived
+- **Archive status:** Archived (2026-10-31)
