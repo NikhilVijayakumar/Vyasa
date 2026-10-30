@@ -12,3 +12,5 @@ Query output is JSON. Indexed success results use the existing schema_version, d
 ## Workspace selection
 
 `vyasa query workspaces` lists configured roots and their accessibility without creating an index. `vyasa query search --workspace ROOT` filters before pagination. `vyasa scan --workspace ROOT` scans one configured root; omit the option to scan all configured roots. An unconfigured root is rejected. Workspace paths are local data. Project-level scans and editable workspace names are not yet supported.
+
+`vyasa query technologies` lists the versioned detector registry without opening the index. These are supported filters, not a claim that any project uses them.
