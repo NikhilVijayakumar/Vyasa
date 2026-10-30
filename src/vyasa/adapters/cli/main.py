@@ -17,6 +17,7 @@ from vyasa.application import profile_context
 from vyasa.application import query as queries
 from vyasa.application.configuration.workspace import load_workspace_config, check_roots
 from vyasa.application.indexing.scan import RootResult, scan_workspace
+from vyasa.application.scanning.frameworks import default_registry
 from vyasa.application.indexing.store import index_path
 from vyasa.domain.index import IN_PROGRESS, INTERNAL_ERROR, UNAVAILABLE, INVALID_INPUT, IndexStoreError
 from vyasa.domain.workspace_config import ConfigError, NotConfigured
@@ -121,6 +122,17 @@ def indexed_query(args: argparse.Namespace, environ: Mapping[str, str], out: Tex
             return INDEX
         out.write(json.dumps({"schema_version": "1", "data": {"version": package_version}}) + "\n")
         return OK
+    if args.operation == "technologies":
+        try:
+            registry = default_registry()
+            entries = [{"key": e.key, "name": e.name, "category": e.category, "ecosystem": e.ecosystem}
+                       for e in sorted(registry.entries, key=lambda e: (e.name.casefold(), e.key))]
+            out.write(json.dumps({"schema_version": "1", "data": {"registry_version": registry.version,
+                                                                      "technologies": entries}}) + "\n")
+            return OK
+        except Exception:  # noqa: BLE001 - avoid exposing internal paths
+            out.write(json.dumps({"error": {"code": INTERNAL_ERROR, "message": "The technology catalog is unavailable."}}) + "\n")
+            return INDEX
     workspace = None
     if args.operation == "workspaces" or (args.operation == "search" and args.workspace is not None):
         try:
@@ -179,6 +191,7 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
     operations.add_parser("version", help="report the installed backend version")
     operations.add_parser("status", help="report index status")
     operations.add_parser("workspaces", help="list configured workspace roots")
+    operations.add_parser("technologies", help="list supported technology filters")
     search_parser = operations.add_parser("search", help="search indexed projects")
     search_parser.add_argument("--query")
     search_parser.add_argument("--technology")
