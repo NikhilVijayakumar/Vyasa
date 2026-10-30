@@ -1,0 +1,3 @@
+# Design
+
+Use the existing configuration loader and root checks. Validate root equality against its normalized configured values; never accept an arbitrary filesystem path. Query service filters with a bound `checkouts.root` predicate before ordering and pagination. Scan selection narrows the immutable `WorkspaceConfig` to the selected existing root and uses the existing full-root scanning pipeline, so absent checkouts under other roots cannot be reconciled as missing. No project-scoped scan is introduced. Invalid, missing and inaccessible configuration is visible as an error or root status; no query initiates scanning.
