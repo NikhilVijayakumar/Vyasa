@@ -69,7 +69,7 @@ The system SHALL record for every supported root manifest a status of `parsed`, 
 
 ### Requirement: Dependencies are recorded with constraint and scope
 
-The system SHALL record the direct dependencies of a parsed manifest with name, declared constraint as written, and scope of `runtime`, `dev`, `optional`, or `build`, SHALL NOT merge scopes, and SHALL count dependency kinds it does not support as skipped.
+The system SHALL record the direct dependencies of a parsed manifest with name, declared constraint as written, and scope of `runtime`, `dev`, `optional`, or `build`, SHALL NOT merge scopes, and SHALL count dependency kinds it does not support as skipped. The system SHALL store at most one dependency row per name and scope for a manifest: when the manifest declares the same name more than once in the same scope, the system SHALL store the first declaration, with its constraint, and SHALL NOT store the repeats. A repeat in one scope SHALL NOT fail the scan, change the manifest's status, or affect the dependencies of another manifest. The declared-entry total SHALL be reported as before.
 
 #### Scenario: Python scopes
 
@@ -136,6 +136,30 @@ The system SHALL record the direct dependencies of a parsed manifest with name, 
 - **GIVEN** a root `package.json` that declares workspaces
 - **WHEN** the checkout is scanned
 - **THEN** the manifest carries a workspace flag and its members are not read
+
+#### Scenario: Declared twice in one scope
+
+- **GIVEN** a `pyproject.toml` whose two optional-dependencies groups both declare `pandas`, first as `>=2` and then as `>=1`
+- **WHEN** the checkout is scanned
+- **THEN** one `pandas` row with scope `optional` and constraint `>=2` is stored, the scan completes, and the manifest is `parsed`
+
+#### Scenario: Same name in two scopes
+
+- **GIVEN** a `package.json` declaring `lodash` in `dependencies` and in `devDependencies`
+- **WHEN** the checkout is scanned
+- **THEN** two rows are stored, one with scope `runtime` and one with scope `dev`
+
+#### Scenario: Repeat does not disturb other manifests
+
+- **GIVEN** one manifest that repeats a dependency and one that does not
+- **WHEN** the checkout is scanned
+- **THEN** both manifests are stored with their own observation and no manifest is missing
+
+#### Scenario: A real violation still fails
+
+- **GIVEN** a dependency whose scope is outside `runtime`, `dev`, `optional`, and `build`
+- **WHEN** it is stored
+- **THEN** the constraint violation still raises rather than being skipped
 
 ### Requirement: Technologies come only from the registry
 
