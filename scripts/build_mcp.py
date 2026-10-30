@@ -53,6 +53,7 @@ def build_one(name: str, entry_text: str, work_dir: Path) -> Path:
             "--paths", str(ROOT / "src"),
             "--collect-data", "vyasa",
             "--copy-metadata", "mcp",
+            "--copy-metadata", "vyasa",
             "--distpath", str(work_dir / "dist"),
             "--workpath", str(work_dir / "build" / name),
             "--specpath", str(work_dir),
