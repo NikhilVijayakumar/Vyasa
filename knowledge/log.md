@@ -47,3 +47,5 @@
 * **Initialization**: Created the bundle, its profile, and section indexes.
 * **Migration**: Moved the architecture documents from `docs/architecture/` into [Architecture](/architecture/) as draft concepts.
 * **Creation**: Added [Evidence and Provenance](/concepts/evidence-and-provenance.md) and [Vertical Slices](/practices/vertical-slices.md).
+
+* **Creation (2026-10-30):** Added [Workspace Names](/concepts/workspace-names.md), human-managed local metadata for configured roots.

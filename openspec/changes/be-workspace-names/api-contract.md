@@ -1,0 +1,3 @@
+# API contract
+
+`vyasa workspace set-name --root ROOT --name NAME` validates the configured root and a trimmed nonempty name of at most 100 characters without control characters, then returns a JSON envelope. `vyasa query workspaces` adds nullable `name` to each item. Invalid input, corrupt metadata and write failures return a structured error and nonzero exit. The operation never scans, modifies the index, or rewrites TOML. Names are machine-local metadata under the data directory, not a shared workspace identity. Each configured root has independent atomic metadata; concurrent edits to one root use last completed write.
