@@ -41,13 +41,22 @@ def _backup(connection: sqlite3.Connection, path: Path, version: int) -> None:
 
 
 def _apply(connection: sqlite3.Connection, number: int, file: Path) -> None:
-    script = f"BEGIN;\n{file.read_text(encoding='utf-8')}\nPRAGMA user_version = {number};\nCOMMIT;"
+    rebuild = file.name == "0012_project_scan_scope.sql"
+    check = ("CREATE TEMP TABLE _migration_fk_check (n INTEGER CHECK (n = 0));"
+             "INSERT INTO _migration_fk_check SELECT COUNT(*) FROM pragma_foreign_key_check;"
+             "DROP TABLE _migration_fk_check;") if rebuild else ""
+    script = f"BEGIN;\n{file.read_text(encoding='utf-8')}\n{check}\nPRAGMA user_version = {number};\nCOMMIT;"
+    if rebuild:
+        connection.execute("PRAGMA foreign_keys = OFF")
     try:
         connection.executescript(script)
     except sqlite3.Error as error:
         if connection.in_transaction:
             connection.rollback()
         raise IndexStoreError(MIGRATION_FAILED, f"migration {file.name} failed: {error}") from error
+    finally:
+        if rebuild:
+            connection.execute("PRAGMA foreign_keys = ON")
 
 
 def open_memory_index(migrations: Path = MIGRATIONS) -> sqlite3.Connection:

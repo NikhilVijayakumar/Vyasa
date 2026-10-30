@@ -56,6 +56,8 @@ vyasa-mcp                       # start the MCP server over stdio
 
 `vyasa scan` exit codes: `0` all roots completed, `1` partial or failed, `2` configuration problem, `3` another scan is running, `4` index problem.
 
+`vyasa scan --project PROJECT_ID --json` refreshes only the indexed checkouts of one project inside the configured roots. The project identifier comes from an indexed project query. Output is one versioned JSON object with the run status and each checkout's outcome (`completed`, or `failed` with a reason such as `MISSING`, `INACCESSIBLE`, `OUTSIDE_CONFIGURED_ROOTS`, `IDENTITY_CONFLICT` or `SCAN_FAILED`). Exit `1` means `partial` or `failed`; read the status instead of inferring it. A project scan never marks other projects missing and never changes index-wide freshness. Probe `vyasa query capabilities` first: support is `{"project_scan": 1}` and any other answer means the command is unsupported. A recorded path that no longer exists is `MISSING`; Vyasa does not search for moved checkouts.
+
 MCP client configuration (the command path is the only setting a built executable needs):
 
 ```json

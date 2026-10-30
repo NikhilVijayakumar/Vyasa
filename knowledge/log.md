@@ -49,3 +49,4 @@
 * **Creation**: Added [Evidence and Provenance](/concepts/evidence-and-provenance.md) and [Vertical Slices](/practices/vertical-slices.md).
 
 * **Creation (2026-10-30):** Added [Workspace Names](/concepts/workspace-names.md), human-managed local metadata for configured roots.
+* **Creation (2026-10-30):** Added [Project-Scoped Scans Preserve Workspace Freshness](/decisions/project-scoped-scan-freshness.md) as a draft decision.

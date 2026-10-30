@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
 from importlib.metadata import PackageNotFoundError, version
 from dataclasses import replace
@@ -18,6 +20,7 @@ from vyasa.application import query as queries
 from vyasa.application.configuration.workspace import load_workspace_config, check_roots, data_directory
 from vyasa.application.configuration.workspace_names import read_name, write_name
 from vyasa.application.indexing.scan import RootResult, scan_workspace
+from vyasa.application.indexing.project_scan import scan_project
 from vyasa.application.scanning.frameworks import default_registry
 from vyasa.application.indexing.store import index_path
 from vyasa.domain.index import IN_PROGRESS, INTERNAL_ERROR, UNAVAILABLE, INVALID_INPUT, IndexStoreError
@@ -99,6 +102,37 @@ def scan(config_path: str | None, environ: Mapping[str, str], out: TextIO, err: 
     return OK if all(r.stored.status == "completed" for r in results) else PARTIAL
 
 
+def project_scan_command(project_id: str, config_path: str | None, environ: Mapping[str, str], out: TextIO) -> int:
+    def error(code: str, message: str, exit_code: int) -> int:
+        out.write(json.dumps({"error": {"code": code, "message": message}}) + "\n")
+        return exit_code
+
+    if not project_id or len(project_id) > 200:
+        return error("INVALID_INPUT", "Invalid project identifier.", USAGE)
+    try:
+        config = load_workspace_config(config_path, environ)
+    except ConfigError:
+        return error("CONFIG_INVALID", "The workspace configuration is invalid.", USAGE)
+    if isinstance(config, NotConfigured):
+        return error("CONFIG_NOT_FOUND", "The workspace configuration is unavailable.", USAGE)
+    path = index_path(environ)
+    if not path.is_file():
+        return error(UNAVAILABLE, "The index is unavailable.", INDEX)
+    try:
+        connection = open_index(path)
+        try:
+            result = scan_project(config, connection, project_id, owner=f"cli-{os.getpid()}")
+        finally:
+            connection.close()
+    except IndexStoreError as exc:
+        exit_code = BUSY if exc.code == IN_PROGRESS else USAGE if exc.code in (INVALID_INPUT, "PROJECT_NOT_FOUND") else INDEX
+        return error(exc.code, "The project scan could not be completed.", exit_code)
+    except Exception:
+        return error(INTERNAL_ERROR, "The project scan could not be completed.", INDEX)
+    out.write(json.dumps({"schema_version": "1", "data": result}) + "\n")
+    return OK if result["status"] == "completed" else PARTIAL
+
+
 def profile_context_command(path: str, out: TextIO, err: TextIO) -> int:
     """Print the context bundle of one repository from a live read-only scan. Nothing is written anywhere."""
     try:
@@ -115,6 +149,9 @@ def profile_context_command(path: str, out: TextIO, err: TextIO) -> int:
 
 def indexed_query(args: argparse.Namespace, environ: Mapping[str, str], out: TextIO) -> int:
     """Run one fixed indexed query; never create or update the index."""
+    if args.operation == "capabilities":
+        out.write(json.dumps({"schema_version": "1", "data": {"capabilities": {"project_scan": 1}}}) + "\n")
+        return OK
     if args.operation == "version":
         try:
             package_version = version("vyasa")
@@ -201,6 +238,8 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
     commands = parser.add_subparsers(dest="command", required=True)
     scan_parser = commands.add_parser("scan", help="scan the configured workspace roots and update the index")
     scan_parser.add_argument("--workspace", help="scan only this configured workspace root")
+    scan_parser.add_argument("--project", help="scan one indexed project")
+    scan_parser.add_argument("--json", action="store_true", help="return structured project scan results")
     scan_parser.add_argument("--config", help="path to a configuration file (default: config.toml in the data directory)")
     workspace_parser = commands.add_parser("workspace", help="manage local workspace metadata")
     workspace_commands = workspace_parser.add_subparsers(dest="workspace_operation", required=True)
@@ -210,6 +249,7 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
     query_parser = commands.add_parser("query", help="query the existing index as JSON without scanning")
     operations = query_parser.add_subparsers(dest="operation", required=True)
     operations.add_parser("version", help="report the installed backend version")
+    operations.add_parser("capabilities", help="report supported backend capabilities")
     operations.add_parser("status", help="report index status")
     operations.add_parser("workspaces", help="list configured workspace roots")
     operations.add_parser("technologies", help="list supported technology filters")
@@ -226,10 +266,26 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
         "profile-context", help="print what Vyasa observes about one repository, for a coding agent writing its profile"
     )
     context_parser.add_argument("path", nargs="?", default=".", help="the repository root (default: the current directory)")
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    project_request = any(arg == "--project" or arg.startswith("--project=") for arg in arguments)
     try:
-        args = parser.parse_args(argv)
+        if project_request:
+            with contextlib.redirect_stderr(io.StringIO()):
+                args = parser.parse_args(arguments)
+        else:
+            args = parser.parse_args(arguments)
     except SystemExit as exit_:
+        if exit_.code and project_request:
+            out.write(json.dumps({"error": {"code": "INVALID_INPUT", "message": "Invalid project scan arguments."}}) + "\n")
         return USAGE if exit_.code else OK
+    if args.command == "scan" and args.json and args.project is None:
+        out.write(json.dumps({"error": {"code": "INVALID_INPUT", "message": "Invalid project scan arguments."}}) + "\n")
+        return USAGE
+    if args.command == "scan" and args.project is not None:
+        if not args.json or args.workspace is not None:
+            out.write(json.dumps({"error": {"code": "INVALID_INPUT", "message": "Invalid project scan arguments."}}) + "\n")
+            return USAGE
+        return project_scan_command(args.project, args.config, os.environ if environ is None else environ, out)
     if args.command == "workspace":
         return name_workspace(args.root, args.name, os.environ if environ is None else environ, out)
     if args.command == "profile-context":

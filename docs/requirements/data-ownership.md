@@ -246,6 +246,8 @@ The following matrix defines the proposed initial ownership model.
 | Workspace root | Current device | Authoritative local configuration | Never export |
 | Local scan timestamp | Vyasa scan operation | Authoritative locally | Shared scan timestamp only under defined semantics |
 | Local scan status | Vyasa scan operation | Authoritative locally | Share only a clearly labeled summary if needed |
+| Local scan scope and selected project | Vyasa scan operation | Authoritative locally | Never export machine-local scope details |
+| Local checkout scan outcome and reason | Vyasa scan operation | Authoritative locally with checkout identity | Share only an approved path-free summary |
 | Remote scan timestamp | Vyasa remote discovery operation | Cache | Shared only under defined semantics |
 | Provider visibility | Remote provider | Cache | Synchronized copy if approved |
 | Generated draft profile | Vyasa, as a non-authoritative draft producer | Optional local file/state | Never export as canonical |
