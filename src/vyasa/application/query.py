@@ -127,6 +127,7 @@ def search_projects(
     marker: object = None,
     marker_state: object = None,
     technology: object = None,
+    workspace: str | None = None,
     limit: int = DEFAULT_LIMIT,
     cursor: str | None = None,
     now: Callable[[], datetime] = _utc_now,
@@ -156,6 +157,11 @@ def search_projects(
 
     # Clauses are fixed strings; every value is bound.
     where, args = ["1 = 1"], []
+    if workspace is not None:
+        if not isinstance(workspace, str) or not workspace:
+            raise IndexStoreError(INVALID_INPUT, "workspace must be a non-empty root")
+        where.append("EXISTS (SELECT 1 FROM checkouts c WHERE c.project_id = p.project_id AND c.root = ?)")
+        args.append(workspace)
     needle = query.lower() if query else None
     if needle:
         where.append(

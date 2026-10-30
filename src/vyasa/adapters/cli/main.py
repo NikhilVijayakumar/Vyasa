@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import json
 from importlib.metadata import PackageNotFoundError, version
+from dataclasses import replace
+from pathlib import Path
 import os
 import sys
 from collections.abc import Mapping, Sequence
@@ -13,10 +15,10 @@ from typing import TextIO
 from vyasa.adapters.sqlite.database import open_index
 from vyasa.application import profile_context
 from vyasa.application import query as queries
-from vyasa.application.configuration.workspace import load_workspace_config
+from vyasa.application.configuration.workspace import load_workspace_config, check_roots
 from vyasa.application.indexing.scan import RootResult, scan_workspace
 from vyasa.application.indexing.store import index_path
-from vyasa.domain.index import IN_PROGRESS, INTERNAL_ERROR, UNAVAILABLE, IndexStoreError
+from vyasa.domain.index import IN_PROGRESS, INTERNAL_ERROR, UNAVAILABLE, INVALID_INPUT, IndexStoreError
 from vyasa.domain.workspace_config import ConfigError, NotConfigured
 
 OK, PARTIAL, USAGE, BUSY, INDEX = 0, 1, 2, 3, 4
@@ -43,7 +45,15 @@ def _root_lines(result: RootResult) -> list[str]:
     return lines
 
 
-def scan(config_path: str | None, environ: Mapping[str, str], out: TextIO, err: TextIO) -> int:
+def selected_root(config, requested: str) -> Path:
+    key = os.path.normcase(os.path.normpath(requested))
+    root = next ( (r for r in config.roots if os.path.normcase(os.path.normpath(str(r))) == key), None )
+    if root is None:
+        raise IndexStoreError(INVALID_INPUT, "The workspace is not a configured root.")
+    return root
+
+
+def scan(config_path: str | None, environ: Mapping[str, str], out: TextIO, err: TextIO, workspace: str | None = None) -> int:
     try:
         config = load_workspace_config(config_path, environ)
     except ConfigError as error:
@@ -52,6 +62,13 @@ def scan(config_path: str | None, environ: Mapping[str, str], out: TextIO, err: 
     if isinstance(config, NotConfigured):
         err.write(f"Nothing to scan: {config.reason}.\nList your workspace roots in config.toml, for example:\n{EXAMPLE}\n")
         return USAGE
+
+    if workspace is not None:
+        try:
+            config = replace(config, roots=(selected_root(config, workspace),))
+        except IndexStoreError as error:
+            err.write(f"{error}\n")
+            return USAGE
 
     index_file = index_path(environ)
     created = not index_file.exists()
@@ -104,6 +121,21 @@ def indexed_query(args: argparse.Namespace, environ: Mapping[str, str], out: Tex
             return INDEX
         out.write(json.dumps({"schema_version": "1", "data": {"version": package_version}}) + "\n")
         return OK
+    workspace = None
+    if args.operation == "workspaces" or (args.operation == "search" and args.workspace is not None):
+        try:
+            config = load_workspace_config(None, environ)
+            if isinstance(config, NotConfigured):
+                raise IndexStoreError(UNAVAILABLE, config.reason)
+            if args.operation == "workspaces":
+                out.write(json.dumps({"schema_version": "1", "data": {"workspaces": [
+                    {"root": str(item.root), "status": item.status} for item in check_roots(config)
+                ]}}) + "\n")
+                return OK
+            workspace = str(selected_root(config, args.workspace))
+        except (IndexStoreError, ConfigError) as error:
+            out.write(json.dumps({"error": {"code": INVALID_INPUT, "message": str(error)}}) + "\n")
+            return INDEX
     path = index_path(environ)
     try:
         if not path.is_file():
@@ -114,7 +146,7 @@ def indexed_query(args: argparse.Namespace, environ: Mapping[str, str], out: Tex
                 result = queries.get_index_status(connection)
             elif args.operation == "search":
                 result = queries.search_projects(connection, query=args.query, technology=args.technology,
-                                                 limit=args.limit, cursor=args.cursor)
+                                                 limit=args.limit, cursor=args.cursor, workspace=workspace)
             elif args.operation == "project":
                 result = queries.get_project(connection, args.project_id)
             elif args.operation == "dependencies":
@@ -140,14 +172,17 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
     parser = argparse.ArgumentParser(prog="vyasa", description="Local-first workspace intelligence.")
     commands = parser.add_subparsers(dest="command", required=True)
     scan_parser = commands.add_parser("scan", help="scan the configured workspace roots and update the index")
+    scan_parser.add_argument("--workspace", help="scan only this configured workspace root")
     scan_parser.add_argument("--config", help="path to a configuration file (default: config.toml in the data directory)")
     query_parser = commands.add_parser("query", help="query the existing index as JSON without scanning")
     operations = query_parser.add_subparsers(dest="operation", required=True)
     operations.add_parser("version", help="report the installed backend version")
     operations.add_parser("status", help="report index status")
+    operations.add_parser("workspaces", help="list configured workspace roots")
     search_parser = operations.add_parser("search", help="search indexed projects")
     search_parser.add_argument("--query")
     search_parser.add_argument("--technology")
+    search_parser.add_argument("--workspace")
     search_parser.add_argument("--limit", type=int, default=20)
     search_parser.add_argument("--cursor")
     for name in ("project", "dependencies", "context", "report"):
@@ -165,7 +200,7 @@ def main(argv: Sequence[str] | None = None, environ: Mapping[str, str] | None = 
         return profile_context_command(args.path, out, err)
     if args.command == "query":
         return indexed_query(args, os.environ if environ is None else environ, out)
-    return scan(args.config, os.environ if environ is None else environ, out, err)
+    return scan(args.config, os.environ if environ is None else environ, out, err, args.workspace)
 
 
 def run() -> None:
